@@ -67,18 +67,18 @@
       </ion-item>
 
       <div class="extras-scrollable">
-        <ion-item *ngFor="let extra of filteredExtraList()">
-          <ion-checkbox
-            slot="start"
-            [(ngModel)]="extra.selected"
-          ></ion-checkbox>
-          <ion-label
-            >{{ extra.name }} (+{{
-              extra.price | currency : "EUR" : "symbol" : "1.2-2"
-            }})</ion-label
-          >
-        </ion-item>
-      </div>
+  <ion-item *ngFor="let extra of filteredExtraList()" (click)="extra.selected = !extra.selected">
+    <ion-checkbox
+      slot="start"
+      [checked]="extra.selected"
+      (click)="$event.stopPropagation()"
+    ></ion-checkbox>
+    <ion-label>
+      {{ extra.name }} (+{{ extra.price | currency: 'EUR':'symbol':'1.2-2' }})
+    </ion-label>
+  </ion-item>
+</div>
+
     </ng-container>
 
     <!-- Comments Input -->
@@ -89,15 +89,17 @@
         placeholder="Προσθέστε σχόλια για την παραγγελία σας"
       ></ion-input>
     </ion-item>
+  </ion-card-content>
+</ion-content>
 
-    <!-- Submit Button -->
+<ion-footer>
+  <ion-toolbar>
     <ion-button
       expand="block"
       (click)="submit()"
-      class="ion-margin-top"
       [disabled]="!isFormValid()"
     >
       Υποβολή
     </ion-button>
-  </ion-card-content>
-</ion-content>
+  </ion-toolbar>
+</ion-footer>

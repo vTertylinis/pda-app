@@ -26,6 +26,13 @@ export class Tab1Page implements OnInit {
   ngOnInit() {
   }
 
+  ionViewWillEnter() {
+    this.selectedTableName = null;
+    this.selectedCategory = null;
+    this.searchQuery = '';
+    this.filteredItems = [];
+  }
+
   onSelectTable(tableName: string) {
     this.selectedTableName = tableName;
   }
