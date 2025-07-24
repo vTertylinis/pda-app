@@ -1,0 +1,103 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ item?.name }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card-header>
+    <ion-card-title>
+      {{ item?.name }}
+
+      <div style="display: inline-flex; align-items: center; margin-left: 10px">
+        <ion-button size="small" (click)="decrement()">-</ion-button>
+        <span style="margin: 0 8px">{{ quantity }}</span>
+        <ion-button size="small" (click)="increment()">+</ion-button>
+      </div>
+    </ion-card-title>
+  </ion-card-header>
+
+  <ion-card-content>
+    <p>
+      <strong>Τιμή:</strong> {{ item?.price | currency : "EUR" : "symbol" }}
+    </p>
+
+    <!-- Coffee Sweetness Options -->
+    <div *ngIf="categoryName === 'Καφέδες'" class="ion-margin-top">
+      <ion-label class="ion-margin-bottom" position="stacked"
+        >Επιλέξτε γλυκύτητα:</ion-label
+      >
+      <ion-radio-group [(ngModel)]="coffeePreference">
+        <ion-item
+          *ngFor="
+            let option of ['Σκέτο', 'Ολίγη', 'Μέτριο', 'Πρός Γλυκό', 'Γλυκό']
+          "
+        >
+          <ion-radio slot="start" [value]="option">{{ option }}</ion-radio>
+        </ion-item>
+      </ion-radio-group>
+    </div>
+
+    <!-- Single/Double Option -->
+    <div *ngIf="supportsSingleOrDouble" class="ion-margin-top">
+      <ion-label position="stacked">Επιλογή:</ion-label>
+      <ion-radio-group [(ngModel)]="coffeeSize">
+        <ion-item>
+          <ion-radio slot="start" value="single">Μονός</ion-radio>
+        </ion-item>
+        <ion-item>
+          <ion-radio slot="start" value="double">Διπλός (+0.50€)</ion-radio>
+        </ion-item>
+      </ion-radio-group>
+    </div>
+
+    <!-- Extra Ingredients Section -->
+    <ng-container *ngIf="item.materials || item.materialsSweet">
+      <ion-item class="ion-margin-top">
+        <ion-label position="stacked">Extra Υλικά</ion-label>
+        <ion-searchbar
+          [(ngModel)]="searchTerm"
+          placeholder="Αναζήτηση έξτρα"
+        ></ion-searchbar>
+      </ion-item>
+
+      <div class="extras-scrollable">
+        <ion-item *ngFor="let extra of filteredExtraList()">
+          <ion-checkbox
+            slot="start"
+            [(ngModel)]="extra.selected"
+          ></ion-checkbox>
+          <ion-label
+            >{{ extra.name }} (+{{
+              extra.price | currency : "EUR" : "symbol" : "1.2-2"
+            }})</ion-label
+          >
+        </ion-item>
+      </div>
+    </ng-container>
+
+    <!-- Comments Input -->
+    <ion-item class="ion-margin-top">
+      <ion-label position="stacked">Σχόλια</ion-label>
+      <ion-input
+        [(ngModel)]="comments"
+        placeholder="Προσθέστε σχόλια για την παραγγελία σας"
+      ></ion-input>
+    </ion-item>
+
+    <!-- Submit Button -->
+    <ion-button
+      expand="block"
+      (click)="submit()"
+      class="ion-margin-top"
+      [disabled]="!isFormValid()"
+    >
+      Υποβολή
+    </ion-button>
+  </ion-card-content>
+</ion-content>

@@ -1,0 +1,64 @@
+<ion-content color="light" class="ion-padding">
+  <!-- List 1: Tables -->
+  <ion-list *ngIf="!selectedTableName" [inset]="true">
+    <ion-list-header>
+      Tables
+    </ion-list-header>
+    <ion-item *ngFor="let table of tables" (click)="onSelectTable(table.name)">
+      <ion-label>{{ table.name }}</ion-label>
+    </ion-item>
+  </ion-list>
+
+  <!-- List 2: Categories -->
+ <ion-list *ngIf="selectedTableName && !selectedCategory" [inset]="true" class="sub-list">
+  <ion-list-header>
+    <ion-button fill="clear" (click)="onBack()">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </ion-button>
+    Menu
+  </ion-list-header>
+
+  <!-- Search bar -->
+  <ion-searchbar
+    debounce="300"
+    (ionInput)="onSearch($event)"
+    [value]="searchQuery"
+    placeholder="Search items"
+    showCancelButton="focus">
+  </ion-searchbar>
+
+  <!-- Show categories if no search query -->
+  <ng-container *ngIf="!searchQuery; else searchResults">
+    <ion-item *ngFor="let sub of categories" (click)="onSelectCategory(sub)">
+      <ion-label>{{ sub.name }}</ion-label>
+    </ion-item>
+  </ng-container>
+
+  <!-- Show search results if query exists -->
+  <ng-template #searchResults>
+    <ion-item *ngFor="let item of filteredItems" (click)="openItemModal(item, item.categoryName)">
+      <ion-label>
+        {{ item.name }} <small>({{ item.categoryName }})</small>
+      </ion-label>
+    </ion-item>
+  </ng-template>
+</ion-list>
+
+  <!-- List 3: Items in Selected Category -->
+ <ion-list *ngIf="selectedCategory" [inset]="true" class="sub-list">
+  <ion-list-header>
+    <ion-button fill="clear" (click)="onBackToCategories()">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </ion-button>
+    {{ selectedCategory.name }}
+  </ion-list-header>
+
+  <ion-item *ngFor="let item of selectedCategory.items" (click)="openItemModal(item, selectedCategory.name)">
+    <ion-label>
+      {{ item.name }}
+    </ion-label>
+  </ion-item>
+</ion-list>
+
+
+</ion-content>

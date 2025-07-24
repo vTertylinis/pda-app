@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Tables</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="loadTables()">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list *ngIf="activeTables.length > 0; else noTables" [inset]="true">
+    <ion-list-header> Tables with Orders </ion-list-header>
+    <ion-item *ngFor="let table of activeTables">
+      <ion-label>Table {{ table }}</ion-label>
+      <ion-button (click)="openTableModal(table)" style="margin-right: 10px;">
+        Info
+        <ion-icon slot="icon-only" name="enter"></ion-icon>
+      </ion-button>
+      <ion-button slot="end" color="danger" (click)="deleteItem(table)">
+        Delete
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ng-template #noTables>
+    <ion-text color="medium">
+      <p>No tables with orders.</p>
+    </ion-text>
+  </ng-template>
+</ion-content>

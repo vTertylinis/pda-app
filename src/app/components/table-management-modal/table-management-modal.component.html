@@ -1,0 +1,56 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      Table {{ table }}
+      <ion-text
+        *ngIf="totalPrice"
+        color="medium"
+        style="display: block; font-size: 0.9em; margin-top: 4px"
+      >
+        Total: {{ totalPrice | currency : "EUR" : "symbol" }}
+      </ion-text>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let item of cartItems; let i = index">
+      <ion-label>
+        <h2>{{ item.name }}</h2>
+        <p>Τιμή: {{ item.price | number : "1.2-2" }} €</p>
+        <p *ngIf="item.coffeeSize">Coffee Size: {{ item.coffeeSize }}</p>
+        <p *ngIf="item.coffeePreference">
+          Προτίμηση: {{ item.coffeePreference }}
+        </p>
+        <p *ngIf="item.extras?.length">
+          Extras:
+          <ng-container *ngFor="let extra of item.extras; let i = index">
+            {{ extra.name }}<span *ngIf="i < item.extras.length - 1">, </span>
+          </ng-container>
+        </p>
+        <p *ngIf="item.comments">Comments: {{ item.comments }}</p>
+      </ion-label>
+
+      <ion-button
+        slot="end"
+        color="primary"
+        (click)="editItem(item, item.category, i)"
+      >
+        Edit
+      </ion-button>
+      <ion-button slot="end" color="danger" (click)="deleteItem(i)">
+        Delete
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ion-button expand="block" class="ion-margin-top" (click)="submit()">
+    Εκτύπωση
+  </ion-button>
+</ion-content>
