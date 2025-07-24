@@ -6,7 +6,7 @@ import { Environment } from './environment.model';
 
 export const environment: Environment = {
   production: false,
-  apiUrl: 'http://192.168.68.140:4300'
+  apiUrl: 'http://192.168.68.116:4300'
 };
 
 
