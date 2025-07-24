@@ -112,8 +112,8 @@ export const CATEGORIES = [
     },
     {
         name: "Τοστ - Κρέπες", items: [
-            { name: "Τοστ", price: 2.5, materials: true },
-            { name: "Κρέπα αλμυρή", price: 3.5, materials: true },
+            { name: "Τοστ", price: 2, materials: true },
+            { name: "Κρέπα αλμυρή", price: 3, materials: true },
             { name: "Κρέπα γλυκιά", price: 3.5, materialsSweet: true }
         ]
     },
