@@ -259,12 +259,12 @@ export const EXTRALIST = [
 ].map((extra) => ({ ...extra, selected: false }));
 
 export const EXTRALISTSWEET = [
-  { name: 'μεράντα', price: 0.5 },
+  { name: 'μερέντα', price: 0.5 },
   { name: 'nutella', price: 1 },
   { name: 'μπισκότο', price: 0.5 },
   { name: 'μπανάνα', price: 0.5 },
   { name: 'λευκή σοκολάτα', price: 0.5 },
-  { name: 'παγωτό', price: 1 },
+  { name: 'παγωτό', price: 2.5 },
   { name: 'μπισκότο oreo', price: 1 },
   { name: 'φράουλα', price: 0.5 },
   { name: 'bueno', price: 0.5 },

@@ -57,29 +57,29 @@
     </div>
 
     <!-- Extra Ingredients Section -->
-    <ng-container *ngIf="item.materials || item.materialsSweet">
-      <ion-item class="ion-margin-top">
-        <ion-label position="stacked">Extra Υλικά</ion-label>
-        <ion-searchbar
-          [(ngModel)]="searchTerm"
-          placeholder="Αναζήτηση έξτρα"
-        ></ion-searchbar>
-      </ion-item>
-
-      <div class="extras-scrollable">
-  <ion-item *ngFor="let extra of filteredExtraList()" (click)="extra.selected = !extra.selected">
-    <ion-checkbox
-      slot="start"
-      [checked]="extra.selected"
-      (click)="$event.stopPropagation()"
-    ></ion-checkbox>
-    <ion-label>
-      {{ extra.name }} (+{{ extra.price | currency: 'EUR':'symbol':'1.2-2' }})
-    </ion-label>
+<ng-container *ngIf="item.materials || item.materialsSweet">
+  <ion-item class="ion-margin-top">
+    <ion-label position="stacked">Extra Υλικά</ion-label>
+    <ion-searchbar
+      [(ngModel)]="searchTerm"
+      placeholder="Αναζήτηση έξτρα"
+    ></ion-searchbar>
   </ion-item>
-</div>
 
-    </ng-container>
+  <div class="extras-scrollable">
+    <ion-item *ngFor="let extra of filteredExtraList()">
+      <ion-checkbox
+        slot="start"
+        [(ngModel)]="extra.selected"
+        (ionChange)="onExtraSelectionChange(extra)"
+      ></ion-checkbox>
+      <ion-label>
+        {{ extra.name }} (+{{ extra.price | currency: 'EUR':'symbol':'1.2-2' }})
+      </ion-label>
+    </ion-item>
+  </div>
+</ng-container>
+
 
     <!-- Comments Input -->
     <ion-item class="ion-margin-top">
