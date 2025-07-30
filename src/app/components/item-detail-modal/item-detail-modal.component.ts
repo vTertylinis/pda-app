@@ -24,7 +24,6 @@ export class ItemDetailModalComponent implements OnInit {
 
   ngOnInit() {
     if (this.editMode) {
-      console.log(this.item);
       this.coffeePreference = this.item?.coffeePreference;
       this.comments = this.item?.comments;
       this.coffeeSize = this.item?.coffeeSize;
@@ -75,6 +74,20 @@ export class ItemDetailModalComponent implements OnInit {
 
   submit() {
     let finalPrice = this.item.price;
+    // In edit mode, revert previously added values to get base price
+    if (this.editMode) {
+      // Remove previous extras
+      if (Array.isArray(this.item.extras)) {
+        this.item.extras.forEach((extra: { price: number }) => {
+          finalPrice -= extra.price;
+        });
+      }
+
+      // Remove double coffee surcharge if previously applied
+      if (this.supportsSingleOrDouble && this.item.coffeeSize === 'double') {
+        finalPrice -= 0.5;
+      }
+    }
 
     if (this.supportsSingleOrDouble && this.coffeeSize === 'double') {
       finalPrice += 0.5;
