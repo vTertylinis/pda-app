@@ -219,6 +219,7 @@ export const CATEGORIES = [
       { name: 'Μπιφτέκι', price: 11 },
       { name: 'Γύρος χοιρινός', price: 11 },
       { name: 'Mix grill', price: 17 },
+      { name: 'Μερίδα Πατάτες', price: 5 }
     ],
   },
 ];
