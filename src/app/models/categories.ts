@@ -97,6 +97,7 @@ export const CATEGORIES = [
       { name: 'Bianco Νero λευκό', price: 6 },
       { name: 'Bianco Nero αφρώδες', price: 6 },
       { name: 'Bianco Nero αφρώδες Ροζέ', price: 6 },
+      { name: 'Λειβαδιώτη μπουκαλάκι', price: 6 },
       { name: 'Παράγκα Μπουκάλι', price: 30 },
       { name: 'Σαμαρόπετρα Μπουκάλι', price: 35 },
     ],
