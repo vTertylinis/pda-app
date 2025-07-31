@@ -73,6 +73,7 @@ export const CATEGORIES = [
       { name: 'Kaiser', price: 4 },
       { name: 'Radler', price: 4 },
       { name: 'Άλφα', price: 4 },
+      { name: 'Μύθος', price: 4 },
       { name: 'Heineken', price: 4 },
       { name: 'Amstel', price: 4 },
       { name: 'Corona', price: 4 },
