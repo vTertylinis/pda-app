@@ -96,20 +96,45 @@ export class TableManagementModalComponent implements OnInit {
     });
   }
 
-  async submit() {
-    const request = {
-      table: this.table,
-      items: this.cartItems
-    }
+async submit() {
+  const request = {
+    table: this.table,
+    items: this.cartItems
+  };
 
-    this.cartService.printItems(this.table,request).subscribe({
-      next: (res) => {
-          console.log(res)
+  this.cartService.printItems(this.table, request).subscribe({
+    next: async (res: any) => {  // If needed, use a proper interface instead of 'any'
+      console.log(res);
 
-      },
-      error: (err) => {
-        console.error('Failed to load active tables:', err);
-      },
-    });
-  }
+      const message = res.status
+        ? `${res.status}. Items printed: ${res.printedCount ?? 0}`
+        : res.error || 'Unknown response';
+
+      await this.alertModal(message);
+    },
+    error: (err) => {
+      console.error('Failed to send items to backend:', err);
+    },
+  });
+}
+
+async alertModal(message: string) {
+  const alert = await this.alertController.create({
+    header: 'Backend Response',
+    message: message,
+    buttons: [
+      {
+        text: 'OK',
+        role: 'ok',
+        handler: () => {
+          console.log('Alert dismissed');
+        },
+      }
+    ],
+  });
+
+  await alert.present();
+}
+
+
 }

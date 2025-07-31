@@ -31,8 +31,11 @@ export class Tab2Page implements OnInit {
       next: (res) => {
         this.activeTables = Object.keys(res);
       },
-      error: (err) => {
+      error: async (err) => {
         console.error('Failed to load active tables:', err);
+        await this.alertModal(
+          'Could not load active tables. Please check your connection or try again later.'
+        );
       },
     });
   }
@@ -78,6 +81,24 @@ export class Tab2Page implements OnInit {
               },
               error: (err) => console.error('Delete cart failed:', err),
             });
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  async alertModal(message: string) {
+    const alert = await this.alertController.create({
+      header: 'Error',
+      message: message,
+      buttons: [
+        {
+          text: 'OK',
+          role: 'cancel',
+          handler: () => {
+            console.log('Error alert dismissed');
           },
         },
       ],
