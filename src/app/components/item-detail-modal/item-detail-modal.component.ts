@@ -106,6 +106,7 @@ export class ItemDetailModalComponent implements OnInit {
     const barCategories = [
       'Καφέδες',
       'Χυμοί',
+      'Ούζο-Μεζέδες',
       'Αναψυκτικά',
       'Ποτά - Κρασιά',
       'Cocktails',

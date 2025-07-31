@@ -10,7 +10,7 @@ export const CATEGORIES = [
       { name: 'Ελληνικός', price: 2.5 },
       { name: 'Σοκολάτα', price: 4 },
       { name: 'Nescafe', price: 3 },
-      { name: 'Nescafe φραπέ', price: 2.5 },
+      { name: 'Nescafe φραπέ', price: 3 },
       { name: 'Καφές φίλτρου', price: 3 },
       { name: 'Macchiato', price: 3.5 },
       { name: 'Latte', price: 4.5 },
@@ -55,6 +55,14 @@ export const CATEGORIES = [
       { name: 'Χυμός Ροδάκινο', price: 3.5 },
       { name: 'Χυμός Μανταρίνι', price: 3.5 },
       { name: 'Χυμός Φράουλα', price: 3.5 },
+    ],
+  },
+  {
+    name: 'Τοστ - Κρέπες',
+    items: [
+      { name: 'Τοστ', price: 2, materials: true },
+      { name: 'Κρέπα αλμυρή', price: 3, materials: true },
+      { name: 'Κρέπα γλυκιά', price: 3.5, materialsSweet: true },
     ],
   },
   {
@@ -132,14 +140,6 @@ export const CATEGORIES = [
     ],
   },
   {
-    name: 'Τοστ - Κρέπες',
-    items: [
-      { name: 'Τοστ', price: 2, materials: true },
-      { name: 'Κρέπα αλμυρή', price: 3, materials: true },
-      { name: 'Κρέπα γλυκιά', price: 3.5, materialsSweet: true },
-    ],
-  },
-  {
     name: 'Club sandwich',
     items: [
       { name: 'Club sandwich', price: 9 },
@@ -153,6 +153,15 @@ export const CATEGORIES = [
     items: [
       { name: 'Junior 1', price: 7.5 },
       { name: 'Junior 2', price: 7.5 },
+    ],
+  },
+  {
+    name: 'Ούζο-Μεζέδες',
+    items: [
+      { name: 'Ούζο ποτήρι', price: 3 },
+      { name: 'Μεζέδες', price: 3 },
+      { name: 'Μπουκάλι Ούζο', price: 6 },
+      { name: 'Αποστολάκι', price: 10 },
     ],
   },
   {
