@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { CartService } from 'src/app/services/cart.service';
 import { ItemDetailModalComponent } from '../item-detail-modal/item-detail-modal.component';
+import { SelectTableComponent } from '../select-table/select-table.component';
 
 @Component({
   selector: 'app-table-management-modal',
@@ -135,6 +136,18 @@ async alertModal(message: string) {
 
   await alert.present();
 }
+
+async moveTable() {
+    const modal = await this.modalCtrl.create({
+      component: SelectTableComponent,
+      componentProps: { table:this.table },
+    });
+    await modal.present();
+        const { data } = await modal.onDidDismiss();
+        if(data&& data.res&&data.res.success){
+          this.close()
+        }
+  }
 
 
 }

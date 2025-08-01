@@ -8,6 +8,7 @@ import { Tab2PageRoutingModule } from './tab2-routing.module';
 
 import { Tab2Page } from './tab2.page';
 import { TableManagementModalComponent } from '../components/table-management-modal/table-management-modal.component';
+import { SelectTableComponent } from '../components/select-table/select-table.component';
 
 @NgModule({
   imports: [
@@ -18,7 +19,8 @@ import { TableManagementModalComponent } from '../components/table-management-mo
   ],
   declarations: [
     Tab2Page,
-    TableManagementModalComponent
+    TableManagementModalComponent,
+    SelectTableComponent
   ]
 })
 export class Tab2PageModule { }

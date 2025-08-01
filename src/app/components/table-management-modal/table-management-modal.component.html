@@ -11,10 +11,15 @@
       </ion-text>
     </ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="close()">
-        <ion-icon name="close"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+  <ion-button size="small" (click)="moveTable()">
+    <ion-icon name="swap-horizontal-outline"></ion-icon>
+    Move
+  </ion-button>
+  <ion-button size="large" (click)="close()">
+    <ion-icon name="close"></ion-icon>
+  </ion-button>
+</ion-buttons>
+
   </ion-toolbar>
 </ion-header>
 

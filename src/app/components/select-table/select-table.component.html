@@ -1,0 +1,22 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      Επιλέξτε τραπέζι μεταφοράς
+    </ion-title>
+    <ion-buttons slot="end">
+  <ion-button size="large" (click)="close()">
+    <ion-icon name="close"></ion-icon>
+  </ion-button>
+</ion-buttons>
+
+  </ion-toolbar>
+</ion-header>
+<ion-content color="light" class="ion-padding">
+  <!-- List 1: Tables -->
+  <ion-list  [inset]="true">
+    <ion-item *ngFor="let table of tables" (click)="onSelectTable(table.name)">
+      <ion-label>{{ table.name }}</ion-label>
+    </ion-item>
+  </ion-list>
+
+</ion-content>

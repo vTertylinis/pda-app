@@ -47,6 +47,7 @@ export const CATEGORIES = [
     items: [
       { name: 'Φυσικός Χυμός', price: 5 },
       { name: 'Χυμός Πορτοκάλι', price: 3.5 },
+      { name: 'Χυμός Ανάμεικτος', price: 3.5 },
       { name: 'Χυμός Βύσσινο', price: 3.5 },
       { name: 'Χυμός Μπανάνα', price: 3.5 },
       { name: 'Χυμός Μήλο', price: 3.5 },

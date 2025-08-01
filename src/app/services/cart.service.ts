@@ -37,4 +37,8 @@ export class CartService {
   printItems(tableId: any, request: any) {
     return this.http.post(`${this.apiUrl}/print-unprinted/${tableId}`, request);
   }
+
+  moveTable(request: any) {
+    return this.http.post(`${this.apiUrl}/move-table-items`, request);
+  }
 }
