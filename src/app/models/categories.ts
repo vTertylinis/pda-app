@@ -66,7 +66,7 @@ export const CATEGORIES = [
   {
     name: 'Τοστ - Κρέπες',
     items: [
-      { name: 'Τοστ', price: 2, materials: true },
+      { name: 'Τοστ', price: 2.5, materials: true },
       { name: 'Κρέπα αλμυρή', price: 3, materials: true },
       { name: 'Κρέπα γλυκιά', price: 3.5, materialsSweet: true },
     ],
@@ -176,8 +176,9 @@ export const CATEGORIES = [
   {
     name: 'Pinsa',
     items: [
-      { name: 'Pinsa απλή', price: 11 },
-      { name: 'Pinsa special', price: 12 },
+      { name: 'Pinsa Απλή', price: 11 },
+      { name: 'Pinsa Μαργαρίτα', price: 11 },
+      { name: 'Pinsa Special', price: 12 },
       { name: 'Pinsa 21', price: 12 },
     ],
   },
