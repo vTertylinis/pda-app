@@ -10,7 +10,13 @@ import { CartService } from 'src/app/services/cart.service';
 })
 export class SelectTableComponent implements OnInit {
   @Input() table: any;
-  tables = Array.from({ length: 40 }, (_, i) => ({ name: (i + 1).toString() }));
+  tables = [
+    ...Array.from({ length: 40 }, (_, i) => ({ name: (i + 1).toString() })),
+    { name: 'bar1' },
+    { name: 'bar2' },
+    { name: 'extra1' },
+    { name: 'extra2' },
+  ];
   toTable: string | null = null;
 
   constructor(
@@ -58,7 +64,7 @@ export class SelectTableComponent implements OnInit {
     };
     this.cartService.moveTable(request).subscribe({
       next: (res) => {
-        this.modalCtrl.dismiss({res});
+        this.modalCtrl.dismiss({ res });
       },
       error: async (err) => {
         console.error(`Move Failed`, err);

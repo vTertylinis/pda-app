@@ -9,6 +9,7 @@ import { Tab2PageRoutingModule } from './tab2-routing.module';
 import { Tab2Page } from './tab2.page';
 import { TableManagementModalComponent } from '../components/table-management-modal/table-management-modal.component';
 import { SelectTableComponent } from '../components/select-table/select-table.component';
+import { DeveloperInfoComponent } from '../components/developer-info/developer-info.component';
 
 @NgModule({
   imports: [
@@ -20,6 +21,7 @@ import { SelectTableComponent } from '../components/select-table/select-table.co
   declarations: [
     Tab2Page,
     TableManagementModalComponent,
+    DeveloperInfoComponent,
     SelectTableComponent
   ]
 })

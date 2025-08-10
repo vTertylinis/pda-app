@@ -11,7 +11,13 @@ import { CATEGORIES } from '../models/categories';
   standalone: false,
 })
 export class Tab1Page implements OnInit {
-  tables = Array.from({ length: 40 }, (_, i) => ({ name: (i + 1).toString() }));
+  tables = [
+    ...Array.from({ length: 40 }, (_, i) => ({ name: (i + 1).toString() })),
+    { name: 'bar1' },
+    { name: 'bar2' },
+    { name: 'extra1' },
+    { name: 'extra2' },
+  ];
   categories = CATEGORIES;
   selectedTableName: string | null = null;
   selectedCategory: any = null;

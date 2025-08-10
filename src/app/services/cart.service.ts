@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { OrderStats } from '../components/developer-info/developer-info.component';
 
 
 @Injectable({ providedIn: 'root' })
@@ -41,4 +42,9 @@ export class CartService {
   moveTable(request: any) {
     return this.http.post(`${this.apiUrl}/move-table-items`, request);
   }
+
+  getOrderStats(yearMonth: string) {
+  return this.http.get<OrderStats>(`${this.apiUrl}/order-stats/${yearMonth}`);
+}
+
 }

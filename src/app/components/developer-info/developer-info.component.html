@@ -1,0 +1,72 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title> Ιστορικό - Πληροφορίες </ion-title>
+    <ion-buttons slot="end">
+      <ion-button size="large" (click)="close()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content *ngIf="stats; else loadingOrError">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Περίληψη</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p><strong>Συνολικές παραγγελίες:</strong> {{ stats.totalOrders }}</p>
+      <p><strong>Συνολικά έσοδα:</strong> €{{ stats.totalRevenue }}</p>
+      <p>
+        <strong>Μέση αξία παραγγελίας:</strong> €{{ stats.averageOrderValue }}
+      </p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Τα πιο δημοφιλή προϊόντα</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-button
+        size="small"
+        fill="outline"
+        (click)="togglePopularItems()"
+        expand="block"
+        style="margin-bottom: 10px"
+      >
+        {{ showPopularItems ? "Συρρίκνωση λίστας" : "Επέκταση λίστας" }}
+      </ion-button>
+
+      <ion-list *ngIf="showPopularItems">
+        <ion-item *ngFor="let item of stats.mostPopularItems">
+          <ion-label>
+            <h2>{{ item.name }}</h2>
+            <p>Μέτρηση: {{ item.count }}</p>
+          </ion-label>
+          <ion-note slot="end">€{{ item.revenue }}</ion-note>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Καθημερινά έσοδα</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let day of stats.dailyRevenue">
+          <ion-label>{{ day[0] }}</ion-label>
+          <ion-note slot="end">€{{ day[1] }}</ion-note>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+
+<ng-template #loadingOrError>
+  <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+  <p *ngIf="!loading">Δεν υπάρχουν διαθέσιμα δεδομένα ή η φόρτωση απέτυχε.</p>
+</ng-template>
