@@ -52,15 +52,23 @@ export interface MostPopularItem {
 }
 
 export interface DailyRevenueEntry {
-  0: string; // date in "YYYY-MM-DD"
-  1: number; // revenue for that day
+  day: string;      // date in "YYYY-MM-DD"
+  revenue: string;  // revenue for that day (formatted string)
+  orders: number;   // number of orders for that day
+}
+
+export interface MostPopularItem {
+  name: string;
+  count: number;
+  revenue: string; // revenue for this item (formatted string)
 }
 
 export interface OrderStats {
-  yearMonth: string; // "YYYY-MM"
+  yearMonth: string;           // "YYYY-MM"
   totalOrders: number;
-  totalRevenue: string; // total revenue formatted as string
-  averageOrderValue: string; // formatted as string
+  totalRevenue: string;        // formatted as string
+  averageOrderValue: string;   // formatted as string
   mostPopularItems: MostPopularItem[];
   dailyRevenue: DailyRevenueEntry[];
 }
+

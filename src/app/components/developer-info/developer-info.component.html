@@ -52,18 +52,22 @@
   </ion-card>
 
   <ion-card>
-    <ion-card-header>
-      <ion-card-title>Καθημερινά έσοδα</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-list>
-        <ion-item *ngFor="let day of stats.dailyRevenue">
-          <ion-label>{{ day[0] }}</ion-label>
-          <ion-note slot="end">€{{ day[1] }}</ion-note>
-        </ion-item>
-      </ion-list>
-    </ion-card-content>
-  </ion-card>
+  <ion-card-header>
+    <ion-card-title>Καθημερινά έσοδα</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <ion-list>
+      <ion-item *ngFor="let day of stats.dailyRevenue">
+        <ion-label>
+          {{ day.day }}  
+          <div>Παραγγελίες: {{ day.orders }}</div>
+        </ion-label>
+        <ion-note slot="end">€{{ day.revenue }}</ion-note>
+      </ion-item>
+    </ion-list>
+  </ion-card-content>
+</ion-card>
+
 </ion-content>
 
 <ng-template #loadingOrError>
