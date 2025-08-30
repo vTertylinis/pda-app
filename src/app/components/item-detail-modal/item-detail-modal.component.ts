@@ -112,7 +112,22 @@ export class ItemDetailModalComponent implements OnInit {
       'Cocktails',
       'Μπύρες',
     ];
+
     const category = this.categoryName ?? '';
+    const itemName = this.item?.name ?? '';
+
+    // define the special case (you can add more later if needed)
+    const kitchenException = {
+      category: 'Ούζο-Μεζέδες',
+      name: 'Μεζέδες',
+    };
+
+    const isBarCategory = barCategories.includes(category);
+
+    // check if the item is the exception
+    const isKitchenException =
+      category === kitchenException.category &&
+      itemName === kitchenException.name;
 
     const finalItem = {
       name: this.item?.name,
@@ -133,7 +148,9 @@ export class ItemDetailModalComponent implements OnInit {
           : null,
       materials: this.item?.materials,
       materialsSweet: this.item?.materialsSweet,
-      printer: barCategories.includes(category)
+      printer: isKitchenException
+        ? 'kitchen'
+        : isBarCategory
         ? 'bar'
         : category === 'Τοστ - Κρέπες'
         ? 'crepe'

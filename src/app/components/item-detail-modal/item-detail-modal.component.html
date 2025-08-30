@@ -43,6 +43,21 @@
       </ion-radio-group>
     </div>
 
+    <div *ngIf="categoryName === 'Ποτά - Κρασιά' && item?.name === 'Λειβαδιώτη μπουκαλάκι'" class="ion-margin-top">
+      <ion-label class="ion-margin-bottom" position="stacked"
+        >Επιλέξτε:</ion-label
+      >
+      <ion-radio-group [(ngModel)]="comments">
+        <ion-item
+          *ngFor="
+            let option of ['Λευκό Ξηρό', 'Λευκό Ημίγλυκο', 'Ερυθρό Ξηρό', 'Ερυθρό Ημίγλυκο', 'Ροζέ Ημίγλυκο', 'Ροζέ Ξηρό']
+          "
+        >
+          <ion-radio slot="start" [value]="option">{{ option }}</ion-radio>
+        </ion-item>
+      </ion-radio-group>
+    </div>
+
     <!-- Single/Double Option -->
     <div *ngIf="supportsSingleOrDouble" class="ion-margin-top">
       <ion-label position="stacked">Επιλογή:</ion-label>

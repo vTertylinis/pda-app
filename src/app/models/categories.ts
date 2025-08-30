@@ -29,6 +29,7 @@ export const CATEGORIES = [
       { name: 'Τσάι Ροδάκινο', price: 3.5 },
       { name: 'Τσάι Λεμόνι', price: 3.5 },
       { name: 'Τσάι Πράσινο', price: 3.5 },
+      { name: 'Τσάι Ζεστό', price: 3.5 },
       { name: 'Red Bull', price: 5 },
       { name: 'Σόδα', price: 3.5 },
       { name: 'Νερό Μικρό', price: 0.5 },
@@ -46,6 +47,7 @@ export const CATEGORIES = [
       { name: 'Σπιτική Ροδακινάδα', price: 6 },
       { name: 'Σπιτική Ροζ Λεμονάδα', price: 6 },
       { name: 'Σπιτική Πράσινο Μήλο - Ρόδι', price: 6 },
+      { name: 'Παγωτό', price: 2.5 },
     ],
   },
   {
