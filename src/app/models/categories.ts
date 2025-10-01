@@ -193,6 +193,8 @@ export const CATEGORIES = [
       { name: 'Bolognesa', price: 9 },
       { name: 'Carbonara', price: 9 },
       { name: 'Pasta 21', price: 9 },
+      { name: 'Πέννες με Κοτόπουλο', price: 11 },
+      { name: 'Ριγκατόνι με σάλτσα 4 τυριών', price: 9 },
       { name: 'Γαριδομακαρονάδα', price: 18 },
       { name: 'Παπαρδέλα ραγού με μοσχαρίσια ουρά', price: 16 },
       { name: 'Λιγκουίνι χταπόδι', price: 18 },
@@ -206,7 +208,11 @@ export const CATEGORIES = [
       { name: 'Burger Caesar', price: 9 },
       { name: 'Burger 21', price: 10 },
       { name: 'Double cheese burger', price: 10 },
-      { name: 'Chicken crispy burger', price: 9 },
+      { name: 'Burger Chili Crispy Chicken', price: 10 },
+      { name: 'Double Smash Burger', price: 11 },
+      { name: 'Burger Double Cheese', price: 10 },
+      { name: 'Chicken Crispy Burger', price: 10 },
+      { name: 'Διάφορα μίνι Burgers', price: 10 }
     ],
   },
   {
@@ -242,6 +248,7 @@ export const CATEGORIES = [
       { name: 'Μπιφτέκι', price: 11 },
       { name: 'Γύρος χοιρινός', price: 11 },
       { name: 'Mix grill', price: 17 },
+      { name: 'Πατάτες Τηγανητές Cheddar Bacon', price: 6 },
       { name: 'Μερίδα Πατάτες', price: 5 }
     ],
   },
