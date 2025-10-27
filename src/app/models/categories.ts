@@ -144,7 +144,7 @@ export const CATEGORIES = [
       { name: 'Αυγά σκραμπλ Με Σολομό', price: 7 },
       { name: 'French toast Απλό', price: 5 },
       { name: 'French toast με μελί και κανέλα', price: 6 },
-      { name: 'Pan cake Πραλίνα', price: 7 ,  materialsSweet: true},
+      { name: 'Pan cake Πραλίνα', price: 7, materialsSweet: true },
       { name: 'Pan cake Μέλι Κανέλα', price: 7 },
       { name: 'Pan cake Πραλίνα Μπανάνα Φουντούκια', price: 9 },
       { name: '2 αυγά τηγανητά με μπέικον και φρυγανιασμένο ψωμί', price: 6 },
@@ -212,7 +212,7 @@ export const CATEGORIES = [
       { name: 'Double Smash Burger', price: 11 },
       { name: 'Burger Double Cheese', price: 10 },
       { name: 'Chicken Crispy Burger', price: 10 },
-      { name: 'Διάφορα μίνι Burgers', price: 10 }
+      { name: 'Διάφορα μίνι Burgers', price: 10 },
     ],
   },
   {
@@ -249,7 +249,28 @@ export const CATEGORIES = [
       { name: 'Γύρος χοιρινός', price: 11 },
       { name: 'Mix grill', price: 17 },
       { name: 'Πατάτες Τηγανητές Cheddar Bacon', price: 6 },
-      { name: 'Μερίδα Πατάτες', price: 5 }
+      { name: 'Μερίδα Πατάτες', price: 5 },
+    ],
+  },
+  {
+    name: 'extra menu Παρέλαση',
+    items: [
+      { name: 'Σκουμπρί Καπνιστό', price: 7.5 },
+      { name: 'Γαρίδες Σαγανάκι', price: 13 },
+      { name: 'Κολοκυθοκεφτέδες', price: 6.5 },
+      { name: 'Ταραμοσαλάτα Χειροποίητη', price: 4.5 },
+      { name: 'Φασόλια Γίγαντες', price: 6 },
+      { name: 'Καυτερές Πιπεριές', price: 5 },
+      { name: 'Πατατοσαλάτα', price: 7 },
+      { name: 'Πικάντικη Σαλάτα', price: 7 },
+      { name: 'Μπεκρή Μεζέ', price: 12 },
+      { name: 'Σπετσοφάι', price: 11 },
+      { name: 'Σουπιές', price: 13 },
+      { name: 'Θράψαλα', price: 12 },
+      { name: 'Μπακαλίαρος Στον Νταβά', price: 14 },
+      { name: 'Μπακαλιάρος Τηγανητός Με Κουρκούτι', price: 14 },
+      { name: 'Χταπόδι Γιουβέτσι', price: 15 },
+      { name: 'Γαρίδες Ψητές', price: 15 },
     ],
   },
 ];
