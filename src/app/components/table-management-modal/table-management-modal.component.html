@@ -42,16 +42,28 @@
         <p *ngIf="item.comments">Comments: {{ item.comments }}</p>
       </ion-label>
 
-      <ion-button
-        slot="end"
-        color="primary"
-        (click)="editItem(item, item.category, i)"
-      >
-        Edit
-      </ion-button>
-      <ion-button slot="end" color="danger" (click)="deleteItem(i)">
-        Delete
-      </ion-button>
+      <div slot="end" style="display: flex; flex-direction: column; gap: 4px;">
+        <ion-button
+          size="small"
+          color="secondary"
+          (click)="duplicateItem(item)"
+        >
+          <ion-icon slot="start" name="copy-outline"></ion-icon>
+          Duplicate
+        </ion-button>
+        <ion-button
+          size="small"
+          color="primary"
+          (click)="editItem(item, item.category, i)"
+        >
+          <ion-icon slot="start" name="create-outline"></ion-icon>
+          Edit
+        </ion-button>
+        <ion-button size="small" color="danger" (click)="deleteItem(i)">
+          <ion-icon slot="start" name="trash-outline"></ion-icon>
+          Delete
+        </ion-button>
+      </div>
     </ion-item>
   </ion-list>
 

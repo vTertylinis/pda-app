@@ -49,6 +49,39 @@ export class TableManagementModalComponent implements OnInit {
     }
   }
 
+  async duplicateItem(item: any) {
+    const alert = await this.alertController.create({
+      header: 'Επιβεβαίωση',
+      message: 'Είστε σίγουρος ότι θέλετε να ξαναφτιάξετε το ίδιο προϊόν;',
+      buttons: [
+        {
+          text: 'Όχι',
+          role: 'cancel',
+          handler: () => {
+            console.log('Duplication cancelled');
+          },
+        },
+        {
+          text: 'Ναι',
+          handler: () => {
+            // Create a copy of the item to add to cart
+            const duplicatedItem = { ...item };
+            
+            this.cartService.addItemToCart(this.table, duplicatedItem).subscribe({
+              next: (res: any) => {
+                console.log('Item duplicated:', res);
+                this.loadTable();
+              },
+              error: (err: any) => console.error('Duplicate item failed:', err),
+            });
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
   async deleteItem(index: any) {
     const alert = await this.alertController.create({
       header: 'Confirm Deletion',

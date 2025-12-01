@@ -100,7 +100,7 @@ export const CATEGORIES = [
     items: [
       { name: 'Ποτό Απλό', price: 7 },
       { name: 'Ποτό Σπέσιαλ', price: 8 },
-      { name: 'Ποτό Πρίμιουμ', price: 10 },
+      { name: 'Ποτό Πρίμιουμ', price: 12 },
       { name: 'Κρασί ποτήρι', price: 6 },
       { name: 'Σφηνάκι', price: 3 },
       { name: 'Ρετσίνα Βασιλική', price: 6 },
@@ -111,6 +111,7 @@ export const CATEGORIES = [
       { name: 'Gordons Space', price: 5 },
       { name: 'Παράγκα Μπουκάλι', price: 30 },
       { name: 'Σαμαρόπετρα Μπουκάλι', price: 35 },
+      { name: 'Μαλαγουζιά Μπουκάλι', price: 35 },
     ],
   },
   {
@@ -159,6 +160,7 @@ export const CATEGORIES = [
       { name: 'Club Sandwich Caesar Κοτόπουλο', price: 11 },
       { name: 'Club Sandwich με Γύρο', price: 11 },
       { name: 'Club πανσέτας', price: 12 },
+      { name: 'Club Καλαμάρι', price: 12 },
     ],
   },
   {
@@ -184,6 +186,8 @@ export const CATEGORIES = [
       { name: 'Pinsa Μαργαρίτα', price: 11 },
       { name: 'Pinsa Special', price: 12 },
       { name: 'Pinsa 21', price: 12 },
+      { name: 'Pinsa Χωριάτικη', price: 10 },
+      { name: 'Pinsa Νηστίσιμη', price: 10 },
     ],
   },
   {
@@ -198,6 +202,8 @@ export const CATEGORIES = [
       { name: 'Γαριδομακαρονάδα', price: 18 },
       { name: 'Παπαρδέλα ραγού με μοσχαρίσια ουρά', price: 16 },
       { name: 'Λιγκουίνι χταπόδι', price: 18 },
+      { name: 'Πένες Τρικολόρε', price: 8 },
+      { name: 'Πένες Τρικολόρε Χωριάτικες', price: 7.5 },
     ],
   },
   {
@@ -212,6 +218,9 @@ export const CATEGORIES = [
       { name: 'Double Smash Burger', price: 11 },
       { name: 'Burger Double Cheese', price: 10 },
       { name: 'Chicken Crispy Burger', price: 10 },
+      { name: 'Burger Λαχανικών', price: 8.5 },
+      { name: 'Burger Καλαμάρι', price: 9 },
+      { name: 'Row No Meat Burger', price: 11 },
       { name: 'Διάφορα μίνι Burgers', price: 10 },
     ],
   },
@@ -221,6 +230,7 @@ export const CATEGORIES = [
       { name: 'Shrimp chili bao', price: 8 },
       { name: 'Nuggets bao', price: 7 },
       { name: 'Pulled pork bao', price: 7 },
+      { name: 'Bao Νηστίσιμο', price: 8 },
     ],
   },
   {
@@ -248,7 +258,9 @@ export const CATEGORIES = [
       { name: 'Μπιφτέκι', price: 11 },
       { name: 'Γύρος χοιρινός', price: 11 },
       { name: 'Mix grill', price: 17 },
+      { name: 'Vegan Mix grill', price: 18 },
       { name: 'Πατάτες Τηγανητές Cheddar Bacon', price: 6 },
+      { name: 'Μερίδα Λουκάνικα', price: 11 },
       { name: 'Μερίδα Πατάτες', price: 5 },
     ],
   },
