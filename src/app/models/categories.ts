@@ -290,7 +290,7 @@ export const CATEGORIES = [
     items: [
       { name: 'Burger Λαχανικών', price: 9 },
       { name: 'Row No Meat Burger', price: 11 },
-      { name: 'Napolitana', price: 9 },
+      { name: 'Napolitana', price: 8 },
       { name: 'Λιγκουίνι με Θαλασσινά', price: 18 },
       { name: 'Γαριδομακαρονάδα', price: 18 },
       { name: 'Κουκουβάγια Salad', price: 8 },
