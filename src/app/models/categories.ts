@@ -285,6 +285,25 @@ export const CATEGORIES = [
       { name: 'Γαρίδες Ψητές', price: 15 },
     ],
   },
+  {
+    name: 'Νηστίσιμο Μενού',
+    items: [
+      { name: 'Burger Λαχανικών', price: 9 },
+      { name: 'Row No Meat Burger', price: 11 },
+      { name: 'Napolitana', price: 9 },
+      { name: 'Λιγκουίνι με Θαλασσινά', price: 18 },
+      { name: 'Γαριδομακαρονάδα', price: 18 },
+      { name: 'Κουκουβάγια Salad', price: 8 },
+      { name: '21 Salad με Γαρίδες', price: 10 },
+      { name: 'Πέννες Salad', price: 10 },
+      { name: 'Pinsa Χωριάτικη', price: 12 },
+      { name: 'Pinsa Νηστίσιμη', price: 11 },
+      { name: 'Bao Buns Γαρίδας', price: 8 },
+      { name: 'Club Καλαμάρι', price: 12 },
+      { name: 'Mix Grill', price: 18 },
+      { name: 'Πατάτες Country', price: 6 },
+    ],
+  },
 ];
 
 export const EXTRALIST = [
