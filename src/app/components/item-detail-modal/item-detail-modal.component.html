@@ -96,6 +96,20 @@
 </ng-container>
 
 
+    <!-- Ouzo drink option to be appended to comments -->
+    <div *ngIf="isOuzoOptionTarget" class="ion-margin-top">
+      <ion-label class="ion-margin-bottom" position="stacked">Επιλέξτε:</ion-label>
+      <ion-radio-group [(ngModel)]="drinkCommentOption">
+        <ion-item>
+          <ion-radio slot="start" value="Με">Με</ion-radio>
+        </ion-item>
+        <ion-item>
+          <ion-radio slot="start" value="Χωρίς">Χωρίς</ion-radio>
+        </ion-item>
+      </ion-radio-group>
+    </div>
+
+
     <!-- Comments Input -->
     <ion-item class="ion-margin-top">
       <ion-label position="stacked">Σχόλια</ion-label>

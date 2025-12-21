@@ -15,6 +15,7 @@ export class ItemDetailModalComponent implements OnInit {
   coffeeSize: 'single' | 'double' = 'single';
   coffeePreference: string = '';
   comments: any;
+  drinkCommentOption: 'Με' | 'Χωρίς' | '' = '';
   searchTerm: string = '';
   extraList = EXTRALIST.map((extra) => ({ ...extra }));
   extraListSweet = EXTRALISTSWEET.map((extra) => ({ ...extra }));
@@ -27,6 +28,16 @@ export class ItemDetailModalComponent implements OnInit {
       this.coffeePreference = this.item?.coffeePreference;
       this.comments = this.item?.comments;
       this.coffeeSize = this.item?.coffeeSize;
+      // Preserve structured comment option when available
+      if (this.isOuzoOptionTarget && typeof this.comments === 'string') {
+        const parts = this.comments.split(' - ');
+        const candidate = parts[0];
+        if (candidate === 'Με' || candidate === 'Χωρίς') {
+          this.drinkCommentOption = candidate as 'Με' | 'Χωρίς';
+          parts.shift();
+          this.comments = parts.join(' - ');
+        }
+      }
       this.selectMatchingItems(
         this.extraList,
         this.extraListSweet,
@@ -117,17 +128,28 @@ export class ItemDetailModalComponent implements OnInit {
     const itemName = this.item?.name ?? '';
 
     // define the special case (you can add more later if needed)
-    const kitchenException = {
-      category: 'Ούζο-Μεζέδες',
-      name: 'Μεζέδες',
-    };
+    const kitchenExceptions = [
+      {
+        category: 'Ούζο-Μεζέδες',
+        name: 'Μεζέδες',
+      },
+      {
+        category: 'Ούζο-Μεζέδες',
+        name: 'Μπακαλιαράκια',
+      },
+      {
+        category: 'Ούζο-Μεζέδες',
+        name: 'Γάμπαρι',
+      },
+    ];
 
     const isBarCategory = barCategories.includes(category);
 
     // check if the item is the exception
-    const isKitchenException =
-      category === kitchenException.category &&
-      itemName === kitchenException.name;
+    const isKitchenException = kitchenExceptions.some(
+      (exception) =>
+        category === exception.category && itemName === exception.name
+    );
 
     const finalItem = {
       name: this.item?.name,
@@ -155,10 +177,19 @@ export class ItemDetailModalComponent implements OnInit {
         : category === 'Τοστ - Κρέπες'
         ? 'crepe'
         : 'kitchen',
-      comments: this.comments,
+      comments: this.composeComments(),
     };
 
     this.modalCtrl.dismiss({ finalItem, quantity: this.quantity });
+  }
+
+  private composeComments(): string | undefined {
+    const combined = this.isOuzoOptionTarget
+      ? [this.drinkCommentOption, this.comments]
+          .filter((value) => !!value)
+          .join(' - ')
+      : this.comments;
+    return combined === '' ? undefined : combined;
   }
 
   isFormValid(): boolean {
@@ -227,6 +258,17 @@ export class ItemDetailModalComponent implements OnInit {
       'Macchiato',
     ];
     return namesWithOption.includes(this.item?.name);
+  }
+
+  get isOuzoOptionTarget(): boolean {
+    const ouzoOptions = [
+      'Ούζο ποτήρι',
+      'Τσίπουρο ποτήρι',
+      'Μπουκάλι Ούζο',
+      'Αποστολάκι',
+      'Ηδωνικό',
+    ];
+    return this.categoryName === 'Ούζο-Μεζέδες' && ouzoOptions.includes(this.item?.name);
   }
 }
 
