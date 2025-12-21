@@ -65,6 +65,7 @@ export const CATEGORIES = [
       { name: 'Χυμός Ροδάκινο', price: 3.5 },
       { name: 'Χυμός Μανταρίνι', price: 3.5 },
       { name: 'Χυμός Φράουλα', price: 3.5 },
+      { name: 'Χυμό Μικρό Παιδικό', price: 1.5 },
     ],
   },
   {
