@@ -270,27 +270,7 @@ export const CATEGORIES = [
       { name: 'Μερίδα Λουκάνικα', price: 11 },
       { name: 'Μερίδα Πατάτες', price: 5 },
       { name: 'Πίτες extra', price: 1.5 },
-    ],
-  },
-  {
-    name: 'extra menu Παρέλαση',
-    items: [
-      { name: 'Σκουμπρί Καπνιστό', price: 7.5 },
-      { name: 'Γαρίδες Σαγανάκι', price: 13 },
-      { name: 'Κολοκυθοκεφτέδες', price: 6.5 },
-      { name: 'Ταραμοσαλάτα Χειροποίητη', price: 4.5 },
-      { name: 'Φασόλια Γίγαντες', price: 6 },
-      { name: 'Καυτερές Πιπεριές', price: 5 },
-      { name: 'Πατατοσαλάτα', price: 7 },
-      { name: 'Πικάντικη Σαλάτα', price: 7 },
-      { name: 'Μπεκρή Μεζέ', price: 12 },
-      { name: 'Σπετσοφάι', price: 11 },
-      { name: 'Σουπιές', price: 13 },
-      { name: 'Θράψαλα', price: 12 },
-      { name: 'Μπακαλίαρος Στον Νταβά', price: 14 },
-      { name: 'Μπακαλιάρος Τηγανητός Με Κουρκούτι', price: 14 },
-      { name: 'Χταπόδι Γιουβέτσι', price: 15 },
-      { name: 'Γαρίδες Ψητές', price: 15 },
+      { name: 'Κουβέρ', price: 1.5 },
     ],
   },
   {
@@ -310,6 +290,29 @@ export const CATEGORIES = [
       { name: 'Club Καλαμάρι (Νηστίσιμο)', price: 12 },
       { name: 'Mix Grill (Νηστίσιμο)', price: 18 },
       { name: 'Πατάτες Country (Νηστίσιμο)', price: 6 },
+    ],
+  },
+  {
+    name: 'Μενού Θεοφανίων',
+    items: [
+      { name: 'Γάμπαρη Τηγανιτή', price: 11 },
+      { name: 'Γόνος Καλαμάρι', price: 12 },
+      { name: 'Γαρίδες Σαγανάκι', price: 14 },
+      { name: 'Χταπόδι στη Σχάρα', price: 14 },
+      { name: 'Σκουμπρί Καπνιστό', price: 7 },
+      { name: 'Πιπεροφάϊ', price: 5 },
+      { name: 'Πικάντικη', price: 4.5 },
+      { name: 'Αγγουροντομάτα', price: 6 },
+      { name: 'Λευκός Ταραμάς', price: 4.5 },
+      { name: 'Αγιορείτικη Μελιτζανοσαλάτα', price: 4.5 },
+      { name: 'Μπακαλιαράκια Τηγανιτά', price: 11 },
+      { name: 'Καλαμαράκια Τηγανιτά', price: 12 },
+      { name: 'Σουπιές με Χόρτα', price: 12 },
+      { name: 'Χοιρινό Κλέφτικο', price: 13 },
+      { name: 'Χοιρινή Τηγανιά', price: 12 },
+      { name: 'Ποικιλία Λουκάνικα', price: 15 },
+      { name: 'Κουβέρ', price: 1.5 },
+      { name: 'Πατάτες Τηγανιτές', price: 5 }
     ],
   },
 ];
@@ -347,6 +350,7 @@ export const EXTRALIST = [
   { name: 'μανούρι', price: 0.5 },
   { name: 'λουκάνικο', price: 1 },
   { name: 'σαλάμι αέρος', price: 0.5 },
+  { name: 'μελιτζανοσαλάτα', price: 0.5 },
 ].map((extra) => ({ ...extra, selected: false }));
 
 export const EXTRALISTSWEET = [
