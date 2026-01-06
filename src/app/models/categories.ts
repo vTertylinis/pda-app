@@ -312,7 +312,8 @@ export const CATEGORIES = [
       { name: 'Χοιρινή Τηγανιά', price: 12 },
       { name: 'Ποικιλία Λουκάνικα', price: 15 },
       { name: 'Κουβέρ', price: 1.5 },
-      { name: 'Πατάτες Τηγανιτές', price: 5 }
+      { name: 'Πατάτες Τηγανιτές', price: 5 },
+      { name: 'Φέτα', price: 4 }
     ],
   },
 ];
