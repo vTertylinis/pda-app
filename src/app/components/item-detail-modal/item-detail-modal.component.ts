@@ -1,12 +1,15 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { FormsModule } from '@angular/forms';
+import { ModalController, IonicModule } from '@ionic/angular';
 import { EXTRALIST, EXTRALISTSWEET } from 'src/app/models/categories';
 
 @Component({
   selector: 'app-item-detail-modal',
   templateUrl: './item-detail-modal.component.html',
   styleUrls: ['./item-detail-modal.component.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [IonicModule, CommonModule, FormsModule],
 })
 export class ItemDetailModalComponent implements OnInit {
   @Input() item: any;
@@ -41,7 +44,7 @@ export class ItemDetailModalComponent implements OnInit {
       this.selectMatchingItems(
         this.extraList,
         this.extraListSweet,
-        this.item.extras
+        this.item.extras,
       );
     }
   }
@@ -49,11 +52,11 @@ export class ItemDetailModalComponent implements OnInit {
   selectMatchingItems(
     arr1: ItemWithSelected[],
     arr2: ItemWithSelected[],
-    itemsToSelect: Item[]
+    itemsToSelect: Item[],
   ): void {
     const containsAll = (arr: ItemWithSelected[], items: Item[]) =>
       items.every((item) =>
-        arr.some((el) => el.name === item.name && el.price === item.price)
+        arr.some((el) => el.name === item.name && el.price === item.price),
       );
 
     let targetArray: ItemWithSelected[] | null = null;
@@ -71,7 +74,7 @@ export class ItemDetailModalComponent implements OnInit {
     targetArray.forEach((obj) => {
       if (
         itemsToSelect.some(
-          (sel) => sel.name === obj.name && sel.price === obj.price
+          (sel) => sel.name === obj.name && sel.price === obj.price,
         )
       ) {
         obj.selected = true;
@@ -148,7 +151,7 @@ export class ItemDetailModalComponent implements OnInit {
     // check if the item is the exception
     const isKitchenException = kitchenExceptions.some(
       (exception) =>
-        category === exception.category && itemName === exception.name
+        category === exception.category && itemName === exception.name,
     );
 
     const finalItem = {
@@ -173,10 +176,10 @@ export class ItemDetailModalComponent implements OnInit {
       printer: isKitchenException
         ? 'kitchen'
         : isBarCategory
-        ? 'bar'
-        : category === 'Τοστ - Κρέπες'
-        ? 'crepe'
-        : 'kitchen',
+          ? 'bar'
+          : category === 'Τοστ - Κρέπες'
+            ? 'crepe'
+            : 'kitchen',
       comments: this.composeComments(),
     };
 
@@ -201,10 +204,10 @@ export class ItemDetailModalComponent implements OnInit {
     // New validation for Τοστ - Κρέπες category
     if (this.categoryName === 'Τοστ - Κρέπες') {
       const anySelectedInExtraList = this.extraList.some(
-        (extra) => extra.selected
+        (extra) => extra.selected,
       );
       const anySelectedInExtraListSweet = this.extraListSweet.some(
-        (extra) => extra.selected
+        (extra) => extra.selected,
       );
 
       if (!anySelectedInExtraList && !anySelectedInExtraListSweet) {
@@ -227,7 +230,7 @@ export class ItemDetailModalComponent implements OnInit {
     }
 
     return extrasSource.filter((extra) =>
-      this.removeDiacritics(extra.name.toLowerCase()).includes(term)
+      this.removeDiacritics(extra.name.toLowerCase()).includes(term),
     );
   }
 
@@ -268,7 +271,10 @@ export class ItemDetailModalComponent implements OnInit {
       'Αποστολάκι',
       'Ηδωνικό',
     ];
-    return this.categoryName === 'Ούζο-Μεζέδες' && ouzoOptions.includes(this.item?.name);
+    return (
+      this.categoryName === 'Ούζο-Μεζέδες' &&
+      ouzoOptions.includes(this.item?.name)
+    );
   }
 }
 

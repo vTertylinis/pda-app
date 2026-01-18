@@ -1,14 +1,21 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, IonicModule, ModalController } from '@ionic/angular';
 import { ItemDetailModalComponent } from '../components/item-detail-modal/item-detail-modal.component';
 import { CartService } from '../services/cart.service';
 import { CATEGORIES } from '../models/categories';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-tab1',
   templateUrl: './tab1.page.html',
   styleUrls: ['./tab1.page.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+  ],
 })
 export class Tab1Page implements OnInit {
   tables = [

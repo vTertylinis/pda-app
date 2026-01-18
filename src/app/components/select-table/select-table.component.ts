@@ -1,12 +1,14 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 import { CartService } from 'src/app/services/cart.service';
 
 @Component({
   selector: 'app-select-table',
   templateUrl: './select-table.component.html',
   styleUrls: ['./select-table.component.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [IonicModule, CommonModule],
 })
 export class SelectTableComponent implements OnInit {
   @Input() table: any;
@@ -22,7 +24,7 @@ export class SelectTableComponent implements OnInit {
   constructor(
     private modalCtrl: ModalController,
     private cartService: CartService,
-    private alertController: AlertController
+    private alertController: AlertController,
   ) {}
 
   ngOnInit() {}

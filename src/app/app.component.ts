@@ -1,12 +1,17 @@
 import { Component } from '@angular/core';
-import { Platform } from '@ionic/angular';
+import { IonicModule, Platform } from '@ionic/angular';
 import { AndroidFullScreen } from '@awesome-cordova-plugins/android-full-screen/ngx';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [
+    IonicModule,
+    RouterModule,
+  ],
   providers: [AndroidFullScreen]
 })
 export class AppComponent {

@@ -1,14 +1,16 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 import { CartService } from 'src/app/services/cart.service';
 import { ItemDetailModalComponent } from '../item-detail-modal/item-detail-modal.component';
 import { SelectTableComponent } from '../select-table/select-table.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-table-management-modal',
   templateUrl: './table-management-modal.component.html',
   styleUrls: ['./table-management-modal.component.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [IonicModule,CommonModule],
 })
 export class TableManagementModalComponent implements OnInit {
   @Input() table: any;
