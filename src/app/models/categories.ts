@@ -217,7 +217,7 @@ export const CATEGORIES = [
     name: 'Hot dogs - Burgers',
     items: [
       { name: 'Hot dog', price: 6, materials: true },
-      { name: 'Burger BBQ', price: 9 },
+      { name: 'Burger BBQ', price: 10 },
       { name: 'Burger Caesar', price: 9 },
       { name: 'Burger 21', price: 10 },
       { name: 'Double cheese burger', price: 10 },
@@ -255,7 +255,7 @@ export const CATEGORIES = [
     name: 'Κυρίως πιάτα',
     items: [
       { name: 'Ριζότο μανιταριών', price: 15 },
-      { name: 'Χοιρινή Πανσετομπριζόλα', price: 15 },
+      { name: 'Χοιρινή Πανσετομπριζόλα', price: 17 },
       { name: 'Τορτιγια με Γύρο Χοίρινο', price: 6 },
       { name: 'Κοτοπουλάκια Nuggets', price: 11 },
       { name: 'Chicken nuggets a la crème', price: 12 },
