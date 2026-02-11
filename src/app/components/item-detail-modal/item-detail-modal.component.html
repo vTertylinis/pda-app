@@ -109,6 +109,19 @@
       </ion-radio-group>
     </div>
 
+    <!-- Καραφάκι Κρασί 1/2 options (Ημίγλυκο / Ξηρό) appended to comments -->
+    <div *ngIf="isKarafakiOptionTarget" class="ion-margin-top">
+      <ion-label class="ion-margin-bottom" position="stacked">Επιλέξτε:</ion-label>
+      <ion-radio-group [(ngModel)]="drinkCommentOption">
+        <ion-item>
+          <ion-radio slot="start" value="Ημίγλυκο">Ημίγλυκο</ion-radio>
+        </ion-item>
+        <ion-item>
+          <ion-radio slot="start" value="Ξηρό">Ξηρό</ion-radio>
+        </ion-item>
+      </ion-radio-group>
+    </div>
+
 
     <!-- Comments Input -->
     <ion-item class="ion-margin-top">

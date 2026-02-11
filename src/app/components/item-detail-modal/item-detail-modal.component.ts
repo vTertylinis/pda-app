@@ -15,7 +15,7 @@ export class ItemDetailModalComponent implements OnInit {
   coffeeSize: 'single' | 'double' = 'single';
   coffeePreference: string = '';
   comments: any;
-  drinkCommentOption: 'Με' | 'Χωρίς' | '' = '';
+  drinkCommentOption: string = '';
   searchTerm: string = '';
   extraList = EXTRALIST.map((extra) => ({ ...extra }));
   extraListSweet = EXTRALISTSWEET.map((extra) => ({ ...extra }));
@@ -29,11 +29,12 @@ export class ItemDetailModalComponent implements OnInit {
       this.comments = this.item?.comments;
       this.coffeeSize = this.item?.coffeeSize;
       // Preserve structured comment option when available
-      if (this.isOuzoOptionTarget && typeof this.comments === 'string') {
+      if ((this.isOuzoOptionTarget || this.isKarafakiOptionTarget) && typeof this.comments === 'string') {
         const parts = this.comments.split(' - ');
         const candidate = parts[0];
-        if (candidate === 'Με' || candidate === 'Χωρίς') {
-          this.drinkCommentOption = candidate as 'Με' | 'Χωρίς';
+        const validCandidates = ['Με', 'Χωρίς', 'Ημίγλυκο', 'Ξηρό'];
+        if (validCandidates.includes(candidate)) {
+          this.drinkCommentOption = candidate;
           parts.shift();
           this.comments = parts.join(' - ');
         }
@@ -184,10 +185,8 @@ export class ItemDetailModalComponent implements OnInit {
   }
 
   private composeComments(): string | undefined {
-    const combined = this.isOuzoOptionTarget
-      ? [this.drinkCommentOption, this.comments]
-          .filter((value) => !!value)
-          .join(' - ')
+    const combined = (this.isOuzoOptionTarget || this.isKarafakiOptionTarget)
+      ? [this.drinkCommentOption, this.comments].filter((value) => !!value).join(' - ')
       : this.comments;
     return combined === '' ? undefined : combined;
   }
@@ -269,6 +268,10 @@ export class ItemDetailModalComponent implements OnInit {
       'Ηδωνικό',
     ];
     return this.categoryName === 'Ούζο-Μεζέδες' && ouzoOptions.includes(this.item?.name);
+  }
+
+  get isKarafakiOptionTarget(): boolean {
+    return this.categoryName === 'Ούζο-Μεζέδες' && this.item?.name === 'Καραφάκι Κρασί 1/2';
   }
 }
 
