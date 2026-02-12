@@ -128,37 +128,96 @@ export class TableManagementModalComponent implements OnInit {
   }
 
   async deleteItem(groupedItem: any) {
-    const alert = await this.alertController.create({
-      header: 'Επιβεβαίωση Διαγραφής',
-      message: groupedItem.quantity > 1 
-        ? `Είστε σίγουροι ότι θέλετε να διαγράψετε ένα από τα ${groupedItem.quantity} "${groupedItem.name}" προϊόντα;`
-        : `Είστε σίγουροι ότι θέλετε να διαγράψετε το προϊόν "${groupedItem.name}"?`,
-      buttons: [
-        {
-          text: 'Όχι',
-          role: 'cancel',
-          handler: () => {
-            console.log('Deletion cancelled');
+    // If there are multiple items, ask user how many to delete
+    if (groupedItem.quantity > 1) {
+      const quantityAlert = await this.alertController.create({
+        header: 'Πόσα να διαγραφούν;',
+        message: `Έχετε ${groupedItem.quantity} "${groupedItem.name}" προϊόντα. Πόσα θέλετε να διαγράψετε;`,
+        inputs: [
+          {
+            name: 'quantity',
+            type: 'number',
+            placeholder: 'Ποσότητα (1-' + groupedItem.quantity + ')',
+            min: '1',
+            max: String(groupedItem.quantity),
+            value: '1'
+          }
+        ],
+        buttons: [
+          {
+            text: 'Άκυρο',
+            role: 'cancel',
+            handler: () => {
+              console.log('Deletion cancelled');
+            },
           },
-        },
-        {
-          text: 'Ναι',
-          handler: () => {
-            // Delete the first occurrence of this item
-            const indexToDelete = groupedItem.indices[0];
-            this.cartService.deleteItemFromTable(this.table, indexToDelete).subscribe({
-              next: (res) => {
-                console.log('Item deleted from cart:', res);
-                this.loadTable(true);
-              },
-              error: (err) => console.error('Delete from cart failed:', err),
-            });
+          {
+            text: 'Διαγραφή',
+            handler: (data) => {
+              const quantity = parseInt(data.quantity, 10);
+              if (isNaN(quantity) || quantity < 1 || quantity > groupedItem.quantity) {
+                console.error('Invalid quantity');
+                return;
+              }
+              this.performDelete(groupedItem, quantity);
+            },
           },
-        },
-      ],
-    });
+        ],
+      });
+      await quantityAlert.present();
+    } else {
+      // Single item - show simple confirmation
+      const alert = await this.alertController.create({
+        header: 'Επιβεβαίωση Διαγραφής',
+        message: `Είστε σίγουροι ότι θέλετε να διαγράψετε το προϊόν "${groupedItem.name}"?`,
+        buttons: [
+          {
+            text: 'Όχι',
+            role: 'cancel',
+            handler: () => {
+              console.log('Deletion cancelled');
+            },
+          },
+          {
+            text: 'Ναι',
+            handler: () => {
+              this.performDelete(groupedItem, 1);
+            },
+          },
+        ],
+      });
+      await alert.present();
+    }
+  }
 
-    await alert.present();
+  private performDelete(groupedItem: any, quantity: number) {
+    // Delete items in reverse order to avoid index shifting
+    const indicesToDelete = groupedItem.indices.slice(0, quantity).sort((a: number, b: number) => b - a);
+    
+    let deleteCount = 0;
+    const deleteNext = () => {
+      if (deleteCount >= indicesToDelete.length) {
+        console.log(`Deleted ${quantity} item(s) from cart`);
+        this.loadTable(true);
+        return;
+      }
+
+      const indexToDelete = indicesToDelete[deleteCount];
+      deleteCount++;
+
+      this.cartService.deleteItemFromTable(this.table, indexToDelete).subscribe({
+        next: (res) => {
+          console.log('Item deleted from cart:', res);
+          deleteNext();
+        },
+        error: (err) => {
+          console.error('Delete from cart failed:', err);
+          deleteNext(); // Continue with next item even if one fails
+        },
+      });
+    };
+
+    deleteNext();
   }
 
   loadTable(fromDeleteMethod?: any) {
