@@ -15,8 +15,17 @@ export class Tab1Page implements OnInit {
     ...Array.from({ length: 40 }, (_, i) => ({ name: (i + 1).toString() })),
     { name: 'bar1' },
     { name: 'bar2' },
+    { name: 'bar3' },
+    { name: 'bar4' },
+    { name: 'bar5' },
     { name: 'extra1' },
     { name: 'extra2' },
+    { name: 'extra3' },
+    { name: 'extra4' },
+    { name: 'extra5' },
+    { name: 'extra6' },
+    { name: 'extra7' },
+    { name: 'extra8' },
   ];
   categories = CATEGORIES;
   selectedTableName: string | null = null;

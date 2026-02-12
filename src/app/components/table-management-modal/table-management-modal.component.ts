@@ -13,6 +13,7 @@ import { SelectTableComponent } from '../select-table/select-table.component';
 export class TableManagementModalComponent implements OnInit {
   @Input() table: any;
   cartItems: any[] = [];
+  groupedItems: any[] = [];
   totalPrice: any;
 
   constructor(
@@ -25,11 +26,54 @@ export class TableManagementModalComponent implements OnInit {
     this.loadTable();
   }
 
+  /**
+   * Groups identical items together by their properties
+   * Returns an array of grouped items with quantity and indices
+   */
+  groupCartItems(): any[] {
+    const grouped: { [key: string]: any } = {};
+
+    this.cartItems.forEach((item, index) => {
+      const key = this.getItemKey(item);
+      
+      if (!grouped[key]) {
+        grouped[key] = {
+          ...item,
+          quantity: 0,
+          indices: []
+        };
+      }
+      
+      grouped[key].quantity++;
+      grouped[key].indices.push(index);
+    });
+
+    return Object.values(grouped);
+  }
+
+  /**
+   * Creates a unique key for an item based on its properties
+   */
+  private getItemKey(item: any): string {
+    return JSON.stringify({
+      name: item.name,
+      price: item.price,
+      coffeeSize: item.coffeeSize || '',
+      coffeePreference: item.coffeePreference || '',
+      extras: item.extras?.map((e: any) => e.name).sort().join(',') || '',
+      comments: item.comments || ''
+    });
+  }
+
   close() {
     this.modalCtrl.dismiss({});
   }
 
-  async editItem(item: any, categoryName: any, index: any) {
+  async editItem(groupedItem: any, categoryName: any) {
+    // Edit the first item in the group
+    const indexToEdit = groupedItem.indices[0];
+    const item = this.cartItems[indexToEdit];
+
     const modal = await this.modalCtrl.create({
       component: ItemDetailModalComponent,
       componentProps: { item, categoryName, editMode: true },
@@ -39,7 +83,7 @@ export class TableManagementModalComponent implements OnInit {
     const { data } = await modal.onDidDismiss();
 
     if (data?.finalItem) {
-      this.cartService.editItem(this.table, index, data.finalItem).subscribe({
+      this.cartService.editItem(this.table, indexToEdit, data.finalItem).subscribe({
         next: (res) => {
           console.log('Item edit to cart:', res);
           this.loadTable();
@@ -49,10 +93,10 @@ export class TableManagementModalComponent implements OnInit {
     }
   }
 
-  async duplicateItem(item: any) {
+  async duplicateItem(groupedItem: any) {
     const alert = await this.alertController.create({
       header: 'Επιβεβαίωση',
-      message: 'Είστε σίγουρος ότι θέλετε να ξαναφτιάξετε το ίδιο προϊόν;',
+      message: `Είστε σίγουρος ότι θέλετε να ξαναφτιάξετε το ίδιο προϊόν "${groupedItem.name}";`,
       buttons: [
         {
           text: 'Όχι',
@@ -64,8 +108,9 @@ export class TableManagementModalComponent implements OnInit {
         {
           text: 'Ναι',
           handler: () => {
-            // Create a copy of the item to add to cart
-            const duplicatedItem = { ...item };
+            // Use the first item in the group as the template to duplicate
+            const itemToDuplicate = this.cartItems[groupedItem.indices[0]];
+            const duplicatedItem = { ...itemToDuplicate };
             
             this.cartService.addItemToCart(this.table, duplicatedItem).subscribe({
               next: (res: any) => {
@@ -82,22 +127,26 @@ export class TableManagementModalComponent implements OnInit {
     await alert.present();
   }
 
-  async deleteItem(index: any) {
+  async deleteItem(groupedItem: any) {
     const alert = await this.alertController.create({
-      header: 'Confirm Deletion',
-      message: 'Are you sure you want to delete this item?',
+      header: 'Επιβεβαίωση Διαγραφής',
+      message: groupedItem.quantity > 1 
+        ? `Είστε σίγουροι ότι θέλετε να διαγράψετε ένα από τα ${groupedItem.quantity} "${groupedItem.name}" προϊόντα;`
+        : `Είστε σίγουροι ότι θέλετε να διαγράψετε το προϊόν "${groupedItem.name}"?`,
       buttons: [
         {
-          text: 'No',
+          text: 'Όχι',
           role: 'cancel',
           handler: () => {
             console.log('Deletion cancelled');
           },
         },
         {
-          text: 'Yes',
+          text: 'Ναι',
           handler: () => {
-            this.cartService.deleteItemFromTable(this.table, index).subscribe({
+            // Delete the first occurrence of this item
+            const indexToDelete = groupedItem.indices[0];
+            this.cartService.deleteItemFromTable(this.table, indexToDelete).subscribe({
               next: (res) => {
                 console.log('Item deleted from cart:', res);
                 this.loadTable(true);
@@ -116,6 +165,7 @@ export class TableManagementModalComponent implements OnInit {
     this.cartService.getCart(this.table).subscribe({
       next: (res) => {
         this.cartItems = res as any[];
+        this.groupedItems = this.groupCartItems();
         this.totalPrice = this.cartItems.reduce(
           (sum, item) => sum + item.price,
           0
