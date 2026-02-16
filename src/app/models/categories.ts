@@ -268,7 +268,8 @@ export const CATEGORIES = [
       { name: 'Mix grill', price: 17 },
       { name: 'Vegan Mix grill', price: 18 },
       { name: 'Πατάτες Τηγανητές Cheddar Bacon', price: 6 },
-      { name: 'Μερίδα Λουκάνικα', price: 11 },
+      { name: 'Πιατέλα Λουκάνικα', price: 11 },
+      { name: 'Λουκάνικο Καραβασίλη', price: 9 },
       { name: 'Πατάτες Τηγανιτές', price: 5 },
       { name: 'Πίτες extra', price: 1.5 },
       { name: 'Κουβέρ', price: 1.5 },
@@ -292,27 +293,7 @@ export const CATEGORIES = [
       { name: 'Mix Grill (Νηστίσιμο)', price: 18 },
       { name: 'Πατάτες Country (Νηστίσιμο)', price: 6 },
     ],
-  },
-  {
-    name: 'Μενού Τσικνοπέμπτης',
-    items: [
-      { name: 'Αρνί', price: 14 },
-      { name: 'Πανσέτα', price: 9 },
-      { name: 'Μπιφτέκι', price: 10 },
-      { name: 'Λουκάνικο', price: 9 },
-      { name: 'Σουβλάκι Τεμ.', price: 2 },
-      { name: 'Πατάτες Τηγανητές', price: 5 },
-      { name: 'Πατάτες Φούρνου', price: 6 },
-      { name: 'Φέτα', price: 4 },
-      { name: 'Τζατζίκι', price: 4.5 },
-      { name: 'Χτυπητή', price: 4.5 },
-      { name: 'Καυτερές Πιπ. 2 Τεμ.', price: 4 },
-      { name: 'Λάχανο', price: 5 },
-      { name: 'Μαρούλι', price: 5 },
-      { name: 'Αγγουροντομάτα', price: 6 },
-      { name: 'Κουβέρ', price: 1.5 }
-    ],
-  },
+  }
 ];
 
 export const EXTRALIST = [

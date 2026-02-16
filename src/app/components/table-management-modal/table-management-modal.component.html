@@ -1,25 +1,30 @@
 <ion-header>
   <ion-toolbar>
+
+    <ion-buttons slot="start">
+      <ion-button size="small" (click)="addNewItem()" color="success">
+        <ion-icon name="add-circle-outline"></ion-icon>
+        Add
+      </ion-button>
+    </ion-buttons>
+
     <ion-title>
       Table {{ table }}
-      <ion-text
-        *ngIf="totalPrice"
-        color="medium"
-        style="display: block; font-size: 0.9em; margin-top: 4px"
-      >
+      <ion-text *ngIf="totalPrice" color="medium" style="display: block; font-size: 0.9em; margin-top: 4px">
         Total: {{ totalPrice | currency : "EUR" : "symbol" }}
       </ion-text>
     </ion-title>
-    <ion-buttons slot="end">
-  <ion-button size="small" (click)="moveTable()">
-    <ion-icon name="swap-horizontal-outline"></ion-icon>
-    Move
-  </ion-button>
-  <ion-button size="large" (click)="close()">
-    <ion-icon name="close"></ion-icon>
-  </ion-button>
-</ion-buttons>
 
+    <ion-buttons slot="end">
+      <ion-button size="small" (click)="moveTable()">
+        <ion-icon name="swap-horizontal-outline"></ion-icon>
+        Move
+      </ion-button>
+      <ion-button size="large" (click)="close()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    
   </ion-toolbar>
 </ion-header>
 

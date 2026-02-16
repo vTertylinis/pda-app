@@ -1,0 +1,62 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Select Item</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- List 1: Categories or Search Results -->
+  <ion-list *ngIf="!selectedCategory" [inset]="true">
+    <!-- Search bar -->
+    <ion-searchbar
+      debounce="300"
+      (ionInput)="onSearch($event)"
+      [value]="searchQuery"
+      placeholder="Search items"
+      showCancelButton="focus">
+    </ion-searchbar>
+
+    <!-- Show categories if no search query -->
+    <ng-container *ngIf="!searchQuery; else searchResults">
+      <ion-list-header>Menu</ion-list-header>
+      <ion-item *ngFor="let category of categories" (click)="onSelectCategory(category)">
+        <ion-label>{{ category.name }}</ion-label>
+      </ion-item>
+    </ng-container>
+
+    <!-- Show search results if query exists -->
+    <ng-template #searchResults>
+      <ion-list-header>Search Results</ion-list-header>
+      <ion-item *ngFor="let item of filteredItems" (click)="selectItem(item, item.categoryName)">
+        <ion-label>
+          {{ item.name }} <small>({{ item.categoryName }})</small>
+        </ion-label>
+      </ion-item>
+      <ion-item *ngIf="filteredItems.length === 0">
+        <ion-label>No items found</ion-label>
+      </ion-item>
+    </ng-template>
+  </ion-list>
+
+  <!-- List 2: Items in Selected Category -->
+  <ion-list *ngIf="selectedCategory" [inset]="true">
+    <ion-list-header>
+      <ion-button fill="clear" (click)="onBackToCategories()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+      {{ selectedCategory.name }}
+    </ion-list-header>
+
+    <ion-item *ngFor="let item of selectedCategory.items" (click)="selectItem(item)">
+      <ion-label>
+        <h3>{{ item.name }}</h3>
+        <p>{{ item.price | currency : "EUR" : "symbol" }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

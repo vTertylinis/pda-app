@@ -3,6 +3,8 @@ import { AlertController, ModalController } from '@ionic/angular';
 import { CartService } from 'src/app/services/cart.service';
 import { ItemDetailModalComponent } from '../item-detail-modal/item-detail-modal.component';
 import { SelectTableComponent } from '../select-table/select-table.component';
+import { ItemSelectionModalComponent } from '../item-selection-modal/item-selection-modal.component';
+import { CATEGORIES } from 'src/app/models/categories';
 
 @Component({
   selector: 'app-table-management-modal',
@@ -15,6 +17,7 @@ export class TableManagementModalComponent implements OnInit {
   cartItems: any[] = [];
   groupedItems: any[] = [];
   totalPrice: any;
+  categories = CATEGORIES;
 
   constructor(
     private modalCtrl: ModalController,
@@ -289,6 +292,65 @@ async moveTable() {
         if(data&& data.res&&data.res.success){
           this.close()
         }
+  }
+
+  async addNewItem() {
+    // Show a simple category/item selection interface
+    const modal = await this.modalCtrl.create({
+      component: ItemSelectionModalComponent,
+      componentProps: { categories: this.categories },
+    });
+    await modal.present();
+
+    const { data } = await modal.onDidDismiss();
+
+    if (data?.item) {
+      // Open the item detail modal with the selected item
+      await this.openItemDetailModal(data.item, data.categoryName);
+    }
+  }
+
+  private async openItemDetailModal(item: any, categoryName: string) {
+    const modal = await this.modalCtrl.create({
+      component: ItemDetailModalComponent,
+      componentProps: { item, categoryName },
+    });
+    await modal.present();
+
+    const { data } = await modal.onDidDismiss();
+
+    if (data?.finalItem) {
+      const quantity = data.quantity || 1;
+      let successCount = 0;
+      let failureCount = 0;
+
+      for (let i = 0; i < quantity; i++) {
+        this.cartService
+          .addItemToCart(this.table, data.finalItem)
+          .subscribe({
+            next: (res) => {
+              successCount++;
+              console.log(`Item #${successCount} added to cart:`, res);
+              // Reload after each successful addition for real-time feedback
+              if (i === quantity - 1 || successCount + failureCount === quantity) {
+                this.loadTable();
+              }
+            },
+            error: (err) => {
+              failureCount++;
+              console.error(`Add to cart failed on item #${i + 1}:`, err);
+              if (i === quantity - 1 || successCount + failureCount === quantity) {
+                this.loadTable();
+                if (failureCount > 0) {
+                  this.alertModal(
+                    `${failureCount} item(s) failed to add to cart. ${successCount} item(s) added successfully.`
+                  );
+                }
+              }
+            },
+          });
+      }
+    }
   }
 
 

@@ -10,19 +10,23 @@ import { Tab2Page } from './tab2.page';
 import { TableManagementModalComponent } from '../components/table-management-modal/table-management-modal.component';
 import { SelectTableComponent } from '../components/select-table/select-table.component';
 import { DeveloperInfoComponent } from '../components/developer-info/developer-info.component';
+import { ItemSelectionModalComponent } from '../components/item-selection-modal/item-selection-modal.component';
+import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    Tab2PageRoutingModule
+    Tab2PageRoutingModule,
+    SharedModule
   ],
   declarations: [
     Tab2Page,
     TableManagementModalComponent,
     DeveloperInfoComponent,
-    SelectTableComponent
+    SelectTableComponent,
+    ItemSelectionModalComponent
   ]
 })
 export class Tab2PageModule { }

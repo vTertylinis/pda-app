@@ -1,0 +1,35 @@
+ion-header {
+  ion-toolbar {
+    padding: 8px 16px;
+  }
+}
+
+ion-list {
+  ion-search-bar {
+    --padding-bottom: 0;
+    --padding-top: 0;
+  }
+}
+
+ion-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+
+  ion-label {
+    h3 {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    p {
+      font-size: 0.9em;
+      color: var(--ion-color-medium);
+      margin: 0;
+    }
+
+    small {
+      color: var(--ion-color-medium);
+      font-size: 0.85em;
+    }
+  }
+}

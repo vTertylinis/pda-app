@@ -16,15 +16,10 @@ export class SelectTableComponent implements OnInit {
     { name: 'bar2' },
     { name: 'bar3' },
     { name: 'bar4' },
-    { name: 'bar5' },
     { name: 'extra1' },
     { name: 'extra2' },
     { name: 'extra3' },
-    { name: 'extra4' },
-    { name: 'extra5' },
-    { name: 'extra6' },
-    { name: 'extra7' },
-    { name: 'extra8' },
+    { name: 'extra4' }
   ];
   toTable: string | null = null;
 
