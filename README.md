@@ -16,4 +16,3 @@ This is a full-stack ordering platform built with Angular, Ionic and Node.js.
 - Angular
 - Ionic
 - Node.js
-- MySQL
