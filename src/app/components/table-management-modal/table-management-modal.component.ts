@@ -14,6 +14,7 @@ import { CATEGORIES } from 'src/app/models/categories';
 })
 export class TableManagementModalComponent implements OnInit {
   @Input() table: any;
+  @Input() tableName: string = '';
   cartItems: any[] = [];
   groupedItems: any[] = [];
   totalPrice: any;

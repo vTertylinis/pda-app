@@ -14,9 +14,24 @@
 <ion-content color="light" class="ion-padding">
   <!-- List 1: Tables -->
   <ion-list  [inset]="true">
-    <ion-item *ngFor="let table of tables" (click)="onSelectTable(table.name)">
-      <ion-label>{{ table.name }}</ion-label>
-    </ion-item>
-  </ion-list>
+    <!-- Predefined tables -->
+    <ion-item-group>
+      <ion-item-divider *ngIf="customTablesList.length > 0">
+        <ion-label>Predefined Tables</ion-label>
+      </ion-item-divider>
+      <ion-item *ngFor="let table of predefinedTablesList" 
+                 (click)="onSelectTable(table)">
+        <ion-label>{{ table.name }}</ion-label>
+      </ion-item>
+    </ion-item-group>
 
-</ion-content>
+    <!-- Custom tables -->
+    <ion-item-group *ngIf="customTablesList.length > 0">
+      <ion-item-divider>
+        <ion-label>Custom Tables</ion-label>
+      </ion-item-divider>
+      <ion-item *ngFor="let table of customTablesList" 
+                 (click)="onSelectTable(table)">
+        <ion-label>{{ table.displayName || table.name }}</ion-label>
+      </ion-item>
+    </ion-item-group>

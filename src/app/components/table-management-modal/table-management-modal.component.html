@@ -9,7 +9,7 @@
     </ion-buttons>
 
     <ion-title>
-      Table {{ table }}
+      {{ tableName || table }}
       <ion-text *ngIf="totalPrice" color="medium" style="display: block; font-size: 0.9em; margin-top: 4px">
         Total: {{ totalPrice | currency : "EUR" : "symbol" }}
       </ion-text>

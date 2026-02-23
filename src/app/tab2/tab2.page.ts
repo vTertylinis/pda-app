@@ -11,6 +11,7 @@ import { TableManagementModalComponent } from '../components/table-management-mo
 })
 export class Tab2Page implements OnInit {
   activeTables: string[] = [];
+  tableMetadata: { [tableId: string]: { name: string; isCustom: boolean } } = {};
 
   constructor(
     private cartService: CartService,
@@ -29,7 +30,8 @@ export class Tab2Page implements OnInit {
   loadTables() {
     this.cartService.getActiveTables().subscribe({
       next: (res) => {
-        this.activeTables = Object.keys(res);
+        this.activeTables = Object.keys(res.carts);
+        this.tableMetadata = res.tableMetadata;
       },
       error: async (err) => {
         console.error('Failed to load active tables:', err);
@@ -40,10 +42,15 @@ export class Tab2Page implements OnInit {
     });
   }
 
+  getTableDisplayName(tableId: string): string {
+    return this.tableMetadata[tableId]?.name || tableId;
+  }
+
   async openTableModal(table: any) {
+    const displayName = this.getTableDisplayName(table);
     const modal = await this.modalCtrl.create({
       component: TableManagementModalComponent,
-      componentProps: { table },
+      componentProps: { table, tableName: displayName },
     });
     await modal.present();
 

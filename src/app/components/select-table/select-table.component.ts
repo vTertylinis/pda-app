@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { CartService } from 'src/app/services/cart.service';
+import { TableService, CustomTable } from 'src/app/services/table.service';
 
 @Component({
   selector: 'app-select-table',
@@ -10,37 +11,75 @@ import { CartService } from 'src/app/services/cart.service';
 })
 export class SelectTableComponent implements OnInit {
   @Input() table: any;
-  tables = [
-    ...Array.from({ length: 40 }, (_, i) => ({ name: (i + 1).toString() })),
-    { name: 'bar1' },
-    { name: 'bar2' },
-    { name: 'bar3' },
-    { name: 'bar4' },
-    { name: 'extra1' },
-    { name: 'extra2' },
-    { name: 'extra3' },
-    { name: 'extra4' }
+
+  predefinedTables = [
+    ...Array.from({ length: 40 }, (_, i) => ({ name: (i + 1).toString(), isCustom: false })),
+    { name: 'bar1', isCustom: false },
+    { name: 'bar2', isCustom: false },
+    { name: 'bar3', isCustom: false },
+    { name: 'bar4', isCustom: false },
+    { name: 'extra1', isCustom: false },
+    { name: 'extra2', isCustom: false },
+    { name: 'extra3', isCustom: false },
+    { name: 'extra4', isCustom: false }
   ];
+
+  tables: any[] = [];
+  predefinedTablesList: any[] = [];
+  customTablesList: any[] = [];
+  customTables: { [key: string]: CustomTable } = {};
   toTable: string | null = null;
+  toTableDisplayName: string | null = null;
 
   constructor(
     private modalCtrl: ModalController,
     private cartService: CartService,
+    private tableService: TableService,
     private alertController: AlertController
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    // Subscribe to custom tables updates
+    this.tableService.getCustomTables().subscribe(customTables => {
+      this.customTables = customTables;
+      this.updateTablesList();
+    });
+    this.updateTablesList();
+  }
+
+  // Update the combined tables list
+  updateTablesList() {
+    // Start with predefined tables
+    this.predefinedTablesList = this.predefinedTables.map(t => ({
+      name: t.name,
+      isCustom: false
+    }));
+
+    // Add custom tables
+    this.customTablesList = Object.values(this.customTables)
+      .filter(ct => ct.active)
+      .map(customTable => ({
+        name: customTable.id,
+        displayName: customTable.name,
+        isCustom: true,
+        customTableId: customTable.id
+      }));
+
+    // Combine for reference
+    this.tables = [...this.predefinedTablesList, ...this.customTablesList];
+  }
 
   close() {
     this.modalCtrl.dismiss({});
   }
 
-  async onSelectTable(tableName: string) {
-    this.toTable = tableName;
+  async onSelectTable(table: any) {
+    this.toTable = table.name;
+    this.toTableDisplayName = table.displayName || table.name;
 
     const alert = await this.alertController.create({
       header: 'Επιβεβαίωση',
-      message: `Είστε σίγουροι ότι θέλετε να μεταφέρετε τις παραγγελίες στο τραπέζι ${this.toTable};`,
+      message: `Είστε σίγουροι ότι θέλετε να μεταφέρετε τις παραγγελίες στο τραπέζι ${this.toTableDisplayName};`,
       buttons: [
         {
           text: 'Όχι',

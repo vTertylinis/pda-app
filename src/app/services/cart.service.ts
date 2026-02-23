@@ -28,7 +28,10 @@ export class CartService {
   }
 
   getActiveTables() {
-    return this.http.get<{ [tableId: string]: any[] }>(`${this.apiUrl}/cart`);
+    return this.http.get<{ 
+      carts: { [tableId: string]: any[] };
+      tableMetadata: { [tableId: string]: { name: string; isCustom: boolean } }
+    }>(`${this.apiUrl}/cart`);
   }
 
   editItem(tableId: any, index: any, item: any) {

@@ -2,11 +2,76 @@
   <!-- List 1: Tables -->
   <ion-list *ngIf="!selectedTableName" [inset]="true">
     <ion-list-header>
-      Tables
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <span>Tables</span>
+        <ion-button 
+          fill="clear" 
+          size="small" 
+          (click)="showNewTableInput = !showNewTableInput"
+          title="Add custom table">
+          <ion-icon name="add-circle-outline"></ion-icon>
+        </ion-button>
+      </div>
     </ion-list-header>
-    <ion-item *ngFor="let table of tables" (click)="onSelectTable(table.name)">
-      <ion-label>{{ table.name }}</ion-label>
+
+    <!-- New table input -->
+    <ion-item *ngIf="showNewTableInput" class="new-table-input">
+      <ion-label position="floating">New table name</ion-label>
+      <ion-input 
+        [(ngModel)]="newTableName" 
+        placeholder="Enter table name"
+        (keyup.enter)="createNewTable()">
+      </ion-input>
+      <ion-button 
+        slot="end" 
+        fill="clear" 
+        size="small"
+        (click)="createNewTable()"
+        title="Create table">
+        <ion-icon name="checkmark"></ion-icon>
+      </ion-button>
+      <ion-button 
+        slot="end" 
+        fill="clear" 
+        size="small"
+        (click)="showNewTableInput = false; newTableName = ''"
+        title="Cancel">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
     </ion-item>
+
+    <!-- Predefined tables -->
+    <ion-item-group>
+      <ion-item-divider *ngIf="customTablesList.length > 0">
+        <ion-label>Predefined Tables</ion-label>
+      </ion-item-divider>
+      <ion-item *ngFor="let table of predefinedTablesList" 
+                 (click)="onSelectTable(table.name)">
+        <ion-label>{{ table.name }}</ion-label>
+      </ion-item>
+    </ion-item-group>
+
+    <!-- Custom tables -->
+    <ion-item-group *ngIf="customTablesList.length > 0">
+      <ion-item-divider>
+        <ion-label>Custom Tables</ion-label>
+      </ion-item-divider>
+      <ion-item *ngFor="let table of customTablesList" 
+                 class="custom-table-item">
+        <ion-label (click)="onSelectTable(table.name)">
+          {{ table.displayName || table.name }}
+        </ion-label>
+        <ion-button 
+          slot="end" 
+          fill="clear" 
+          size="small"
+          color="danger"
+          (click)="deleteCustomTable(table.customTableId)"
+          title="Delete table">
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-item-group>
   </ion-list>
 
   <!-- List 2: Categories -->
@@ -60,5 +125,18 @@
   </ion-item>
 </ion-list>
 
-
 </ion-content>
+
+<style>
+  .new-table-input {
+    margin-bottom: 10px;
+  }
+
+  .custom-table-item {
+    cursor: pointer;
+  }
+
+  ionicon {
+    cursor: pointer;
+  }
+</style>
