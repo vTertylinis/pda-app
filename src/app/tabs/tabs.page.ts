@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController, IonicModule } from '@ionic/angular';
+import { CommonModule } from '@angular/common';
 import { DeveloperInfoComponent } from '../components/developer-info/developer-info.component';
 
 @Component({
   selector: 'app-tabs',
   templateUrl: './tabs.page.html',
   styleUrls: ['./tabs.page.scss'],
-  standalone: false
+  standalone: true,
+  imports: [IonicModule, CommonModule]
 })
 export class TabsPage implements OnInit {
     private tab2Clicks: number[] = [];

@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, ModalController, IonicModule } from '@ionic/angular';
+import { CommonModule } from '@angular/common';
 import { CartService } from 'src/app/services/cart.service';
 
 @Component({
   selector: 'app-developer-info',
   templateUrl: './developer-info.component.html',
   styleUrls: ['./developer-info.component.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [IonicModule, CommonModule]
 })
 export class DeveloperInfoComponent implements OnInit {
   currentMonth = new Date().toISOString().slice(0, 7);

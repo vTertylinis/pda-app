@@ -1,11 +1,14 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController, IonicModule } from '@ionic/angular';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-item-selection-modal',
   templateUrl: './item-selection-modal.component.html',
   styleUrls: ['./item-selection-modal.component.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [IonicModule, CommonModule, FormsModule]
 })
 export class ItemSelectionModalComponent implements OnInit {
   @Input() categories: any[] = [];

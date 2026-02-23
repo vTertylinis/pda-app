@@ -1,12 +1,15 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController, IonicModule } from '@ionic/angular';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { EXTRALIST, EXTRALISTSWEET } from 'src/app/models/categories';
 
 @Component({
   selector: 'app-item-detail-modal',
   templateUrl: './item-detail-modal.component.html',
   styleUrls: ['./item-detail-modal.component.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [IonicModule, CommonModule, FormsModule]
 })
 export class ItemDetailModalComponent implements OnInit {
   @Input() item: any;

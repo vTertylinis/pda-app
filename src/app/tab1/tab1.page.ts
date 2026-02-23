@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, ModalController, IonicModule } from '@ionic/angular';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ItemDetailModalComponent } from '../components/item-detail-modal/item-detail-modal.component';
 import { CartService } from '../services/cart.service';
 import { TableService, CustomTable } from '../services/table.service';
@@ -9,7 +11,8 @@ import { CATEGORIES } from '../models/categories';
   selector: 'app-tab1',
   templateUrl: './tab1.page.html',
   styleUrls: ['./tab1.page.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [IonicModule, CommonModule, FormsModule]
 })
 export class Tab1Page implements OnInit {
   predefinedTables = [

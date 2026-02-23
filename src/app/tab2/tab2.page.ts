@@ -1,13 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CartService } from '../services/cart.service';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, ModalController, IonicModule } from '@ionic/angular';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { TableManagementModalComponent } from '../components/table-management-modal/table-management-modal.component';
 
 @Component({
   selector: 'app-tab2',
   templateUrl: './tab2.page.html',
   styleUrls: ['./tab2.page.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [IonicModule, CommonModule, FormsModule]
 })
 export class Tab2Page implements OnInit {
   activeTables: string[] = [];
