@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CartService } from '../services/cart.service';
+import { TableService } from '../services/table.service';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -18,6 +19,7 @@ export class Tab2Page implements OnInit {
 
   constructor(
     private cartService: CartService,
+    private tableService: TableService,
     private modalCtrl: ModalController,
     private alertController: AlertController
   ) {}
@@ -70,26 +72,47 @@ export class Tab2Page implements OnInit {
   }
 
   async deleteItem(table: any) {
+    const isCustom = this.tableMetadata[table]?.isCustom || false;
+    const tableName = this.getTableDisplayName(table);
+
     const alert = await this.alertController.create({
-      header: 'Confirm Deletion',
-      message: 'Are you sure you want to delete this table?',
+      header: 'Επιβεβαίωση Διαγραφής',
+      message: `Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το τραπέζι${isCustom ? ' "' + tableName + '"' : ''}?`,
       buttons: [
         {
-          text: 'No',
+          text: 'Οχι',
           role: 'cancel',
           handler: () => {
             console.log('Deletion cancelled');
           },
         },
         {
-          text: 'Yes',
+          text: 'Ναι',
           handler: () => {
             this.cartService.clearCart(table).subscribe({
               next: (res) => {
-                console.log('deleted  cart:', res);
+                console.log('deleted cart:', res);
+
+                // If it's a custom table, also delete it from the service
+                if (isCustom) {
+                  this.tableService.deleteCustomTable(table).subscribe({
+                    next: () => {
+                      console.log('Custom table deleted successfully');
+                      this.loadTables();
+                    },
+                    error: (err) => {
+                      console.error('Failed to delete custom table:', err);
+                      this.loadTables();
+                    }
+                  });
+                } else {
+                  this.loadTables();
+                }
+              },
+              error: (err) => {
+                console.error('Delete cart failed:', err);
                 this.loadTables();
               },
-              error: (err) => console.error('Delete cart failed:', err),
             });
           },
         },

@@ -20,11 +20,7 @@ export class Tab1Page implements OnInit {
     { name: 'bar1', isCustom: false },
     { name: 'bar2', isCustom: false },
     { name: 'bar3', isCustom: false },
-    { name: 'bar4', isCustom: false },
-    { name: 'extra1', isCustom: false },
-    { name: 'extra2', isCustom: false },
-    { name: 'extra3', isCustom: false },
-    { name: 'extra4', isCustom: false }
+    { name: 'bar4', isCustom: false }
   ];
 
   tables: any[] = [];
@@ -119,8 +115,8 @@ export class Tab1Page implements OnInit {
     if (!customTable) return;
 
     const alert = await this.alertController.create({
-      header: 'Delete Table',
-      message: `Are you sure you want to delete the custom table "${customTable.name}"?`,
+      header: 'Επιβεβαίωση Διαγραφής',
+      message: `Είστε σίγουροι ότι θέλετε να διαγράψετε το προσωρινό τραπέζι "${customTable.name}"?`,
       buttons: [
         {
           text: 'Cancel',

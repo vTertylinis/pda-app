@@ -5,8 +5,6 @@
       <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
         <span>Tables</span>
         <ion-button 
-          fill="clear" 
-          size="small" 
           (click)="showNewTableInput = !showNewTableInput"
           title="Add custom table">
           <ion-icon name="add-circle-outline"></ion-icon>
@@ -24,16 +22,12 @@
       </ion-input>
       <ion-button 
         slot="end" 
-        fill="clear" 
-        size="small"
         (click)="createNewTable()"
         title="Create table">
         <ion-icon name="checkmark"></ion-icon>
       </ion-button>
       <ion-button 
         slot="end" 
-        fill="clear" 
-        size="small"
         (click)="showNewTableInput = false; newTableName = ''"
         title="Cancel">
         <ion-icon name="close"></ion-icon>

@@ -19,11 +19,7 @@ export class SelectTableComponent implements OnInit {
     { name: 'bar1', isCustom: false },
     { name: 'bar2', isCustom: false },
     { name: 'bar3', isCustom: false },
-    { name: 'bar4', isCustom: false },
-    { name: 'extra1', isCustom: false },
-    { name: 'extra2', isCustom: false },
-    { name: 'extra3', isCustom: false },
-    { name: 'extra4', isCustom: false }
+    { name: 'bar4', isCustom: false }
   ];
 
   tables: any[] = [];
