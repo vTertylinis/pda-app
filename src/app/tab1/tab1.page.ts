@@ -90,7 +90,7 @@ export class Tab1Page implements OnInit {
   // Create a new custom table
   async createNewTable() {
     if (!this.newTableName.trim()) {
-      await this.alertModal('Please enter a table name');
+      await this.alertModal('Please enter a table name', 'Error');
       return;
     }
 
@@ -99,12 +99,12 @@ export class Tab1Page implements OnInit {
         if (response.success) {
           this.newTableName = '';
           this.showNewTableInput = false;
-          this.alertModal(`Table "${response.table.name}" created successfully!`);
+          this.alertModal(`Table "${response.table.name}" created successfully!`, 'Success');
         }
       },
       error: async (err) => {
         console.error('Failed to create table:', err);
-        await this.alertModal(`Failed to create table. ${err.error?.message || err.message}`);
+            await this.alertModal(`Failed to create table. ${err.error?.message || err.message}`, 'Error');
       }
     });
   }
@@ -128,11 +128,11 @@ export class Tab1Page implements OnInit {
           handler: () => {
             this.tableService.deleteCustomTable(tableId).subscribe({
               next: () => {
-                this.alertModal('Table deleted successfully');
+                this.alertModal('Table deleted successfully', 'Success');
               },
               error: async (err) => {
                 console.error('Failed to delete table:', err);
-                await this.alertModal(`Failed to delete table. ${err.error?.message || err.message}`);
+                await this.alertModal(`Failed to delete table. ${err.error?.message || err.message}`, 'Error');
               }
             });
           }
@@ -218,7 +218,8 @@ export class Tab1Page implements OnInit {
               await this.alertModal(
                 `Failed to add item #${i + 1} to cart. Error: ${
                   err.message || err
-                }`
+                }`,
+                'Error'
               );
             },
           });
@@ -226,9 +227,9 @@ export class Tab1Page implements OnInit {
     }
   }
 
-  async alertModal(message: string) {
+  async alertModal(message: string, header: string = 'Notification') {
     const alert = await this.alertController.create({
-      header: 'Error',
+      header: header,
       message: message,
       buttons: [
         {
