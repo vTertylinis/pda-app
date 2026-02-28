@@ -35,8 +35,23 @@ export class Tab2Page implements OnInit {
   loadTables() {
     this.cartService.getActiveTables().subscribe({
       next: (res) => {
-        this.activeTables = Object.keys(res.carts);
+        // store metadata first so the sort callback can reference it
         this.tableMetadata = res.tableMetadata;
+
+        // sort keys so that non-custom tables come first (numeric/natural order),
+        // and any custom/uuid-based tables are pushed to the bottom.
+        this.activeTables = Object.keys(res.carts).sort((a, b) => {
+          const aCustom = this.tableMetadata[a]?.isCustom;
+          const bCustom = this.tableMetadata[b]?.isCustom;
+
+          // If one is custom and the other is not, the custom one should be later
+          if (aCustom !== bCustom) {
+            return aCustom ? 1 : -1;
+          }
+
+          // otherwise sort by the id/name in a natural, numeric-aware manner
+          return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+        });
       },
       error: async (err) => {
         console.error('Failed to load active tables:', err);
