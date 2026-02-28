@@ -114,6 +114,9 @@ export const CATEGORIES = [
       { name: 'Παράγκα Μπουκάλι', price: 30 },
       { name: 'Σαμαρόπετρα Μπουκάλι', price: 35 },
       { name: 'Μαλαγουζιά Μπουκάλι', price: 35 },
+      { name: 'Φιάλη Απλή', price: 70 },
+      { name: 'Φιάλη Σπέσιαλ', price: 80 },
+      { name: 'Φιάλη Premium', price: 120 },
     ],
   },
   {
