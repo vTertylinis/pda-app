@@ -2,31 +2,51 @@
   <ion-toolbar>
     <ion-title>Tables</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="loadTables()">
+      <ion-button (click)="loadTables()" aria-label="Refresh tables">
         <ion-icon name="refresh-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-list *ngIf="activeTables.length > 0; else noTables" [inset]="true">
-    <ion-list-header> Tables with Orders </ion-list-header>
-    <ion-item *ngFor="let table of activeTables">
-      <ion-label>{{ tableMetadata[table].name || table }}</ion-label>
-      <ion-button slot="end" (click)="openTableModal(table)" style="margin-right: 10px;">
-        <ion-icon slot="start" name="enter"></ion-icon>
-        Info
-      </ion-button>
-      <ion-button slot="end" color="danger" (click)="deleteItem(table)">
-        Delete
-      </ion-button>
-    </ion-item>
-  </ion-list>
+<ion-content class="tablet">
+  <ng-container *ngIf="activeTables.length > 0; else noTables">
+    <!-- Tablet landscape: show cards in a 2-column grid for better use of 1280x800 -->
+<ion-grid class="table-grid" fixed>
+  <ion-row>
+    <ion-col size="3" *ngFor="let table of activeTables">
+      <ion-card class="table-card">
+        <ion-card-header>
+          <div class="table-title">
+            <div class="table-name">
+              {{ getTableDisplayName(table) }}
+            </div>
+          </div>
+        </ion-card-header>
+
+        <ion-card-content>
+          <div class="actions">
+            <ion-button size="small" fill="outline" (click)="openTableModal(table)">
+              <ion-icon slot="start" name="enter"></ion-icon>
+              Info
+            </ion-button>
+
+            <ion-button size="small" color="danger" (click)="deleteItem(table)">
+              Delete
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+  </ion-row>
+</ion-grid>
+  </ng-container>
 
   <ng-template #noTables>
-    <ion-text color="medium">
-      <p>No tables with orders.</p>
-    </ion-text>
+    <div class="empty-state">
+      <ion-text color="medium">
+        <p>No tables with orders.</p>
+      </ion-text>
+    </div>
   </ng-template>
 </ion-content>

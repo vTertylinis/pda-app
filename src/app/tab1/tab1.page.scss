@@ -1,5 +1,158 @@
+/* Keep any existing selection styling */
 ion-item.selected {
   background-color: #d0f0ff;
 }
 
+/* Tablet base */
+ion-content.tablet {
+  --padding-start: 18px;
+  --padding-end: 18px;
+  --padding-top: 14px;
+  --padding-bottom: 14px;
+}
 
+/* Header row */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 2px 10px;
+}
+
+.page-header .title {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.page-header .spacer {
+  flex: 1;
+}
+
+.icon-btn {
+  --padding-start: 6px;
+  --padding-end: 6px;
+  height: 44px;
+}
+
+.search {
+  margin: 0 2px 10px;
+}
+
+/* Sections */
+.section {
+  margin-top: 10px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0.8;
+  margin: 8px 4px;
+}
+
+/* Grid & Cards */
+.grid {
+  padding: 0;
+}
+
+ion-col {
+  padding: 6px;
+}
+
+/* 4 columns => size=3 in HTML */
+.card {
+  margin: 0;
+  border-radius: 12px;
+}
+
+.card-content {
+  padding: 12px;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.card-subtitle {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.7;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tappable {
+  cursor: pointer;
+}
+
+/* Split layout for custom table cards with trash button */
+.card-split {
+  justify-content: space-between;
+  text-align: left;
+}
+
+.card-split .card-title {
+  text-align: left;
+  justify-content: flex-start;
+  flex: 1;
+}
+
+.trash-btn {
+  height: 36px;
+  width: 36px;
+  margin-left: 6px;
+}
+
+/* New table input as a card (full width) */
+.new-table-card {
+  border-radius: 14px;
+  margin: 8px 2px 12px;
+}
+
+.new-table-content {
+  padding: 0;
+}
+
+/* Apply only on landscape tablets */
+@media (min-width: 1024px) and (orientation: landscape) {
+  .card-content {
+    min-height: 78px;
+  }
+
+  .card-title {
+    font-size: 16px;
+  }
+}
+
+/* Fine-tune exactly for 1280x800 */
+@media (width: 1280px) and (height: 800px) and (orientation: landscape) {
+  ion-content.tablet {
+    --padding-start: 20px;
+    --padding-end: 20px;
+  }
+
+  ion-col {
+    padding: 6px;
+  }
+
+  .card-content {
+    padding: 12px;
+    min-height: 76px;
+  }
+}

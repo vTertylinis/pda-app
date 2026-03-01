@@ -1,0 +1,55 @@
+/* 1280x800 landscape - 4 column optimized */
+
+ion-content.tablet {
+  --padding-start: 18px;
+  --padding-end: 18px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+}
+
+.table-card {
+  margin: 8px;
+  border-radius: 12px;
+}
+
+.table-name {
+  font-size: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.actions ion-button {
+  height: 38px;
+  font-size: 14px;
+}
+
+/* Apply ONLY for landscape tablet */
+@media (min-width: 1024px) and (orientation: landscape) {
+  ion-col {
+    padding: 6px;
+  }
+}
+
+/* Fine tune exactly for 1280x800 */
+@media (width: 1280px) and (height: 800px) and (orientation: landscape) {
+  .table-card {
+    margin: 6px;
+  }
+
+  .table-name {
+    font-size: 17px;
+  }
+
+  .actions ion-button {
+    height: 36px;
+    font-size: 13px;
+  }
+}
