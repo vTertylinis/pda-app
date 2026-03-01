@@ -333,6 +333,7 @@ export const EXTRALIST = [
   { name: 'λουκάνικο', price: 1 },
   { name: 'σαλάμι αέρος', price: 0.5 },
   { name: 'μελιτζανοσαλάτα', price: 0.5 },
+  { name: 'τσένταρ', price: 0.5 },
 ].map((extra) => ({ ...extra, selected: false }));
 
 export const EXTRALISTSWEET = [
