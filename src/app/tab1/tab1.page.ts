@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,7 +14,9 @@ import { CATEGORIES } from '../models/categories';
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule]
 })
-export class Tab1Page implements OnInit {
+export class Tab1Page implements OnInit, OnDestroy {
+  private customTablesSub: any;
+
   predefinedTables = [
     ...Array.from({ length: 40 }, (_, i) => ({ name: (i + 1).toString(), isCustom: false })),
     { name: 'bar1', isCustom: false },
@@ -46,7 +48,7 @@ export class Tab1Page implements OnInit {
 
   ngOnInit() {
     // Subscribe to custom tables updates
-    this.tableService.getCustomTables().subscribe(customTables => {
+    this.customTablesSub = this.tableService.getCustomTables().subscribe(customTables => {
       this.customTables = customTables;
       this.updateTablesList();
     });
@@ -224,6 +226,12 @@ export class Tab1Page implements OnInit {
             },
           });
       }
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.customTablesSub) {
+      this.customTablesSub.unsubscribe();
     }
   }
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { io, Socket } from 'socket.io-client';
 
@@ -20,6 +20,10 @@ export class TableService {
   private socket: Socket | null = null;
   private customTablesSubject = new BehaviorSubject<{ [key: string]: CustomTable }>({});
   public customTables$ = this.customTablesSubject.asObservable();
+
+  // emit when carts/active tables change on the server
+  private cartUpdatesSubject = new Subject<any>();
+  public cartUpdates$ = this.cartUpdatesSubject.asObservable();
 
   constructor(private http: HttpClient) {
     this.initializeSocket();
@@ -63,6 +67,12 @@ export class TableService {
       const current = this.customTablesSubject.value;
       current[table.id] = table;
       this.customTablesSubject.next({ ...current });
+    });
+
+    // Listen for cart activities (active tables changed)
+    this.socket.on('carts:updated', (data: any) => {
+      console.log('Carts updated event received:', data);
+      this.cartUpdatesSubject.next(data);
     });
 
     this.socket.on('connect', () => {
