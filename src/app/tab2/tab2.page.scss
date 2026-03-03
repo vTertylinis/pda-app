@@ -13,11 +13,19 @@ ion-content.tablet {
 }
 
 .table-name {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0.2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: white;
+}
+
+ion-card-header {
+  padding-top: 14px;
+  padding-bottom: 10px;
 }
 
 .actions {
@@ -45,7 +53,7 @@ ion-content.tablet {
   }
 
   .table-name {
-    font-size: 17px;
+    font-size: 21px;
   }
 
   .actions ion-button {

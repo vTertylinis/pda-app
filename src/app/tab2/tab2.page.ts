@@ -95,6 +95,7 @@ export class Tab2Page implements OnInit, OnDestroy {
     const modal = await this.modalCtrl.create({
       component: TableManagementModalComponent,
       componentProps: { table, tableName: displayName },
+      cssClass: 'big-modal'
     });
     await modal.present();
 

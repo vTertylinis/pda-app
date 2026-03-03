@@ -35,3 +35,12 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+
+.big-modal {
+  --width: 70%;
+  --height: 90%;
+  --max-width: 1200px;
+  --max-height: 90%;
+  --border-radius: 16px;
+}

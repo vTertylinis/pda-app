@@ -10,7 +10,7 @@
 
     <ion-title>
       Table {{ tableName || table }}
-      <ion-text *ngIf="totalPrice" color="medium" style="display: block; font-size: 0.9em; margin-top: 4px">
+      <ion-text *ngIf="totalPrice" color="primary" style="display: block; font-size: 1.2em; font-weight: bold;">
         Total: {{ totalPrice | currency : "EUR" : "symbol" }}
       </ion-text>
     </ion-title>
@@ -32,12 +32,12 @@
   <ion-list>
     <ion-item *ngFor="let item of groupedItems">
       <ion-label>
-        <h2>
+        <h1>
           {{ item.name }}
           <ion-badge color="primary" *ngIf="item.quantity > 1" style="margin-left: 8px;">
             ×{{ item.quantity }}
           </ion-badge>
-        </h2>
+        </h1>
         <p>Τιμή: {{ item.price | number : "1.2-2" }} € <span *ngIf="item.quantity > 1">(Σύνολο: {{ item.price * item.quantity | number : "1.2-2" }} €)</span></p>
         <p *ngIf="item.coffeeSize">Coffee Size: {{ item.coffeeSize }}</p>
         <p *ngIf="item.coffeePreference">
