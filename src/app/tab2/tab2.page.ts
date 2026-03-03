@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CartService } from '../services/cart.service';
 import { TableService } from '../services/table.service';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
@@ -13,9 +13,11 @@ import { TableManagementModalComponent } from '../components/table-management-mo
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule]
 })
-export class Tab2Page implements OnInit {
+export class Tab2Page implements OnInit, OnDestroy {
   activeTables: string[] = [];
   tableMetadata: { [tableId: string]: { name: string; isCustom: boolean } } = {};
+  private customTablesSub: any;
+  private cartUpdatesSub: any;
 
   constructor(
     private cartService: CartService,
@@ -26,6 +28,28 @@ export class Tab2Page implements OnInit {
 
   ngOnInit() {
     this.loadTables();
+
+    // react to custom table changes from other clients
+    this.customTablesSub = this.tableService.getCustomTables().subscribe({
+      next: () => {
+        // reload list whenever any custom table is added/updated/deleted
+        this.loadTables();
+      },
+      error: (err) => {
+        console.error('Error subscribing to custom tables updates:', err);
+      }
+    });
+
+    // also listen for cart/active-table updates
+    this.cartUpdatesSub = this.tableService.cartUpdates$.subscribe({
+      next: (data) => {
+        console.log('received cart update event', data);
+        this.loadTables();
+      },
+      error: (err) => {
+        console.error('Error subscribing to cart updates:', err);
+      }
+    });
   }
 
   ionViewWillEnter() {
@@ -135,6 +159,15 @@ export class Tab2Page implements OnInit {
     });
 
     await alert.present();
+  }
+
+  ngOnDestroy() {
+    if (this.customTablesSub) {
+      this.customTablesSub.unsubscribe();
+    }
+    if (this.cartUpdatesSub) {
+      this.cartUpdatesSub.unsubscribe();
+    }
   }
 
   async alertModal(message: string) {
