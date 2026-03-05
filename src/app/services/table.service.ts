@@ -41,13 +41,11 @@ export class TableService {
 
     // Listen for initial sync
     this.socket.on('tables:sync', (tables: { [key: string]: CustomTable }) => {
-      console.log('Received table sync:', tables);
       this.customTablesSubject.next(tables);
     });
 
     // Listen for new table creation
     this.socket.on('table:created', (table: CustomTable) => {
-      console.log('New table created:', table);
       const current = this.customTablesSubject.value;
       current[table.id] = table;
       this.customTablesSubject.next({ ...current });
@@ -55,7 +53,6 @@ export class TableService {
 
     // Listen for table deletion
     this.socket.on('table:deleted', (data: { id: string }) => {
-      console.log('Table deleted:', data.id);
       const current = this.customTablesSubject.value;
       delete current[data.id];
       this.customTablesSubject.next({ ...current });
@@ -63,7 +60,6 @@ export class TableService {
 
     // Listen for table updates
     this.socket.on('table:updated', (table: CustomTable) => {
-      console.log('Table updated:', table);
       const current = this.customTablesSubject.value;
       current[table.id] = table;
       this.customTablesSubject.next({ ...current });
@@ -71,7 +67,6 @@ export class TableService {
 
     // Listen for cart activities (active tables changed)
     this.socket.on('carts:updated', (data: any) => {
-      console.log('Carts updated event received:', data);
       this.cartUpdatesSubject.next(data);
     });
 
