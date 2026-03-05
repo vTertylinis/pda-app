@@ -1,6 +1,11 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>Online Orders</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="refreshOrders()">
+        <ion-icon name="refresh"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -28,35 +33,35 @@
       <ion-label><strong>Last {{ onlineOrders.length }} Online Orders</strong></ion-label>
     </ion-item-divider>
 
-    <ion-card *ngFor="let order of onlineOrders" class="order-card">
+    <ion-card *ngFor="let order of onlineOrders; trackBy: trackByTimestamp" class="order-card">
       <ion-card-header>
         <ion-card-title>
           <strong>{{ order.address?.name || 'N/A' }}</strong>
         </ion-card-title>
         <ion-card-subtitle>
-          {{ getOrderDate(order.timestamp) }}
+          {{ order.timestampDisplay }}
         </ion-card-subtitle>
       </ion-card-header>
 
       <ion-card-content>
         <div class="order-info">
           <p><strong>Phone:</strong> {{ order.address?.phone || 'N/A' }}</p>
-        <p><strong>Address:</strong> {{ order.address?.address || 'N/A' }}</p>
-        <ion-button *ngIf="order.address?.location?.lat != null && order.address?.location?.lng != null"
+          <p><strong>Address:</strong> {{ order.address?.address || 'N/A' }}</p>
+          <ion-button *ngIf="order.address?.location?.lat != null && order.address?.location?.lng != null"
             fill="outline" (click)="openInGoogleMaps(order)">
             Open in Google Maps
-        </ion-button>
-        <p *ngIf="order.address?.floor"><strong>Floor:</strong> {{ order.address.floor }}</p>
-          
+          </ion-button>
+          <p *ngIf="order.address?.floor"><strong>Floor:</strong> {{ order.address.floor }}</p>
+
           <ion-text color="dark">
             <p><strong>Items:</strong></p>
             <ul>
-            <li *ngFor="let item of order.cart">
+              <li *ngFor="let item of order.cart">
                 {{ item.quantity }}x {{ item.name }}
-                <span *ngIf="item.ingredients && item.ingredients.length > 0">
-                    + {{ getIngredientNames(item.ingredients) }}
+                <span *ngIf="item.ingredientsDisplay">
+                  + {{ item.ingredientsDisplay }}
                 </span>
-            </li>
+              </li>
             </ul>
           </ion-text>
 

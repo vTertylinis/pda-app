@@ -1,0 +1,67 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title>Printed Orders</ion-title>
+        <ion-buttons slot="end">
+            <ion-button (click)="refreshOrders()">
+                <ion-icon name="refresh"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-refresher slot="fixed" (ionRefresh)="refreshOrders(); $event.detail.complete()">
+        <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+
+    <div *ngIf="loading" class="ion-padding ion-text-center">
+        <ion-spinner></ion-spinner>
+        <p>Loading orders...</p>
+    </div>
+
+    <div *ngIf="error && !loading" class="ion-padding ion-text-center">
+        <p style="color: red;">{{ error }}</p>
+        <ion-button (click)="refreshOrders()">Retry</ion-button>
+    </div>
+
+    <div *ngIf="!loading && !error && printedOrders.length === 0" class="ion-padding ion-text-center">
+        <p>No printed orders found</p>
+    </div>
+
+    <ion-list *ngIf="!loading && !error && printedOrders.length > 0">
+        <ion-item-divider>
+            <ion-label><strong>Last {{ printedOrders.length }} Printed Orders</strong></ion-label>
+        </ion-item-divider>
+
+        <ion-card *ngFor="let order of printedOrders; trackBy: trackByTimestamp" class="order-card">
+            <ion-card-header>
+                <ion-card-title>
+                    <strong>Table: {{ order.table || 'N/A' }}</strong>
+                </ion-card-title>
+                <ion-card-subtitle>
+                    {{ order.timestampDisplay }}
+                </ion-card-subtitle>
+            </ion-card-header>
+
+            <ion-card-content>
+                <div class="order-info">
+                    <ion-text color="dark">
+                        <p><strong>Items:</strong></p>
+                        <ul>
+                            <li *ngFor="let item of order.items">
+                                <span *ngIf="item.quantity">{{ item.quantity }}x </span>
+                                {{ item.name }}
+                                <span *ngIf="item.coffeePreference"> - {{ item.coffeePreference }}</span>
+                                <span *ngIf="item.coffeeSize"> ({{ item.coffeeSize }})</span>
+                                <span *ngIf="item.extrasDisplay">
+                                    + {{ item.extrasDisplay }}
+                                </span>
+                                <span *ngIf="item.comments"> - {{ item.comments }}</span>
+                            </li>
+                        </ul>
+                    </ion-text>
+                </div>
+            </ion-card-content>
+        </ion-card>
+    </ion-list>
+</ion-content>

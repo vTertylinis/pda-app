@@ -5,14 +5,14 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 
 @Component({
-  selector: 'app-tab3',
-  templateUrl: './tab3.page.html',
-  styleUrls: ['./tab3.page.scss'],
+  selector: 'app-tab4',
+  templateUrl: './tab4.page.html',
+  styleUrls: ['./tab4.page.scss'],
   standalone: true,
   imports: [CommonModule, IonicModule],
 })
-export class Tab3Page implements OnInit, ViewWillEnter, ViewWillLeave {
-  onlineOrders: any[] = [];
+export class Tab4Page implements OnInit, ViewWillEnter, ViewWillLeave {
+  printedOrders: any[] = [];
   loading: boolean = true;
   error: string | null = null;
   private apiUrl = environment.apiUrl;
@@ -23,11 +23,11 @@ export class Tab3Page implements OnInit, ViewWillEnter, ViewWillLeave {
   }
 
   ionViewWillEnter() {
-    this.loadOnlineOrders();
+    this.loadPrintedOrders();
   }
 
   ionViewWillLeave() {
-    this.onlineOrders = [];
+    this.printedOrders = [];
     this.error = null;
   }
 
@@ -40,52 +40,52 @@ export class Tab3Page implements OnInit, ViewWillEnter, ViewWillLeave {
     }
   }
 
-  loadOnlineOrders() {
+  loadPrintedOrders() {
     this.loading = true;
     this.error = null;
 
-    this.http.get<any[]>(`${this.apiUrl}/online-orders/last-20`).subscribe({
+    this.http.get<any[]>(`${this.apiUrl}/orders/last-100`).subscribe({
       next: (data) => {
-        this.onlineOrders = (data || []).map((order) => ({
+        this.printedOrders = (data || []).map((order) => ({
           ...order,
           timestampDisplay: this.formatOrderDate(order.timestamp),
           items: (order.items || []).map((item: any) => ({
             ...item,
-            ingredientsDisplay:
-              item.ingredients?.map((ing: any) => ing.name).join(', ') || '',
+            extrasDisplay:
+              item.extras?.map((e: any) => e.name).join(', ') || '',
           })),
         }));
 
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error loading online orders:', err);
-        this.error = 'Failed to load online orders';
+        console.error('Error loading printed orders:', err);
+        this.error = 'Failed to load printed orders';
         this.loading = false;
       },
     });
   }
 
   refreshOrders() {
-    this.loadOnlineOrders();
+    this.loadPrintedOrders();
   }
 
   getItemsDisplay(order: any): string {
-    if (!order.cart || order.cart.length === 0) {
+    if (!order.items || order.items.length === 0) {
       return 'No items';
     }
-    return order.cart
-      .map((item: any) => `${item.quantity}x ${item.name}`)
-      .join(', ');
+    return order.items.map((item: any) => `${item.name}`).join(', ');
   }
 
-  openInGoogleMaps(order: any) {
-    const loc = order?.address?.location;
-    if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number')
-      return;
-
-    const url = `https://www.google.com/maps?q=${loc.lat},${loc.lng}`;
-    window.open(url, '_blank'); // opens in browser / system
+  getItemPrice(item: any): number {
+    let price = item.basePrice || 0;
+    if (item.extras && item.extras.length > 0) {
+      price += item.extras.reduce(
+        (sum: number, extra: any) => sum + (extra.price || 0),
+        0,
+      );
+    }
+    return price;
   }
 
   trackByTimestamp(index: number, order: any): string {

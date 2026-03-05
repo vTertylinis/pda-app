@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { AlertController, ModalController, IonicModule } from '@ionic/angular';
+import { AlertController, ModalController, IonicModule, ViewWillLeave } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ItemDetailModalComponent } from '../components/item-detail-modal/item-detail-modal.component';
@@ -14,7 +14,7 @@ import { CATEGORIES } from '../models/categories';
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule]
 })
-export class Tab1Page implements OnInit, OnDestroy {
+export class Tab1Page implements OnInit, OnDestroy, ViewWillLeave {
   private customTablesSub: any;
 
   predefinedTables = [
@@ -60,6 +60,11 @@ export class Tab1Page implements OnInit, OnDestroy {
     this.searchQuery = '';
     this.filteredItems = [];
     this.showNewTableInput = false;
+  }
+
+  ionViewWillLeave() {
+    this.filteredItems = [];
+    this.customTables = {};
   }
 
   // Initialize tables - merge predefined and custom
