@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CartService } from '../services/cart.service';
 import { TableService } from '../services/table.service';
-import { AlertController, ModalController, IonicModule } from '@ionic/angular';
+import { AlertController, ModalController, IonicModule, ViewWillLeave } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableManagementModalComponent } from '../components/table-management-modal/table-management-modal.component';
@@ -13,7 +13,7 @@ import { TableManagementModalComponent } from '../components/table-management-mo
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule]
 })
-export class Tab2Page implements OnInit, OnDestroy {
+export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
   activeTables: string[] = [];
   tableMetadata: { [tableId: string]: { name: string; isCustom: boolean } } = {};
   private customTablesSub: any;
@@ -27,7 +27,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.loadTables();
+    this.loadTables()
 
     // react to custom table changes from other clients
     this.customTablesSub = this.tableService.getCustomTables().subscribe({
@@ -43,13 +43,17 @@ export class Tab2Page implements OnInit, OnDestroy {
     // also listen for cart/active-table updates
     this.cartUpdatesSub = this.tableService.cartUpdates$.subscribe({
       next: (data) => {
-        console.log('received cart update event', data);
         this.loadTables();
       },
       error: (err) => {
         console.error('Error subscribing to cart updates:', err);
       }
     });
+  }
+
+  ionViewWillLeave() {
+    this.activeTables = [];
+    this.tableMetadata = {};
   }
 
   ionViewWillEnter() {
