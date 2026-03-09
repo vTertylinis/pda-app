@@ -172,8 +172,8 @@ export const CATEGORIES = [
   {
     name: 'Junior menu',
     items: [
-      { name: 'Junior 1', price: 7.5 },
-      { name: 'Junior 2', price: 7.5 },
+      { name: 'Junior 1 (Burger)', price: 7.5 },
+      { name: 'Junior 2 (Nuggets)', price: 7.5 },
     ],
   },
   {
