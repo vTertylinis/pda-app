@@ -20,6 +20,7 @@ export class TableManagementModalComponent implements OnInit {
   cartItems: any[] = [];
   groupedItems: any[] = [];
   totalPrice: any;
+  selectedTotal: number = 0;
   categories = CATEGORIES;
 
   constructor(
@@ -41,15 +42,16 @@ export class TableManagementModalComponent implements OnInit {
 
     this.cartItems.forEach((item, index) => {
       const key = this.getItemKey(item);
-      
+
       if (!grouped[key]) {
         grouped[key] = {
           ...item,
           quantity: 0,
-          indices: []
+          indices: [],
+          selectedQuantity: 0
         };
       }
-      
+
       grouped[key].quantity++;
       grouped[key].indices.push(index);
     });
@@ -73,6 +75,85 @@ export class TableManagementModalComponent implements OnInit {
 
   close() {
     this.modalCtrl.dismiss({});
+  }
+
+  onSelectedQuantityChange(groupedItem: any, event: any) {
+    const value = Number(event?.detail?.value ?? 0);
+
+    if (isNaN(value) || value < 0) {
+      groupedItem.selectedQuantity = 0;
+    } else if (value > groupedItem.quantity) {
+      groupedItem.selectedQuantity = groupedItem.quantity;
+    } else {
+      groupedItem.selectedQuantity = value;
+    }
+
+    this.updateSelectedTotal();
+  }
+
+  updateSelectedTotal() {
+    this.selectedTotal = this.groupedItems.reduce((sum, item) => {
+      return sum + ((item.selectedQuantity || 0) * item.price);
+    }, 0);
+  }
+
+  clearSelection() {
+    this.groupedItems.forEach(item => {
+      item.selectedQuantity = 0;
+    });
+
+    this.updateSelectedTotal();
+  }
+
+  toggleSelectAll() {
+    const hasAnyUnselected = this.groupedItems.some(
+      item => (item.selectedQuantity || 0) < item.quantity
+    );
+
+    this.groupedItems.forEach(item => {
+      item.selectedQuantity = hasAnyUnselected ? item.quantity : 0;
+    });
+
+    this.updateSelectedTotal();
+  }
+
+  get hasSelection(): boolean {
+    return this.groupedItems.some(item => (item.selectedQuantity || 0) > 0);
+  }
+
+  getSelectedItems(): any[] {
+    const selectedItems: any[] = [];
+
+    this.groupedItems.forEach(groupedItem => {
+      const quantityToPay = groupedItem.selectedQuantity || 0;
+
+      if (quantityToPay > 0) {
+        const selectedIndices = groupedItem.indices.slice(0, quantityToPay);
+
+        selectedIndices.forEach((index: number) => {
+          const item = this.cartItems[index];
+          if (item) {
+            selectedItems.push(item);
+          }
+        });
+      }
+    });
+
+    return selectedItems;
+  }
+
+  getSelectedIndices(): number[] {
+    const selectedIndices: number[] = [];
+
+    this.groupedItems.forEach(groupedItem => {
+      const quantityToRemove = groupedItem.selectedQuantity || 0;
+
+      if (quantityToRemove > 0) {
+        selectedIndices.push(...groupedItem.indices.slice(0, quantityToRemove));
+      }
+    });
+
+    return selectedIndices.sort((a, b) => b - a);
   }
 
   async editItem(groupedItem: any, categoryName: any) {
@@ -117,7 +198,7 @@ export class TableManagementModalComponent implements OnInit {
             // Use the first item in the group as the template to duplicate
             const itemToDuplicate = this.cartItems[groupedItem.indices[0]];
             const duplicatedItem = { ...itemToDuplicate };
-            
+
             this.cartService.addItemToCart(this.table, duplicatedItem).subscribe({
               next: (res: any) => {
                 console.log('Item duplicated:', res);
@@ -153,26 +234,23 @@ export class TableManagementModalComponent implements OnInit {
           {
             text: 'Άκυρο',
             role: 'cancel',
-            handler: () => {
-              console.log('Deletion cancelled');
-            },
           },
           {
             text: 'Διαγραφή',
             handler: (data) => {
               const quantity = parseInt(data.quantity, 10);
               if (isNaN(quantity) || quantity < 1 || quantity > groupedItem.quantity) {
-                console.error('Invalid quantity');
-                return;
+                return false;
               }
+
               this.performDelete(groupedItem, quantity);
+              return true;
             },
           },
         ],
       });
       await quantityAlert.present();
     } else {
-      // Single item - show simple confirmation
       const alert = await this.alertController.create({
         header: 'Επιβεβαίωση Διαγραφής',
         message: `Είστε σίγουροι ότι θέλετε να διαγράψετε το προϊόν "${groupedItem.name}"?`,
@@ -180,9 +258,6 @@ export class TableManagementModalComponent implements OnInit {
           {
             text: 'Όχι',
             role: 'cancel',
-            handler: () => {
-              console.log('Deletion cancelled');
-            },
           },
           {
             text: 'Ναι',
@@ -198,12 +273,19 @@ export class TableManagementModalComponent implements OnInit {
 
   private performDelete(groupedItem: any, quantity: number) {
     // Delete items in reverse order to avoid index shifting
-    const indicesToDelete = groupedItem.indices.slice(0, quantity).sort((a: number, b: number) => b - a);
-    
+    const indicesToDelete = groupedItem.indices
+      .slice(0, quantity)
+      .sort((a: number, b: number) => b - a);
+
+    this.deleteItemsByIndices(indicesToDelete);
+  }
+
+  private deleteItemsByIndices(indicesToDelete: number[]) {
     let deleteCount = 0;
+
     const deleteNext = () => {
       if (deleteCount >= indicesToDelete.length) {
-        console.log(`Deleted ${quantity} item(s) from cart`);
+        console.log(`Deleted ${indicesToDelete.length} item(s) from cart`);
         this.loadTable(true);
         return;
       }
@@ -218,7 +300,7 @@ export class TableManagementModalComponent implements OnInit {
         },
         error: (err) => {
           console.error('Delete from cart failed:', err);
-          deleteNext(); // Continue with next item even if one fails
+          deleteNext();
         },
       });
     };
@@ -235,6 +317,8 @@ export class TableManagementModalComponent implements OnInit {
           (sum, item) => sum + item.price,
           0
         );
+        this.selectedTotal = 0;
+
         if (this.cartItems?.length === 0 && fromDeleteMethod) {
           this.close();
         }
@@ -245,56 +329,126 @@ export class TableManagementModalComponent implements OnInit {
     });
   }
 
-async submit() {
-  const request = {
-    table: this.table,
-    items: this.cartItems
-  };
+  async submit() {
+    const request = {
+      table: this.table,
+      items: this.cartItems
+    };
 
-  this.cartService.printItems(this.table, request).subscribe({
-    next: async (res: any) => {  // If needed, use a proper interface instead of 'any'
-      console.log(res);
+    this.cartService.printItems(this.table, request).subscribe({
+      next: async (res: any) => {
+        console.log(res);
 
-      const message = res.status
-        ? `${res.status}. Items printed: ${res.printedCount ?? 0}`
-        : res.error || 'Unknown response';
+        const message = res.status
+          ? `${res.status}. Items printed: ${res.printedCount ?? 0}`
+          : res.error || 'Unknown response';
 
-      await this.alertModal(message);
-    },
-    error: (err) => {
-      console.error('Failed to send items to backend:', err);
-    },
-  });
+        await this.alertModal(message);
+      },
+      error: (err) => {
+        console.error('Failed to send items to backend:', err);
+      },
+    });
+  }
+
+  async paySelectedItems() {
+    const selectedItems = this.getSelectedItems();
+
+    if (!selectedItems.length) {
+      await this.alertModal('Please select at least one item.');
+      return;
+    }
+
+    const request = {
+      table: this.table,
+      items: selectedItems
+    };
+
+    this.cartService.printItems(this.table, request).subscribe({
+      next: async (res: any) => {
+        console.log(res);
+
+        const message = res.status
+          ? `${res.status}. Items printed: ${res.printedCount ?? 0}`
+          : res.error || 'Unknown response';
+
+        await this.alertModal(message);
+
+        if (res?.status) {
+          await this.askToRemovePaidItems();
+        }
+      },
+      error: (err) => {
+        console.error('Failed to send selected items to backend:', err);
+      },
+    });
+  }
+
+  async handleSelectedItems() {
+  if (!this.hasSelection) {
+    await this.alertModal('Please select at least one item.');
+    return;
+  }
+
+  await this.askToRemovePaidItems();
 }
 
-async alertModal(message: string) {
-  const alert = await this.alertController.create({
-    header: 'Backend Response',
-    message: message,
-    buttons: [
-      {
-        text: 'OK',
-        role: 'ok',
-        handler: () => {
-          console.log('Alert dismissed');
+ async askToRemovePaidItems() {
+    const selectedIndices = this.getSelectedIndices();
+
+    if (!selectedIndices.length) {
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: `Αφαίρεση αντικειμένων (€${this.selectedTotal.toFixed(2)})`,
+      message: `Θέλετε να αφαιρέσετε τα επιλεγμένα είδη αξίας ${this.selectedTotal.toFixed(2)} € από το τραπέζι;`,
+      buttons: [
+        {
+          text: 'Όχι',
+          role: 'cancel',
         },
-      }
-    ],
-  });
+        {
+          text: 'Ναι',
+          handler: () => {
+            this.deleteItemsByIndices(selectedIndices);
+          },
+        },
+      ],
+    });
 
-  await alert.present();
-}
+    await alert.present();
+  }
 
-async moveTable() {
+  async alertModal(message: string) {
+    const alert = await this.alertController.create({
+      header: 'Backend Response',
+      message: message,
+      buttons: [
+        {
+          text: 'OK',
+          role: 'ok',
+          handler: () => {
+            console.log('Alert dismissed');
+          },
+        }
+      ],
+    });
+
+    await alert.present();
+  }
+
+  async moveTable() {
     const modal = await this.modalCtrl.create({
       component: SelectTableComponent,
-      componentProps: { table:this.table },
+      componentProps: { table: this.table },
     });
     await modal.present();
-        const { data } = await modal.onDidDismiss();
-        if(data&& data.res&&data.res.success){
-          this.close()
-        }
+
+    const { data } = await modal.onDidDismiss();
+    if (data && data.res && data.res.success) {
+      this.close();
+    }
   }
 
   async addNewItem() {
@@ -334,7 +488,7 @@ async moveTable() {
             next: (res) => {
               successCount++;
               console.log(`Item #${successCount} added to cart:`, res);
-              // Reload after each successful addition for real-time feedback
+
               if (i === quantity - 1 || successCount + failureCount === quantity) {
                 this.loadTable();
               }
@@ -342,6 +496,7 @@ async moveTable() {
             error: (err) => {
               failureCount++;
               console.error(`Add to cart failed on item #${i + 1}:`, err);
+
               if (i === quantity - 1 || successCount + failureCount === quantity) {
                 this.loadTable();
                 if (failureCount > 0) {
@@ -355,6 +510,4 @@ async moveTable() {
       }
     }
   }
-
-
 }
