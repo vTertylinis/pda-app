@@ -46,7 +46,7 @@
         <p *ngIf="item.extras?.length">
           Extras:
           <ng-container *ngFor="let extra of item.extras; let i = index">
-            {{ extra.name }}<span *ngIf="i < item.extras.length - 1">, </span>
+            {{ extra.name }}<span *ngIf="extra.quantity && extra.quantity > 1"> x{{ extra.quantity }}</span><span *ngIf="i < item.extras.length - 1">, </span>
           </ng-container>
         </p>
         <p *ngIf="item.comments">Comments: {{ item.comments }}</p>

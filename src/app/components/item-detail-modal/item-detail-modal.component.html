@@ -91,6 +91,11 @@
       <ion-label>
         {{ extra.name }} (+{{ extra.price | currency: 'EUR':'symbol':'1.2-2' }})
       </ion-label>
+      <div *ngIf="extra.selected" slot="end" class="extra-quantity-controls">
+        <ion-button size="small" fill="clear" (click)="decreaseExtraQuantity(extra)" [disabled]="extra.quantity <= 1">-</ion-button>
+        <span>{{ extra.quantity }}</span>
+        <ion-button size="small" fill="clear" (click)="increaseExtraQuantity(extra)">+</ion-button>
+      </div>
     </ion-item>
   </div>
 </ng-container>
