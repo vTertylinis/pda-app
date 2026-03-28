@@ -20,8 +20,8 @@ export class ItemDetailModalComponent implements OnInit {
   comments: any;
   drinkCommentOption: string = '';
   searchTerm: string = '';
-  extraList: ItemWithSelected[] = EXTRALIST.map((extra) => ({ ...extra, selected: false, quantity: 1 }));
-  extraListSweet: ItemWithSelected[] = EXTRALISTSWEET.map((extra) => ({ ...extra, selected: false, quantity: 1 }));
+  extraList = EXTRALIST.map((extra) => ({ ...extra }));
+  extraListSweet = EXTRALISTSWEET.map((extra) => ({ ...extra }));
   quantity = 1;
 
   constructor(private modalCtrl: ModalController) {}
@@ -73,12 +73,12 @@ export class ItemDetailModalComponent implements OnInit {
     }
 
     targetArray.forEach((obj) => {
-      const matchingExtra = itemsToSelect.find(
-        (sel) => sel.name === obj.name && sel.price === obj.price
-      );
-      if (matchingExtra) {
+      if (
+        itemsToSelect.some(
+          (sel) => sel.name === obj.name && sel.price === obj.price
+        )
+      ) {
         obj.selected = true;
-        obj.quantity = (matchingExtra as any).quantity || 1;
       }
     });
   }
@@ -103,12 +103,6 @@ export class ItemDetailModalComponent implements OnInit {
         finalPrice -= 0.5;
       }
 
-      // Remove previous extras (accounting for quantity)
-      if (Array.isArray(this.item.extras)) {
-        this.item.extras.forEach((extra: { price: number; quantity?: number }) => {
-          finalPrice -= extra.price * (extra.quantity || 1);
-        });
-      }
     }
 
     if (this.supportsSingleOrDouble && this.coffeeSize === 'double') {
@@ -123,7 +117,7 @@ export class ItemDetailModalComponent implements OnInit {
       extrasSource?.filter((extra) => extra.selected) || [];
 
     selectedExtras.forEach((extra) => {
-      finalPrice += extra.price * (extra.quantity || 1);
+      finalPrice += extra.price;
     });
 
     const barCategories = [
@@ -178,7 +172,6 @@ export class ItemDetailModalComponent implements OnInit {
           ? selectedExtras.map((extra) => ({
               name: extra.name,
               price: extra.price,
-              quantity: extra.quantity || 1,
             }))
           : null,
       materials: this.item?.materials,
@@ -226,9 +219,10 @@ export class ItemDetailModalComponent implements OnInit {
     return true;
   }
 
-  filteredExtraList(): ItemWithSelected[] {
+  filteredExtraList() {
     const term = this.removeDiacritics(this.searchTerm?.toLowerCase() || '');
-    let extrasSource: ItemWithSelected[] = [];
+    let extrasSource: { name: string; price: number; selected?: boolean }[] =
+      [];
 
     if (this.item?.materials) {
       extrasSource = this.extraList ?? [];
@@ -241,25 +235,8 @@ export class ItemDetailModalComponent implements OnInit {
     );
   }
 
-  onExtraSelectionChange(extra: ItemWithSelected) {
-    if (extra.selected && (!extra.quantity || extra.quantity < 1)) {
-      extra.quantity = 1;
-    }
-    if (!extra.selected) {
-      extra.quantity = 1;
-    }
-  }
-
-  increaseExtraQuantity(extra: ItemWithSelected) {
-    if (extra.selected) {
-      extra.quantity = (extra.quantity || 1) + 1;
-    }
-  }
-
-  decreaseExtraQuantity(extra: ItemWithSelected) {
-    if (extra.selected && extra.quantity && extra.quantity > 1) {
-      extra.quantity -= 1;
-    }
+  onExtraSelectionChange(extra: { selected?: boolean }) {
+   console.log('Extra selection changed:', extra);
   }
 
   // Reuse this helper function
@@ -307,12 +284,9 @@ interface ItemWithSelected {
   name: string;
   price: number;
   selected: boolean;
-  quantity: number;
 }
 
 interface Item {
   name: string;
   price: number;
-  quantity?: number;
-  selected?: boolean;
 }
