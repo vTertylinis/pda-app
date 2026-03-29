@@ -189,7 +189,7 @@ export class ItemDetailModalComponent implements OnInit {
           ? selectedExtras.map((extra) => {
               const qty = extra.quantity || 1;
               return {
-                name: qty > 1 ? `${extra.name} ×${qty}` : extra.name,
+                name: qty > 1 ? `${extra.name} x${qty}` : extra.name,
                 price: extra.price,
                 quantity: qty,
               };
