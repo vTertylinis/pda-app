@@ -82,7 +82,7 @@
   </ion-item>
 
   <div class="extras-scrollable">
-    <ion-item *ngFor="let extra of filteredExtraList()">
+    <ion-item *ngFor="let extra of filteredExtraList()" style="align-items: center;">
       <ion-checkbox
         slot="start"
         [(ngModel)]="extra.selected"
@@ -91,6 +91,12 @@
       <ion-label>
         {{ extra.name }} (+{{ extra.price | currency: 'EUR':'symbol':'1.2-2' }})
       </ion-label>
+
+      <div *ngIf="extra.selected" slot="end" style="display: flex; align-items: center; gap: 4px;">
+        <ion-button size="small" (click)="decrementExtra(extra)">-</ion-button>
+        <ion-badge color="secondary">x{{ extra.quantity || 1 }}</ion-badge>
+        <ion-button size="small" (click)="incrementExtra(extra)">+</ion-button>
+      </div>
     </ion-item>
   </div>
 </ng-container>

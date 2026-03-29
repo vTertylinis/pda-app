@@ -20,8 +20,8 @@ export class ItemDetailModalComponent implements OnInit {
   comments: any;
   drinkCommentOption: string = '';
   searchTerm: string = '';
-  extraList = EXTRALIST.map((extra) => ({ ...extra }));
-  extraListSweet = EXTRALISTSWEET.map((extra) => ({ ...extra }));
+  extraList: ItemWithSelected[] = EXTRALIST.map((extra) => ({ ...extra, quantity: 1, selected: false }));
+  extraListSweet: ItemWithSelected[] = EXTRALISTSWEET.map((extra) => ({ ...extra, quantity: 1, selected: false }));
   quantity = 1;
 
   constructor(private modalCtrl: ModalController) {}
@@ -42,10 +42,25 @@ export class ItemDetailModalComponent implements OnInit {
           this.comments = parts.join(' - ');
         }
       }
+      // Parse formatted extra names (e.g., "cheese ×2" → "cheese", quantity: 2)
+      let extrasToSelect = this.item.extras;
+      if (extrasToSelect) {
+        extrasToSelect = extrasToSelect.map((extra: any) => {
+          const match = extra.name.match(/^(.*?)\s×(\d+)$/);
+          if (match) {
+            return {
+              name: match[1],
+              price: extra.price,
+              quantity: parseInt(match[2], 10),
+            };
+          }
+          return extra;
+        });
+      }
       this.selectMatchingItems(
         this.extraList,
         this.extraListSweet,
-        this.item.extras
+        extrasToSelect
       );
     }
   }
@@ -73,12 +88,12 @@ export class ItemDetailModalComponent implements OnInit {
     }
 
     targetArray.forEach((obj) => {
-      if (
-        itemsToSelect.some(
-          (sel) => sel.name === obj.name && sel.price === obj.price
-        )
-      ) {
+      const matched = itemsToSelect.find(
+        (sel) => sel.name === obj.name && sel.price === obj.price
+      );
+      if (matched) {
         obj.selected = true;
+        obj.quantity = (matched as any).quantity || 1;
       }
     });
   }
@@ -91,10 +106,11 @@ export class ItemDetailModalComponent implements OnInit {
     let finalPrice = this.item.price;
     // In edit mode, revert previously added values to get base price
     if (this.editMode) {
-      // Remove previous extras
+      // Remove previous extras (including their quantity)
       if (Array.isArray(this.item.extras)) {
-        this.item.extras.forEach((extra: { price: number }) => {
-          finalPrice -= extra.price;
+        this.item.extras.forEach((extra: { price: number; quantity?: number }) => {
+          const qty = extra.quantity || 1;
+          finalPrice -= extra.price * qty;
         });
       }
 
@@ -117,7 +133,8 @@ export class ItemDetailModalComponent implements OnInit {
       extrasSource?.filter((extra) => extra.selected) || [];
 
     selectedExtras.forEach((extra) => {
-      finalPrice += extra.price;
+      const qty = extra.quantity || 1;
+      finalPrice += extra.price * qty;
     });
 
     const barCategories = [
@@ -169,10 +186,14 @@ export class ItemDetailModalComponent implements OnInit {
           : null,
       extras:
         selectedExtras.length > 0
-          ? selectedExtras.map((extra) => ({
-              name: extra.name,
-              price: extra.price,
-            }))
+          ? selectedExtras.map((extra) => {
+              const qty = extra.quantity || 1;
+              return {
+                name: qty > 1 ? `${extra.name} ×${qty}` : extra.name,
+                price: extra.price,
+                quantity: qty,
+              };
+            })
           : null,
       materials: this.item?.materials,
       materialsSweet: this.item?.materialsSweet,
@@ -219,10 +240,9 @@ export class ItemDetailModalComponent implements OnInit {
     return true;
   }
 
-  filteredExtraList() {
+  filteredExtraList(): ItemWithSelected[] {
     const term = this.removeDiacritics(this.searchTerm?.toLowerCase() || '');
-    let extrasSource: { name: string; price: number; selected?: boolean }[] =
-      [];
+    let extrasSource: ItemWithSelected[] = [];
 
     if (this.item?.materials) {
       extrasSource = this.extraList ?? [];
@@ -235,8 +255,29 @@ export class ItemDetailModalComponent implements OnInit {
     );
   }
 
-  onExtraSelectionChange(extra: { selected?: boolean }) {
-   console.log('Extra selection changed:', extra);
+  onExtraSelectionChange(extra: { selected?: boolean; quantity?: number }) {
+    if (extra.selected && (!extra.quantity || extra.quantity < 1)) {
+      extra.quantity = 1;
+    }
+    console.log('Extra selection changed:', extra);
+  }
+
+  incrementExtra(extra: { selected?: boolean; quantity?: number }) {
+    if (!extra.selected) {
+      extra.selected = true;
+      extra.quantity = 1;
+    } else {
+      extra.quantity = Math.min((extra.quantity || 1) + 1, 2);
+    }
+  }
+
+  decrementExtra(extra: { selected?: boolean; quantity?: number }) {
+    if (!extra.selected) return;
+    extra.quantity = Math.max((extra.quantity || 1) - 1, 1);
+    if (extra.quantity === 0) {
+      extra.selected = false;
+      extra.quantity = 1;
+    }
   }
 
   // Reuse this helper function
@@ -284,9 +325,11 @@ interface ItemWithSelected {
   name: string;
   price: number;
   selected: boolean;
+  quantity: number;
 }
 
 interface Item {
   name: string;
   price: number;
+  quantity?: number;
 }
