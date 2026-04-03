@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -25,62 +25,70 @@ export class TableService {
   private cartUpdatesSubject = new Subject<any>();
   public cartUpdates$ = this.cartUpdatesSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private ngZone: NgZone) {
     this.initializeSocket();
     this.loadCustomTables();
   }
 
   // Initialize Socket.io connection
   private initializeSocket() {
-    this.socket = io(this.apiUrl, {
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      reconnectionAttempts: 5
-    });
+    this.ngZone.runOutsideAngular(() => {
+      this.socket = io(this.apiUrl, {
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 5
+      });
 
-    // Listen for initial sync
-    this.socket.on('tables:sync', (tables: { [key: string]: CustomTable }) => {
-      console.log('Received table sync:', tables);
-      this.customTablesSubject.next(tables);
-    });
+      // Listen for initial sync
+      this.socket.on('tables:sync', (tables: { [key: string]: CustomTable }) => {
+        console.log('Received table sync:', tables);
+        this.ngZone.run(() => this.customTablesSubject.next(tables));
+      });
 
-    // Listen for new table creation
-    this.socket.on('table:created', (table: CustomTable) => {
-      console.log('New table created:', table);
-      const current = this.customTablesSubject.value;
-      current[table.id] = table;
-      this.customTablesSubject.next({ ...current });
-    });
+      // Listen for new table creation
+      this.socket.on('table:created', (table: CustomTable) => {
+        console.log('New table created:', table);
+        this.ngZone.run(() => {
+          const current = this.customTablesSubject.value;
+          current[table.id] = table;
+          this.customTablesSubject.next({ ...current });
+        });
+      });
 
-    // Listen for table deletion
-    this.socket.on('table:deleted', (data: { id: string }) => {
-      console.log('Table deleted:', data.id);
-      const current = this.customTablesSubject.value;
-      delete current[data.id];
-      this.customTablesSubject.next({ ...current });
-    });
+      // Listen for table deletion
+      this.socket.on('table:deleted', (data: { id: string }) => {
+        console.log('Table deleted:', data.id);
+        this.ngZone.run(() => {
+          const current = this.customTablesSubject.value;
+          delete current[data.id];
+          this.customTablesSubject.next({ ...current });
+        });
+      });
 
-    // Listen for table updates
-    this.socket.on('table:updated', (table: CustomTable) => {
-      console.log('Table updated:', table);
-      const current = this.customTablesSubject.value;
-      current[table.id] = table;
-      this.customTablesSubject.next({ ...current });
-    });
+      // Listen for table updates
+      this.socket.on('table:updated', (table: CustomTable) => {
+        console.log('Table updated:', table);
+        this.ngZone.run(() => {
+          const current = this.customTablesSubject.value;
+          current[table.id] = table;
+          this.customTablesSubject.next({ ...current });
+        });
+      });
 
-    // Listen for cart activities (active tables changed)
-    this.socket.on('carts:updated', (data: any) => {
-      console.log('Carts updated event received:', data);
-      this.cartUpdatesSubject.next(data);
-    });
+      // Listen for cart activities (active tables changed)
+      this.socket.on('carts:updated', (data: any) => {
+        console.log('Carts updated event received:', data);
+        this.ngZone.run(() => this.cartUpdatesSubject.next(data));
+      });
 
-    this.socket.on('connect', () => {
-      console.log('Connected to server');
-    });
+      this.socket.on('connect', () => {
+        console.log('Connected to server');
+      });
 
-    this.socket.on('disconnect', () => {
-      console.log('Disconnected from server');
+      this.socket.on('disconnect', () => {
+        console.log('Disconnected from server');
+      });
     });
   }
 
