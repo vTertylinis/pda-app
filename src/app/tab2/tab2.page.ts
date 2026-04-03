@@ -5,6 +5,8 @@ import { AlertController, ModalController, IonicModule, ViewWillLeave } from '@i
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableManagementModalComponent } from '../components/table-management-modal/table-management-modal.component';
+import { Subject, EMPTY } from 'rxjs';
+import { debounceTime, takeUntil, switchMap, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-tab2',
@@ -16,8 +18,8 @@ import { TableManagementModalComponent } from '../components/table-management-mo
 export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
   activeTables: string[] = [];
   tableMetadata: { [tableId: string]: { name: string; isCustom: boolean } } = {};
-  private customTablesSub: any;
-  private cartUpdatesSub: any;
+  private destroy$ = new Subject<void>();
+  private loadTrigger$ = new Subject<void>();
 
   constructor(
     private cartService: CartService,
@@ -27,13 +29,41 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
   ) {}
 
   ngOnInit() {
-    this.loadTables();
+    // Debounce all load triggers, use switchMap to cancel in-flight requests
+    this.loadTrigger$.pipe(
+      debounceTime(300),
+      switchMap(() =>
+        this.cartService.getActiveTables().pipe(
+          catchError((err) => {
+            console.error('Failed to load active tables:', err);
+            return EMPTY;
+          })
+        )
+      ),
+      takeUntil(this.destroy$)
+    ).subscribe((res) => {
+      this.tableMetadata = res.tableMetadata;
+
+      this.activeTables = Object.keys(res.carts).sort((a, b) => {
+        const aCustom = this.tableMetadata[a]?.isCustom;
+        const bCustom = this.tableMetadata[b]?.isCustom;
+
+        if (aCustom !== bCustom) {
+          return aCustom ? 1 : -1;
+        }
+
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      });
+    });
+
+    this.loadTrigger$.next();
 
     // react to custom table changes from other clients
-    this.customTablesSub = this.tableService.getCustomTables().subscribe({
+    this.tableService.getCustomTables().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: () => {
-        // reload list whenever any custom table is added/updated/deleted
-        this.loadTables();
+        this.loadTrigger$.next();
       },
       error: (err) => {
         console.error('Error subscribing to custom tables updates:', err);
@@ -41,10 +71,11 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
     });
 
     // also listen for cart/active-table updates
-    this.cartUpdatesSub = this.tableService.cartUpdates$.subscribe({
-      next: (data) => {
-        console.log('received cart update event', data);
-        this.loadTables();
+    this.tableService.cartUpdates$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: () => {
+        this.loadTrigger$.next();
       },
       error: (err) => {
         console.error('Error subscribing to cart updates:', err);
@@ -52,43 +83,17 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
     });
   }
 
-  ionViewWillEnter() {
-    this.loadTables();
-  }
-
   ionViewWillLeave() {
     this.activeTables = [];
     this.tableMetadata = {};
   }
 
-  loadTables() {
-    this.cartService.getActiveTables().subscribe({
-      next: (res) => {
-        // store metadata first so the sort callback can reference it
-        this.tableMetadata = res.tableMetadata;
+  ionViewWillEnter() {
+    this.loadTrigger$.next();
+  }
 
-        // sort keys so that non-custom tables come first (numeric/natural order),
-        // and any custom/uuid-based tables are pushed to the bottom.
-        this.activeTables = Object.keys(res.carts).sort((a, b) => {
-          const aCustom = this.tableMetadata[a]?.isCustom;
-          const bCustom = this.tableMetadata[b]?.isCustom;
-
-          // If one is custom and the other is not, the custom one should be later
-          if (aCustom !== bCustom) {
-            return aCustom ? 1 : -1;
-          }
-
-          // otherwise sort by the id/name in a natural, numeric-aware manner
-          return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
-        });
-      },
-      error: async (err) => {
-        console.error('Failed to load active tables:', err);
-        await this.alertModal(
-          'Could not load active tables. Please check your connection or try again later.'
-        );
-      },
-    });
+  refresh() {
+    this.loadTrigger$.next();
   }
 
   getTableDisplayName(tableId: string): string {
@@ -105,7 +110,7 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
     await modal.present();
 
     const { data } = await modal.onDidDismiss();
-    this.loadTables();
+    this.loadTrigger$.next();
 
     if (data?.finalItem) {
       console.log('Received from modal:', data.finalItem);
@@ -143,20 +148,20 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
                   this.tableService.deleteCustomTable(table).subscribe({
                     next: () => {
                       console.log('Custom table deleted successfully');
-                      this.loadTables();
+                      this.loadTrigger$.next();
                     },
                     error: (err) => {
                       console.error('Failed to delete custom table:', err);
-                      this.loadTables();
+                      this.loadTrigger$.next();
                     }
                   });
                 } else {
-                  this.loadTables();
+                  this.loadTrigger$.next();
                 }
               },
               error: (err) => {
                 console.error('Delete cart failed:', err);
-                this.loadTables();
+                this.loadTrigger$.next();
               },
             });
           },
@@ -168,29 +173,7 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
   }
 
   ngOnDestroy() {
-    if (this.customTablesSub) {
-      this.customTablesSub.unsubscribe();
-    }
-    if (this.cartUpdatesSub) {
-      this.cartUpdatesSub.unsubscribe();
-    }
-  }
-
-  async alertModal(message: string) {
-    const alert = await this.alertController.create({
-      header: 'Error',
-      message: message,
-      buttons: [
-        {
-          text: 'OK',
-          role: 'cancel',
-          handler: () => {
-            console.log('Error alert dismissed');
-          },
-        },
-      ],
-    });
-
-    await alert.present();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
