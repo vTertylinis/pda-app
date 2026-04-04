@@ -24,7 +24,7 @@
     <!-- Show categories if no search query -->
     <ng-container *ngIf="!searchQuery; else searchResults">
       <ion-list-header>Menu</ion-list-header>
-      <ion-item *ngFor="let category of categories" (click)="onSelectCategory(category)">
+      <ion-item *ngFor="let category of categories; trackBy: trackByCategoryName" (click)="onSelectCategory(category)">
         <ion-label>{{ category.name }}</ion-label>
       </ion-item>
     </ng-container>
@@ -32,7 +32,7 @@
     <!-- Show search results if query exists -->
     <ng-template #searchResults>
       <ion-list-header>Search Results</ion-list-header>
-      <ion-item *ngFor="let item of filteredItems" (click)="selectItem(item, item.categoryName)">
+      <ion-item *ngFor="let item of filteredItems; trackBy: trackByName" (click)="selectItem(item, item.categoryName)">
         <ion-label>
           {{ item.name }} <small>({{ item.categoryName }})</small>
         </ion-label>
@@ -52,7 +52,7 @@
       {{ selectedCategory.name }}
     </ion-list-header>
 
-    <ion-item *ngFor="let item of selectedCategory.items" (click)="selectItem(item)">
+    <ion-item *ngFor="let item of selectedCategory.items; trackBy: trackByName" (click)="selectItem(item)">
       <ion-label>
         <h3>{{ item.name }}</h3>
         <p>{{ item.price | currency : "EUR" : "symbol" }}</p>

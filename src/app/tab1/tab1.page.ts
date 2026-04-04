@@ -1,8 +1,9 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { concat, Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 import { ItemDetailModalComponent } from '../components/item-detail-modal/item-detail-modal.component';
 import { CartService } from '../services/cart.service';
@@ -14,7 +15,8 @@ import { CATEGORIES } from '../models/categories';
   templateUrl: './tab1.page.html',
   styleUrls: ['./tab1.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Tab1Page implements OnDestroy {
   private customTablesSub?: Subscription;
@@ -43,7 +45,8 @@ export class Tab1Page implements OnDestroy {
     private modalCtrl: ModalController,
     private cartService: CartService,
     private tableService: TableService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private cdr: ChangeDetectorRef
   ) {
     this.initializeTables();
   }
@@ -57,9 +60,12 @@ export class Tab1Page implements OnDestroy {
 
     // Re-subscribe every time page becomes active
     if (!this.customTablesSub || this.customTablesSub.closed) {
-      this.customTablesSub = this.tableService.getCustomTables().subscribe(customTables => {
+      this.customTablesSub = this.tableService.getCustomTables().pipe(
+        debounceTime(300)
+      ).subscribe(customTables => {
         this.customTables = customTables;
         this.updateTablesList();
+        this.cdr.markForCheck();
       });
     }
   }
@@ -107,6 +113,7 @@ export class Tab1Page implements OnDestroy {
         if (response.success) {
           this.newTableName = '';
           this.showNewTableInput = false;
+          this.cdr.markForCheck();
           this.alertModal(`Table "${response.table.name}" created successfully!`, 'Success');
         }
       },
@@ -214,18 +221,21 @@ export class Tab1Page implements OnDestroy {
 
     if (data?.finalItem) {
       const quantity = data.quantity || 1;
-      for (let i = 0; i < quantity; i++) {
-        this.cartService.addItemToCart(this.selectedTableName, data.finalItem).subscribe({
-          next: (res) => console.log(`Item #${i + 1} added to cart:`, res),
-          error: async (err) => {
-            console.error(`Add to cart failed on item #${i + 1}:`, err);
-            await this.alertModal(
-              `Failed to add item #${i + 1} to cart. Error: ${err.message || err}`,
-              'Error'
-            );
-          },
-        });
-      }
+      const requests = Array.from({ length: quantity }, () =>
+        this.cartService.addItemToCart(this.selectedTableName, data.finalItem)
+      );
+
+      concat(...requests).subscribe({
+        next: (res) => console.log('Item added to cart:', res),
+        error: async (err) => {
+          console.error('Add to cart failed:', err);
+          await this.alertModal(
+            `Failed to add item to cart. Error: ${err.message || err}`,
+            'Error'
+          );
+        },
+        complete: () => console.log(`All ${quantity} items added to cart`)
+      });
     }
   }
 
@@ -233,6 +243,14 @@ export class Tab1Page implements OnDestroy {
     if (this.customTablesSub) {
       this.customTablesSub.unsubscribe();
     }
+  }
+
+  trackByName(index: number, item: any): string {
+    return item.name;
+  }
+
+  trackByCategoryName(index: number, category: any): string {
+    return category.name;
   }
 
   async alertModal(message: string, header: string = 'Notification') {

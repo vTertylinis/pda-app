@@ -1,18 +1,22 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { CartService } from 'src/app/services/cart.service';
 import { TableService, CustomTable } from 'src/app/services/table.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-select-table',
   templateUrl: './select-table.component.html',
   styleUrls: ['./select-table.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule]
+  imports: [IonicModule, CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SelectTableComponent implements OnInit {
+export class SelectTableComponent implements OnInit, OnDestroy {
   @Input() table: any;
+  private destroy$ = new Subject<void>();
 
   predefinedTables = [
     ...Array.from({ length: 40 }, (_, i) => ({ name: (i + 1).toString(), isCustom: false })),
@@ -33,14 +37,18 @@ export class SelectTableComponent implements OnInit {
     private modalCtrl: ModalController,
     private cartService: CartService,
     private tableService: TableService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     // Subscribe to custom tables updates
-    this.tableService.getCustomTables().subscribe(customTables => {
+    this.tableService.getCustomTables().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(customTables => {
       this.customTables = customTables;
       this.updateTablesList();
+      this.cdr.markForCheck();
     });
     this.updateTablesList();
   }
@@ -130,5 +138,14 @@ export class SelectTableComponent implements OnInit {
     });
 
     await alert.present();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  trackByName(index: number, item: any): string {
+    return item.name;
   }
 }

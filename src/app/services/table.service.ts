@@ -1,6 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, shareReplay, delay } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { io, Socket } from 'socket.io-client';
 
@@ -20,10 +21,17 @@ export class TableService {
   private socket: Socket | null = null;
   private customTablesSubject = new BehaviorSubject<{ [key: string]: CustomTable }>({});
   public customTables$ = this.customTablesSubject.asObservable();
-
-  // emit when carts/active tables change on the server
   private cartUpdatesSubject = new Subject<any>();
-  public cartUpdates$ = this.cartUpdatesSubject.asObservable();
+  public cartUpdates$ = this.cartUpdatesSubject.asObservable().pipe(debounceTime(500));
+  private connectedSubject = new BehaviorSubject<boolean>(false);
+  public connected$ = this.connectedSubject.pipe(
+    switchMap(connected => connected
+      ? of(true)
+      : of(false).pipe(delay(5000))
+    ),
+    distinctUntilChanged(),
+    shareReplay(1)
+  );
 
   constructor(private http: HttpClient, private ngZone: NgZone) {
     this.initializeSocket();
@@ -35,9 +43,10 @@ export class TableService {
     this.ngZone.runOutsideAngular(() => {
       this.socket = io(this.apiUrl, {
         reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        reconnectionAttempts: 5
+        reconnectionDelay: 300,
+        reconnectionDelayMax: 3000,
+        reconnectionAttempts: Infinity,
+        timeout: 20000,
       });
 
       // Listen for initial sync
@@ -84,10 +93,12 @@ export class TableService {
 
       this.socket.on('connect', () => {
         console.log('Connected to server');
+        this.ngZone.run(() => this.connectedSubject.next(true));
       });
 
       this.socket.on('disconnect', () => {
         console.log('Disconnected from server');
+        this.ngZone.run(() => this.connectedSubject.next(false));
       });
     });
   }
@@ -147,6 +158,13 @@ export class TableService {
   disconnect() {
     if (this.socket) {
       this.socket.disconnect();
+    }
+  }
+
+  // Reconnect socket (e.g. after app resume)
+  reconnect() {
+    if (this.socket && !this.socket.connected) {
+      this.socket.connect();
     }
   }
 }

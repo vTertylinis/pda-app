@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CartService } from '../services/cart.service';
 import { TableService } from '../services/table.service';
 import { AlertController, ModalController, IonicModule, ViewWillLeave } from '@ionic/angular';
@@ -13,7 +13,8 @@ import { debounceTime, takeUntil, switchMap, catchError } from 'rxjs/operators';
   templateUrl: './tab2.page.html',
   styleUrls: ['./tab2.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
   activeTables: string[] = [];
@@ -25,7 +26,8 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
     private cartService: CartService,
     private tableService: TableService,
     private modalCtrl: ModalController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -54,6 +56,8 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
 
         return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
       });
+
+      this.cdr.markForCheck();
     });
 
     this.loadTrigger$.next();
@@ -174,5 +178,9 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  trackByTable(index: number, table: string): string {
+    return table;
   }
 }

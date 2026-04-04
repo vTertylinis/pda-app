@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { DeveloperInfoComponent } from '../components/developer-info/developer-info.component';
+import { TableService } from '../services/table.service';
 
 @Component({
   selector: 'app-tabs',
@@ -15,8 +16,9 @@ export class TabsPage implements OnInit {
       private clickLimit = 10;
   private timeWindow = 10000; // 10 seconds in ms
 
+  connected$ = this.tableService.connected$;
 
-  constructor(private modalCtrl: ModalController) { }
+  constructor(private modalCtrl: ModalController, private tableService: TableService) { }
 
   ngOnInit() {
   }

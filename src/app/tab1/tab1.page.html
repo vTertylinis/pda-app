@@ -39,7 +39,7 @@
       <ion-item-divider *ngIf="customTablesList.length > 0">
         <ion-label>Predefined Tables</ion-label>
       </ion-item-divider>
-      <ion-item *ngFor="let table of predefinedTablesList" 
+      <ion-item *ngFor="let table of predefinedTablesList; trackBy: trackByName" 
                  (click)="onSelectTable(table.name)">
         <ion-label>{{ table.name }}</ion-label>
       </ion-item>
@@ -50,7 +50,7 @@
       <ion-item-divider>
         <ion-label>Custom Tables</ion-label>
       </ion-item-divider>
-      <ion-item *ngFor="let table of customTablesList" 
+      <ion-item *ngFor="let table of customTablesList; trackBy: trackByName" 
                  class="custom-table-item">
         <ion-label (click)="onSelectTable(table.name)">
           {{ table.displayName || table.name }}
@@ -88,14 +88,14 @@
 
   <!-- Show categories if no search query -->
   <ng-container *ngIf="!searchQuery; else searchResults">
-    <ion-item *ngFor="let sub of categories" (click)="onSelectCategory(sub)">
+    <ion-item *ngFor="let sub of categories; trackBy: trackByCategoryName" (click)="onSelectCategory(sub)">
       <ion-label>{{ sub.name }}</ion-label>
     </ion-item>
   </ng-container>
 
   <!-- Show search results if query exists -->
   <ng-template #searchResults>
-    <ion-item *ngFor="let item of filteredItems" (click)="openItemModal(item, item.categoryName)">
+    <ion-item *ngFor="let item of filteredItems; trackBy: trackByName" (click)="openItemModal(item, item.categoryName)">
       <ion-label>
         {{ item.name }} <small>({{ item.categoryName }})</small>
       </ion-label>
@@ -112,7 +112,7 @@
     {{ selectedCategory.name }}
   </ion-list-header>
 
-  <ion-item *ngFor="let item of selectedCategory.items" (click)="openItemModal(item, selectedCategory.name)">
+  <ion-item *ngFor="let item of selectedCategory.items; trackBy: trackByName" (click)="openItemModal(item, selectedCategory.name)">
     <ion-label>
       {{ item.name }}
     </ion-label>

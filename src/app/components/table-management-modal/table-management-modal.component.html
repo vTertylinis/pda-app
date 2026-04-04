@@ -30,7 +30,7 @@
 
 <ion-content>
   <ion-list>
-    <ion-item *ngFor="let item of groupedItems">
+    <ion-item *ngFor="let item of groupedItems; trackBy: trackByIndex">
       <ion-label>
         <h2>
           {{ item.name }}

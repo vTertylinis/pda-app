@@ -6,37 +6,34 @@ import {
   HttpEvent,
   HttpErrorResponse
 } from '@angular/common/http';
-import { Observable, throwError, timer } from 'rxjs';
-import { retryWhen, mergeMap } from 'rxjs/operators';
+import { Observable, timer } from 'rxjs';
+import { retry, timeout } from 'rxjs/operators';
 
 @Injectable()
 export class RetryInterceptor implements HttpInterceptor {
-  // how many times to retry
-  private readonly maxRetries = 3;
-
-  // base delay in ms (will back off exponentially)
-  private readonly scalingDuration = 1000;
+  private readonly maxRetries = 2;
+  private readonly scalingDuration = 1500;
+  private readonly requestTimeout = 15000;
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(req).pipe(
-      retryWhen(errors =>
-        errors.pipe(
-          mergeMap((error, retryCount) => {
-            if (
-              retryCount < this.maxRetries &&
-              error instanceof HttpErrorResponse &&
-              (error.status === 0 || error.status >= 500) // network/server errors
-            ) {
-              const backoffTime = (retryCount + 1) * this.scalingDuration;
-              console.warn(
-                `Retrying request ${req.url} (attempt #${retryCount + 1}) after ${backoffTime}ms`
-              );
-              return timer(backoffTime);
-            }
-            return throwError(() => error);
-          })
-        )
-      )
+      timeout(this.requestTimeout),
+      retry({
+        count: this.maxRetries,
+        delay: (error, retryCount) => {
+          if (
+            error instanceof HttpErrorResponse &&
+            (error.status === 0 || error.status >= 500)
+          ) {
+            const backoffTime = retryCount * this.scalingDuration;
+            console.warn(
+              `Retrying request ${req.url} (attempt #${retryCount}) after ${backoffTime}ms`
+            );
+            return timer(backoffTime);
+          }
+          throw error;
+        }
+      })
     );
   }
 }

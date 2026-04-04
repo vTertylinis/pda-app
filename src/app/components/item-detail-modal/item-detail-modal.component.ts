@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +9,8 @@ import { EXTRALIST, EXTRALISTSWEET } from 'src/app/models/categories';
   templateUrl: './item-detail-modal.component.html',
   styleUrls: ['./item-detail-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ItemDetailModalComponent implements OnInit {
   @Input() item: any;
@@ -19,10 +20,17 @@ export class ItemDetailModalComponent implements OnInit {
   coffeePreference: string = '';
   comments: any;
   drinkCommentOption: string = '';
-  searchTerm: string = '';
+  private _searchTerm: string = '';
+  cachedFilteredExtras: ItemWithSelected[] = [];
   extraList: ItemWithSelected[] = EXTRALIST.map((extra) => ({ ...extra, quantity: 1, selected: false }));
   extraListSweet: ItemWithSelected[] = EXTRALISTSWEET.map((extra) => ({ ...extra, quantity: 1, selected: false }));
   quantity = 1;
+
+  get searchTerm(): string { return this._searchTerm; }
+  set searchTerm(value: string) {
+    this._searchTerm = value;
+    this.updateFilteredExtras();
+  }
 
   constructor(private modalCtrl: ModalController) {}
 
@@ -63,6 +71,7 @@ export class ItemDetailModalComponent implements OnInit {
         extrasToSelect
       );
     }
+    this.updateFilteredExtras();
   }
 
   selectMatchingItems(
@@ -241,7 +250,11 @@ export class ItemDetailModalComponent implements OnInit {
   }
 
   filteredExtraList(): ItemWithSelected[] {
-    const term = this.removeDiacritics(this.searchTerm?.toLowerCase() || '');
+    return this.cachedFilteredExtras;
+  }
+
+  private updateFilteredExtras() {
+    const term = this.removeDiacritics(this._searchTerm?.toLowerCase() || '');
     let extrasSource: ItemWithSelected[] = [];
 
     if (this.item?.materials) {
@@ -250,7 +263,7 @@ export class ItemDetailModalComponent implements OnInit {
       extrasSource = this.extraListSweet ?? [];
     }
 
-    return extrasSource.filter((extra) =>
+    this.cachedFilteredExtras = extrasSource.filter((extra) =>
       this.removeDiacritics(extra.name.toLowerCase()).includes(term)
     );
   }
@@ -318,6 +331,14 @@ export class ItemDetailModalComponent implements OnInit {
 
   get isKarafakiOptionTarget(): boolean {
     return this.categoryName === 'Ούζο-Μεζέδες' && this.item?.name === 'Καραφάκι Κρασί 1/2';
+  }
+
+  trackByExtraName(index: number, extra: ItemWithSelected): string {
+    return extra.name;
+  }
+
+  trackByValue(index: number, option: string): string {
+    return option;
   }
 }
 

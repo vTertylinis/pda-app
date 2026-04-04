@@ -19,7 +19,7 @@
       <ion-item-divider *ngIf="customTablesList.length > 0">
         <ion-label>Predefined Tables</ion-label>
       </ion-item-divider>
-      <ion-item *ngFor="let table of predefinedTablesList" 
+      <ion-item *ngFor="let table of predefinedTablesList; trackBy: trackByName" 
                  (click)="onSelectTable(table)">
         <ion-label>{{ table.name }}</ion-label>
       </ion-item>
@@ -30,7 +30,7 @@
       <ion-item-divider>
         <ion-label>Custom Tables</ion-label>
       </ion-item-divider>
-      <ion-item *ngFor="let table of customTablesList" 
+      <ion-item *ngFor="let table of customTablesList; trackBy: trackByName" 
                  (click)="onSelectTable(table)">
         <ion-label>{{ table.displayName || table.name }}</ion-label>
       </ion-item>

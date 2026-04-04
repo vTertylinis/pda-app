@@ -35,7 +35,8 @@
       <ion-radio-group [(ngModel)]="coffeePreference">
         <ion-item
           *ngFor="
-            let option of ['Σκέτο', 'Ολίγη', 'Μέτριο', 'Πρός Γλυκό', 'Γλυκό']
+            let option of ['Σκέτο', 'Ολίγη', 'Μέτριο', 'Πρός Γλυκό', 'Γλυκό'];
+            trackBy: trackByValue
           "
         >
           <ion-radio slot="start" [value]="option">{{ option }}</ion-radio>
@@ -50,7 +51,8 @@
       <ion-radio-group [(ngModel)]="comments">
         <ion-item
           *ngFor="
-            let option of ['Λευκό Ξηρό', 'Λευκό Ημίγλυκο', 'Ερυθρό Ξηρό', 'Ερυθρό Ημίγλυκο', 'Ροζέ Ημίγλυκο', 'Ροζέ Ξηρό']
+            let option of ['Λευκό Ξηρό', 'Λευκό Ημίγλυκο', 'Ερυθρό Ξηρό', 'Ερυθρό Ημίγλυκο', 'Ροζέ Ημίγλυκο', 'Ροζέ Ξηρό'];
+            trackBy: trackByValue
           "
         >
           <ion-radio slot="start" [value]="option">{{ option }}</ion-radio>
@@ -82,7 +84,7 @@
   </ion-item>
 
   <div class="extras-scrollable">
-    <ion-item *ngFor="let extra of filteredExtraList()" style="align-items: center;">
+    <ion-item *ngFor="let extra of filteredExtraList(); trackBy: trackByExtraName" style="align-items: center;">
       <ion-checkbox
         slot="start"
         [(ngModel)]="extra.selected"

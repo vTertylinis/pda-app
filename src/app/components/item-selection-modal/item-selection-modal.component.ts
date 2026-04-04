@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,7 +8,8 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './item-selection-modal.component.html',
   styleUrls: ['./item-selection-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ItemSelectionModalComponent implements OnInit {
   @Input() categories: any[] = [];
@@ -72,5 +73,13 @@ export class ItemSelectionModalComponent implements OnInit {
 
   close() {
     this.modalCtrl.dismiss({});
+  }
+
+  trackByName(index: number, item: any): string {
+    return item.name;
+  }
+
+  trackByCategoryName(index: number, category: any): string {
+    return category.name;
   }
 }

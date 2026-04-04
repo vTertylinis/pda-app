@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { CartService } from 'src/app/services/cart.service';
@@ -6,13 +6,16 @@ import { ItemDetailModalComponent } from '../item-detail-modal/item-detail-modal
 import { SelectTableComponent } from '../select-table/select-table.component';
 import { ItemSelectionModalComponent } from '../item-selection-modal/item-selection-modal.component';
 import { CATEGORIES } from 'src/app/models/categories';
+import { concat } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-table-management-modal',
   templateUrl: './table-management-modal.component.html',
   styleUrls: ['./table-management-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule]
+  imports: [IonicModule, CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableManagementModalComponent implements OnInit {
   @Input() table: any;
@@ -25,7 +28,8 @@ export class TableManagementModalComponent implements OnInit {
   constructor(
     private modalCtrl: ModalController,
     private cartService: CartService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -199,31 +203,20 @@ export class TableManagementModalComponent implements OnInit {
   private performDelete(groupedItem: any, quantity: number) {
     // Delete items in reverse order to avoid index shifting
     const indicesToDelete = groupedItem.indices.slice(0, quantity).sort((a: number, b: number) => b - a);
-    
-    let deleteCount = 0;
-    const deleteNext = () => {
-      if (deleteCount >= indicesToDelete.length) {
+
+    const deleteOps = indicesToDelete.map((index: number) =>
+      this.cartService.deleteItemFromTable(this.table, index)
+    );
+
+    concat(...deleteOps).pipe(
+      finalize(() => {
         console.log(`Deleted ${quantity} item(s) from cart`);
         this.loadTable(true);
-        return;
-      }
-
-      const indexToDelete = indicesToDelete[deleteCount];
-      deleteCount++;
-
-      this.cartService.deleteItemFromTable(this.table, indexToDelete).subscribe({
-        next: (res) => {
-          console.log('Item deleted from cart:', res);
-          deleteNext();
-        },
-        error: (err) => {
-          console.error('Delete from cart failed:', err);
-          deleteNext(); // Continue with next item even if one fails
-        },
-      });
-    };
-
-    deleteNext();
+      })
+    ).subscribe({
+      next: (res) => console.log('Item deleted from cart:', res),
+      error: (err) => console.error('Delete from cart failed:', err)
+    });
   }
 
   loadTable(fromDeleteMethod?: any) {
@@ -235,6 +228,7 @@ export class TableManagementModalComponent implements OnInit {
           (sum, item) => sum + item.price,
           0
         );
+        this.cdr.markForCheck();
         if (this.cartItems?.length === 0 && fromDeleteMethod) {
           this.close();
         }
@@ -324,37 +318,25 @@ async moveTable() {
 
     if (data?.finalItem) {
       const quantity = data.quantity || 1;
-      let successCount = 0;
-      let failureCount = 0;
+      const requests = Array.from({ length: quantity }, () =>
+        this.cartService.addItemToCart(this.table, data.finalItem)
+      );
 
-      for (let i = 0; i < quantity; i++) {
-        this.cartService
-          .addItemToCart(this.table, data.finalItem)
-          .subscribe({
-            next: (res) => {
-              successCount++;
-              console.log(`Item #${successCount} added to cart:`, res);
-              // Reload after each successful addition for real-time feedback
-              if (i === quantity - 1 || successCount + failureCount === quantity) {
-                this.loadTable();
-              }
-            },
-            error: (err) => {
-              failureCount++;
-              console.error(`Add to cart failed on item #${i + 1}:`, err);
-              if (i === quantity - 1 || successCount + failureCount === quantity) {
-                this.loadTable();
-                if (failureCount > 0) {
-                  this.alertModal(
-                    `${failureCount} item(s) failed to add to cart. ${successCount} item(s) added successfully.`
-                  );
-                }
-              }
-            },
-          });
-      }
+      concat(...requests).pipe(
+        finalize(() => this.loadTable())
+      ).subscribe({
+        next: (res) => console.log('Item added to cart:', res),
+        error: (err) => {
+          console.error('Add to cart failed:', err);
+          this.alertModal('Failed to add item(s) to cart.');
+        },
+        complete: () => console.log(`All ${quantity} items added to cart`)
+      });
     }
   }
 
+  trackByIndex(index: number): number {
+    return index;
+  }
 
 }

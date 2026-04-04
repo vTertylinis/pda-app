@@ -12,7 +12,7 @@
 <ion-content>
   <ion-list *ngIf="activeTables.length > 0; else noTables" [inset]="true">
     <ion-list-header> Tables with Orders </ion-list-header>
-    <ion-item *ngFor="let table of activeTables">
+    <ion-item *ngFor="let table of activeTables; trackBy: trackByTable">
       <ion-label>{{ tableMetadata[table].name || table }}</ion-label>
       <ion-button slot="end" (click)="openTableModal(table)" style="margin-right: 10px;">
         <ion-icon slot="start" name="enter"></ion-icon>

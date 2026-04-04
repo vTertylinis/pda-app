@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { CartService } from 'src/app/services/cart.service';
@@ -8,7 +8,8 @@ import { CartService } from 'src/app/services/cart.service';
   templateUrl: './developer-info.component.html',
   styleUrls: ['./developer-info.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule]
+  imports: [IonicModule, CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DeveloperInfoComponent implements OnInit {
   currentMonth = new Date().toISOString().slice(0, 7);
@@ -19,7 +20,8 @@ export class DeveloperInfoComponent implements OnInit {
   constructor(
     private modalCtrl: ModalController,
     private cartService: CartService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -32,25 +34,30 @@ export class DeveloperInfoComponent implements OnInit {
   togglePopularItems() {
     this.showPopularItems = !this.showPopularItems;
   }
+
+  trackByItemName(index: number, item: MostPopularItem): string {
+    return item.name;
+  }
+
+  trackByDay(index: number, day: DailyRevenueEntry): string {
+    return day.day;
+  }
+
   fetchStats() {
     this.loading = true;
     this.cartService.getOrderStats(this.currentMonth).subscribe({
       next: (res: OrderStats) => {
         this.stats = res;
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.loading = false;
+        this.cdr.markForCheck();
         console.error('Failed to load stats', err);
       },
     });
   }
-}
-
-export interface MostPopularItem {
-  name: string;
-  count: number;
-  revenue: string; // string because backend formats toFixed(2)
 }
 
 export interface DailyRevenueEntry {
