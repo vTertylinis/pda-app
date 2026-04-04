@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController, IonicModule } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { DeveloperInfoComponent } from '../components/developer-info/developer-info.component';
 import { TableService } from '../services/table.service';
 
 @Component({
@@ -12,41 +11,12 @@ import { TableService } from '../services/table.service';
   imports: [IonicModule, CommonModule]
 })
 export class TabsPage implements OnInit {
-    private tab2Clicks: number[] = [];
-      private clickLimit = 10;
-  private timeWindow = 10000; // 10 seconds in ms
 
   connected$ = this.tableService.connected$;
 
-  constructor(private modalCtrl: ModalController, private tableService: TableService) { }
+  constructor(private tableService: TableService) { }
 
   ngOnInit() {
-  }
-
-  async handleTab2Click(event: Event) {
-    const now = Date.now();
-
-    // Add click timestamp
-    this.tab2Clicks.push(now);
-
-    // Keep only clicks within last 10 seconds
-    this.tab2Clicks = this.tab2Clicks.filter(
-      timestamp => now - timestamp <= this.timeWindow
-    );
-
-    // Check if limit reached
-    if (this.tab2Clicks.length >= this.clickLimit) {
-      this.tab2Clicks = []; // reset to prevent immediate re-trigger
-
-      const modal = await this.modalCtrl.create({
-        component: DeveloperInfoComponent,
-      });
-      await modal.present();
-
-      // Prevent multiple modals during navigation
-      event.preventDefault();
-      event.stopPropagation();
-    }
   }
 
 }
