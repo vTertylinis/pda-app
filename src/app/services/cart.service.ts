@@ -45,4 +45,8 @@ export class CartService {
     return this.http.post(`${this.apiUrl}/move-table-items`, request);
   }
 
+  moveTableItems(request: any) {
+    return this.http.post(`${this.apiUrl}/move-table-items-selected`, request);
+  }
+
 }

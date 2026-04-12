@@ -19,6 +19,7 @@
       <ion-button size="small" (click)="moveTable()">
         <ion-icon name="swap-horizontal-outline"></ion-icon>
         Move
+        <ion-badge *ngIf="selectedItems.size > 0" color="danger">{{ selectedItems.size }}</ion-badge>
       </ion-button>
       <ion-button size="large" (click)="close()">
         <ion-icon name="close"></ion-icon>
@@ -31,6 +32,12 @@
 <ion-content>
   <ion-list>
     <ion-item *ngFor="let item of groupedItems; trackBy: trackByIndex">
+      <ion-checkbox
+        *ngIf="selectionMode"
+        slot="start"
+        [checked]="isItemSelected(item)"
+        (ionChange)="toggleItemSelection(item)"
+      ></ion-checkbox>
       <ion-label>
         <h2>
           {{ item.name }}

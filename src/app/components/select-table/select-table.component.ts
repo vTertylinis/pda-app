@@ -16,6 +16,8 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class SelectTableComponent implements OnInit, OnDestroy {
   @Input() table: any;
+  @Input() selectedItems: any[] = [];
+  @Input() cartItems: any[] = [];
   private destroy$ = new Subject<void>();
 
   predefinedTables = [
@@ -107,19 +109,45 @@ export class SelectTableComponent implements OnInit, OnDestroy {
   }
 
   async movetable() {
-    const request = {
+    let request: any = {
       fromTable: this.table,
       toTable: this.toTable,
     };
-    this.cartService.moveTable(request).subscribe({
-      next: (res) => {
-        this.modalCtrl.dismiss({ res });
-      },
-      error: async (err) => {
-        console.error(`Move Failed`, err);
-        await this.alertModal(`Failed to move Table`);
-      },
-    });
+
+    // If specific items were selected, calculate their indices and move only those
+    if (this.selectedItems.length > 0 && this.cartItems.length > 0) {
+      const indicesToMove: number[] = [];
+      
+      // For each selected item, find its indices in cartItems
+      for (const selectedItem of this.selectedItems) {
+        // Get all indices that match this grouped item
+        const matchingIndices = selectedItem.indices || [];
+        indicesToMove.push(...matchingIndices);
+      }
+
+      request.indicesToMove = indicesToMove.sort((a, b) => b - a); // Sort descending to avoid index shifting
+      
+      this.cartService.moveTableItems(request).subscribe({
+        next: (res) => {
+          this.modalCtrl.dismiss({ res });
+        },
+        error: async (err) => {
+          console.error(`Move Failed`, err);
+          await this.alertModal(`Failed to move items`);
+        },
+      });
+    } else {
+      // Move all items (backward compatibility)
+      this.cartService.moveTable(request).subscribe({
+        next: (res) => {
+          this.modalCtrl.dismiss({ res });
+        },
+        error: async (err) => {
+          console.error(`Move Failed`, err);
+          await this.alertModal(`Failed to move Table`);
+        },
+      });
+    }
   }
 
   async alertModal(message: string) {

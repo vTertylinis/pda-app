@@ -24,6 +24,8 @@ export class TableManagementModalComponent implements OnInit {
   groupedItems: any[] = [];
   totalPrice: any;
   categories = CATEGORIES;
+  selectedItems: Set<any> = new Set();
+  selectionMode: boolean = false;
 
   constructor(
     private modalCtrl: ModalController,
@@ -77,6 +79,19 @@ export class TableManagementModalComponent implements OnInit {
 
   close() {
     this.modalCtrl.dismiss({});
+  }
+
+  toggleItemSelection(item: any) {
+    if (this.selectedItems.has(item)) {
+      this.selectedItems.delete(item);
+    } else {
+      this.selectedItems.add(item);
+    }
+    this.cdr.markForCheck();
+  }
+
+  isItemSelected(item: any): boolean {
+    return this.selectedItems.has(item);
   }
 
   async editItem(groupedItem: any, categoryName: any) {
@@ -280,15 +295,81 @@ async alertModal(message: string) {
 }
 
 async moveTable() {
+    // If already in selection mode, proceed to table selection
+    if (this.selectionMode) {
+      // If no items selected in selection mode, select all
+      if (this.selectedItems.size === 0) {
+        this.groupedItems.forEach(item => this.selectedItems.add(item));
+      }
+
+      const modal = await this.modalCtrl.create({
+        component: SelectTableComponent,
+        componentProps: { 
+          table: this.table,
+          selectedItems: Array.from(this.selectedItems),
+          cartItems: this.cartItems
+        },
+      });
+      await modal.present();
+      const { data } = await modal.onDidDismiss();
+      if(data && data.res && data.res.success){
+        this.close()
+      }
+      return;
+    }
+
+    // Show move options alert
+    const alert = await this.alertController.create({
+      header: 'Μετακίνηση αντικειμένων',
+      message: 'Πώς θα θέλατε να προχωρήσουμε;',
+      cssClass: 'move-options-alert',
+      buttons: [
+        {
+          text: 'Ακύρωση',
+          role: 'cancel',
+          cssClass: 'alert-button-cancel',
+          handler: () => {
+            console.log('Move cancelled');
+          },
+        },
+        {
+          text: 'Όλα',
+          cssClass: 'alert-button-all',
+          handler: () => {
+            // Select all items and proceed to table selection
+            this.groupedItems.forEach(item => this.selectedItems.add(item));
+            this.proceedToTableSelection();
+          },
+        },
+        {
+          text: 'Μερικά',
+          cssClass: 'alert-button-select',
+          handler: () => {
+            // Enable selection mode so user can select specific items
+            this.selectionMode = true;
+            this.cdr.markForCheck();
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  private async proceedToTableSelection() {
     const modal = await this.modalCtrl.create({
       component: SelectTableComponent,
-      componentProps: { table:this.table },
+      componentProps: { 
+        table: this.table,
+        selectedItems: Array.from(this.selectedItems),
+        cartItems: this.cartItems
+      },
     });
     await modal.present();
-        const { data } = await modal.onDidDismiss();
-        if(data&& data.res&&data.res.success){
-          this.close()
-        }
+    const { data } = await modal.onDidDismiss();
+    if(data && data.res && data.res.success){
+      this.close()
+    }
   }
 
   async addNewItem() {

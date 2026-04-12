@@ -136,6 +136,8 @@ export const CATEGORIES = [
       { name: 'Mai tai', price: 10 },
       { name: 'Long island', price: 10 },
       { name: 'Pina colada', price: 10 },
+      { name: 'Bloody Mary', price: 10 },
+      { name: 'Porn Star Martini', price: 10 },
       { name: 'Yuzi gun', price: 11 },
       { name: 'Cucu splash', price: 11 },
       { name: 'Passion paradise', price: 11 },
