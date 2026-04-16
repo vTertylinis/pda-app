@@ -6,7 +6,6 @@ import { concat, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
 import { ItemDetailModalComponent } from '../components/item-detail-modal/item-detail-modal.component';
-import { TableManagementModalComponent } from '../components/table-management-modal/table-management-modal.component';
 import { CartService } from '../services/cart.service';
 import { TableService, CustomTable } from '../services/table.service';
 import { CATEGORIES } from '../models/categories';
@@ -235,30 +234,8 @@ export class Tab1Page implements OnDestroy {
             'Error'
           );
         },
-        complete: () => {
-          console.log(`All ${quantity} items added to cart`);
-          if (this.selectedTableName) {
-            this.openTableManagementModal(this.selectedTableName);
-          }
-        }
+        complete: () => console.log(`All ${quantity} items added to cart`)
       });
-    }
-  }
-
-  private async openTableManagementModal(tableName: string) {
-    const modal = await this.modalCtrl.create({
-      component: TableManagementModalComponent,
-      componentProps: {
-        table: tableName,
-        tableName,
-      },
-    });
-
-    await modal.present();
-
-    const { data } = await modal.onDidDismiss();
-    if (data?.finalItem) {
-      console.log('Returned from table management modal with item:', data.finalItem);
     }
   }
 

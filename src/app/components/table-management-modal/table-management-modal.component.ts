@@ -234,6 +234,71 @@ export class TableManagementModalComponent implements OnInit {
     });
   }
 
+  async cancelItem(groupedItem: any) {
+    if (groupedItem.quantity > 1) {
+      const quantityAlert = await this.alertController.create({
+        header: 'Πόσα να ακυρωθούν;',
+        message: `Έχετε ${groupedItem.quantity} "${groupedItem.name}" προϊόντα. Πόσα θέλετε να ακυρώσετε;`,
+        inputs: [
+          {
+            name: 'quantity',
+            type: 'number',
+            placeholder: 'Ποσότητα (1-' + groupedItem.quantity + ')',
+            min: '1',
+            max: String(groupedItem.quantity),
+            value: '1'
+          }
+        ],
+        buttons: [
+          { text: 'Άκυρο', role: 'cancel' },
+          {
+            text: 'Ακύρωση',
+            handler: (data) => {
+              const quantity = parseInt(data.quantity, 10);
+              if (isNaN(quantity) || quantity < 1 || quantity > groupedItem.quantity) return;
+              this.performCancel(groupedItem, quantity);
+            }
+          }
+        ],
+      });
+      await quantityAlert.present();
+    } else {
+      const wasPrinted = this.cartItems[groupedItem.indices[0]]?.printed;
+      const alert = await this.alertController.create({
+        header: 'Ακύρωση Παραγγελίας',
+        message: wasPrinted
+          ? `Ακύρωση "${groupedItem.name}"; Επειδή έχει ήδη εκτυπωθεί, θα σταλεί ειδοποίηση ακύρωσης στο αντίστοιχο σταθμό.`
+          : `Ακύρωση "${groupedItem.name}";`,
+        buttons: [
+          { text: 'Όχι', role: 'cancel' },
+          {
+            text: 'Ναι, Ακύρωση',
+            handler: () => this.performCancel(groupedItem, 1)
+          }
+        ],
+      });
+      await alert.present();
+    }
+  }
+
+  private performCancel(groupedItem: any, quantity: number) {
+    const indicesToCancel = groupedItem.indices.slice(0, quantity).sort((a: number, b: number) => b - a);
+
+    const cancelOps = indicesToCancel.map((index: number) =>
+      this.cartService.cancelItem(this.table, index)
+    );
+
+    concat(...cancelOps).pipe(
+      finalize(() => {
+        console.log(`Cancelled ${quantity} item(s)`);
+        this.loadTable(true);
+      })
+    ).subscribe({
+      next: (res) => console.log('Item cancelled:', res),
+      error: (err) => console.error('Cancel failed:', err)
+    });
+  }
+
   loadTable(fromDeleteMethod?: any) {
     this.cartService.getCart(this.table).subscribe({
       next: (res) => {

@@ -26,6 +26,10 @@ export class CartService {
     return this.http.delete(`${this.apiUrl}/cart/${tableId}/item/${index}`);
   }
 
+  cancelItem(tableId: any, index: any) {
+    return this.http.delete(`${this.apiUrl}/cancel-item/${tableId}/item/${index}`);
+  }
+
   getActiveTables() {
     return this.http.get<{ 
       carts: { [tableId: string]: any[] };
