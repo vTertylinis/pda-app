@@ -298,7 +298,24 @@ export const CATEGORIES = [
       { name: 'Mix Grill (Νηστίσιμο)', price: 18 },
       { name: 'Πατάτες Country (Νηστίσιμο)', price: 6 },
     ],
-  }
+  },
+  {
+    name: 'Μενού Πρωτομαγιάς',
+    items: [
+      { name: 'Αρνάκι Φούρνου', price: 15 },
+      { name: 'Κοκορέτσι', price: 15 },
+      { name: 'Πανσέτα', price: 10 },
+      { name: 'Λουκάνικο Χωριάτικο', price: 9 },
+      { name: 'Μπιφτέκι', price: 11 },
+      { name: 'Μαρούλι', price: 6 },
+      { name: 'Αγγουροντομάτα', price: 6 },
+      { name: 'Φέτα', price: 4 },
+      { name: 'Τζατζίκι', price: 4.5 },
+      { name: 'Καυτερές', price: 4 },
+      { name: 'Πατάτες Τηγανιτές', price: 5 },
+      { name: 'Κουβέρ', price: 1.5 },
+    ],
+  },
 ];
 
 export const EXTRALIST = [
