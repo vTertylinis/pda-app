@@ -232,6 +232,7 @@ export const CATEGORIES = [
       { name: 'Burger Λαχανικών', price: 8.5 },
       { name: 'Burger Καλαμάρι', price: 9 },
       { name: 'Row No Meat Burger', price: 11 },
+      { name: 'Burger Λαχανικών', price: 9 },
       { name: 'Διάφορα μίνι Burgers', price: 10 },
     ],
   },
@@ -276,25 +277,6 @@ export const CATEGORIES = [
       { name: 'Πατάτες Τηγανιτές', price: 5 },
       { name: 'Πίτες extra', price: 1.5 },
       { name: 'Κουβέρ', price: 1.5 },
-    ],
-  },
-  {
-    name: 'Νηστίσιμο Μενού',
-    items: [
-      { name: 'Burger Λαχανικών (Νηστίσιμο)', price: 9 },
-      { name: 'Row No Meat Burger (Νηστίσιμο)', price: 11 },
-      { name: 'Napolitana (Νηστίσιμο)', price: 8 },
-      { name: 'Λιγκουίνι με Θαλασσινά (Νηστίσιμο)', price: 18 },
-      { name: 'Γαριδομακαρονάδα (Νηστίσιμο)', price: 18 },
-      { name: 'Κουκουβάγια Salad (Νηστίσιμο)', price: 8 },
-      { name: '21 Salad με Γαρίδες (Νηστίσιμο)', price: 10 },
-      { name: 'Πέννες Salad (Νηστίσιμο)', price: 10 },
-      { name: 'Pinsa Χωριάτικη (Νηστίσιμο)', price: 12 },
-      { name: 'Pinsa Νηστίσιμη (Νηστίσιμο)', price: 11 },
-      { name: 'Bao Buns Γαρίδας (Νηστίσιμο)', price: 8 },
-      { name: 'Club Καλαμάρι (Νηστίσιμο)', price: 12 },
-      { name: 'Mix Grill (Νηστίσιμο)', price: 18 },
-      { name: 'Πατάτες Country (Νηστίσιμο)', price: 6 },
     ],
   }
 ];
