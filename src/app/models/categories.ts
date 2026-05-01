@@ -302,8 +302,8 @@ export const CATEGORIES = [
   {
     name: 'Μενού Πρωτομαγιάς',
     items: [
-      { name: 'Αρνάκι Φούρνου', price: 15 },
-      { name: 'Κοκορέτσι', price: 15 },
+      { name: 'Αρνάκι Φούρνου', price: 17 },
+      { name: 'Κοκορέτσι', price: 17 },
       { name: 'Πανσέτα', price: 10 },
       { name: 'Λουκάνικο Χωριάτικο', price: 9 },
       { name: 'Μπιφτέκι', price: 11 },
