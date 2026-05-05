@@ -298,24 +298,7 @@ export const CATEGORIES = [
       { name: 'Mix Grill (Νηστίσιμο)', price: 18 },
       { name: 'Πατάτες Country (Νηστίσιμο)', price: 6 },
     ],
-  },
-  {
-    name: 'Μενού Πρωτομαγιάς',
-    items: [
-      { name: 'Αρνάκι Φούρνου', price: 17 },
-      { name: 'Κοκορέτσι', price: 17 },
-      { name: 'Πανσέτα', price: 10 },
-      { name: 'Λουκάνικο Χωριάτικο', price: 9 },
-      { name: 'Μπιφτέκι', price: 11 },
-      { name: 'Μαρούλι', price: 6 },
-      { name: 'Αγγουροντομάτα', price: 6 },
-      { name: 'Φέτα', price: 4 },
-      { name: 'Τζατζίκι', price: 4.5 },
-      { name: 'Καυτερές', price: 4 },
-      { name: 'Πατάτες Τηγανιτές', price: 5 },
-      { name: 'Κουβέρ', price: 1.5 },
-    ],
-  },
+  }
 ];
 
 export const EXTRALIST = [
@@ -371,6 +354,9 @@ export const EXTRALISTSWEET = [
   { name: 'Φουντούκι', price: 0.5 },
   { name: 'Αμύγδαλο', price: 0.5 },
   { name: 'Lila pause', price: 1.5 },
+  { name: 'Smarties', price: 1 },
+  { name: 'Mars', price: 1 },
+  { name: 'Twix', price: 1 },
   { name: 'Μαρμελάδα φράουλα', price: 0.5 },
   { name: 'Μαρμελάδα ροδάκινο', price: 0.5 },
   { name: 'Caprice', price: 1 },

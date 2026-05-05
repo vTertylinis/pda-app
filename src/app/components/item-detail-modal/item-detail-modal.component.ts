@@ -20,6 +20,8 @@ export class ItemDetailModalComponent implements OnInit {
   coffeePreference: string = '';
   comments: any;
   drinkCommentOption: string = '';
+  potoMixOption: string = '';
+  private _editPotoMixOption: string = '';
   private _searchTerm: string = '';
   cachedFilteredExtras: ItemWithSelected[] = [];
   extraList: ItemWithSelected[] = EXTRALIST.map((extra) => ({ ...extra, quantity: 1, selected: false }));
@@ -46,6 +48,17 @@ export class ItemDetailModalComponent implements OnInit {
         const validCandidates = ['Με', 'Χωρίς', 'Ημίγλυκο', 'Ξηρό'];
         if (validCandidates.includes(candidate)) {
           this.drinkCommentOption = candidate;
+          parts.shift();
+          this.comments = parts.join(' - ');
+        }
+      }
+      if (this.isPotoOptionTarget && typeof this.comments === 'string') {
+        const parts = this.comments.split(' - ');
+        const candidate = parts[0];
+        const validPotoOptions = ['Pink Soda', 'Φυσικός Πορτοκάλι', 'Red Bull'];
+        if (validPotoOptions.includes(candidate)) {
+          this.potoMixOption = candidate;
+          this._editPotoMixOption = candidate;
           parts.shift();
           this.comments = parts.join(' - ');
         }
@@ -128,10 +141,19 @@ export class ItemDetailModalComponent implements OnInit {
         finalPrice -= 0.5;
       }
 
+      // Remove previously applied poto mix surcharge
+      if (this.isPotoOptionTarget && this._editPotoMixOption) {
+        finalPrice -= 1;
+      }
+
     }
 
     if (this.supportsSingleOrDouble && this.coffeeSize === 'double') {
       finalPrice += 0.5;
+    }
+
+    if (this.isPotoOptionTarget && this.potoMixOption) {
+      finalPrice += 1;
     }
 
     const hasSelectedExtras = this.extraList?.some((extra) => extra.selected);
@@ -220,9 +242,14 @@ export class ItemDetailModalComponent implements OnInit {
   }
 
   private composeComments(): string | undefined {
-    const combined = (this.isOuzoOptionTarget || this.isKarafakiOptionTarget)
-      ? [this.drinkCommentOption, this.comments].filter((value) => !!value).join(' - ')
-      : this.comments;
+    let combined: string | undefined;
+    if (this.isOuzoOptionTarget || this.isKarafakiOptionTarget) {
+      combined = [this.drinkCommentOption, this.comments].filter((value) => !!value).join(' - ');
+    } else if (this.isPotoOptionTarget && this.potoMixOption) {
+      combined = [this.potoMixOption, this.comments].filter((value) => !!value).join(' - ');
+    } else {
+      combined = this.comments;
+    }
     return combined === '' ? undefined : combined;
   }
 
@@ -308,6 +335,10 @@ export class ItemDetailModalComponent implements OnInit {
     }
   }
 
+  get potoLivePreview(): string {
+    return [this.comments, this.potoMixOption].filter(Boolean).join(' ');
+  }
+
   get supportsSingleOrDouble(): boolean {
     const namesWithOption = [
       'Ελληνικός',
@@ -331,6 +362,11 @@ export class ItemDetailModalComponent implements OnInit {
 
   get isKarafakiOptionTarget(): boolean {
     return this.categoryName === 'Ούζο-Μεζέδες' && this.item?.name === 'Καραφάκι Κρασί 1/2';
+  }
+
+  get isPotoOptionTarget(): boolean {
+    const potoItems = ['Ποτό Απλό', 'Ποτό Σπέσιαλ', 'Ποτό Πρίμιουμ'];
+    return this.categoryName === 'Ποτά - Κρασιά' && potoItems.includes(this.item?.name);
   }
 
   trackByExtraName(index: number, extra: ItemWithSelected): string {

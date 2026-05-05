@@ -130,6 +130,16 @@
     </div>
 
 
+    <!-- Ποτό mixer option (+1€) -->
+    <div *ngIf="isPotoOptionTarget" class="ion-margin-top">
+      <ion-label class="ion-margin-bottom" position="stacked">Επιλέξτε αναψυκτικό (+1€):</ion-label>
+      <ion-radio-group [(ngModel)]="potoMixOption">
+        <ion-item *ngFor="let option of ['Pink Soda', 'Φυσικός Πορτοκάλι', 'Red Bull']; trackBy: trackByValue">
+          <ion-radio slot="start" [value]="option">{{ option }}</ion-radio>
+        </ion-item>
+      </ion-radio-group>
+    </div>
+
     <!-- Comments Input -->
     <ion-item class="ion-margin-top">
       <ion-label position="stacked">Σχόλια</ion-label>
@@ -137,6 +147,11 @@
         [(ngModel)]="comments"
         placeholder="Προσθέστε σχόλια για την παραγγελία σας"
       ></ion-input>
+    </ion-item>
+
+    <!-- Live preview for poto mixer + comments -->
+    <ion-item *ngIf="isPotoOptionTarget && potoMixOption" lines="none">
+      <ion-note color="medium">Προεπισκόπηση: <strong>{{ potoLivePreview }}</strong></ion-note>
     </ion-item>
   </ion-card-content>
 </ion-content>
