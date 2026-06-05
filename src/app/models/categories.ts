@@ -105,9 +105,9 @@ export const CATEGORIES = [
       { name: 'Κρασί ποτήρι', price: 6 },
       { name: 'Σφηνάκι', price: 3 },
       { name: 'Ρετσίνα Βασιλική', price: 6 },
-      { name: 'Bianco Νero λευκό', price: 6 },
-      { name: 'Bianco Nero αφρώδες', price: 6 },
-      { name: 'Bianco Nero αφρώδες Ροζέ', price: 6 },
+      { name: 'Bianco Νero λευκό', price: 7 },
+      { name: 'Bianco Nero αφρώδες', price: 7 },
+      { name: 'Bianco Nero αφρώδες Ροζέ', price: 7 },
       { name: 'Λειβαδιώτη μπουκαλάκι', price: 6 },
       { name: 'Gordons Space', price: 5 },
       { name: 'Παράγκα Μπουκάλι', price: 30 },
@@ -186,8 +186,8 @@ export const CATEGORIES = [
   {
     name: 'Ούζο-Μεζέδες',
     items: [
-      { name: 'Ούζο ποτήρι', price: 3 },
-      { name: 'Τσίπουρο ποτήρι', price: 3 },
+      { name: 'Ούζο ποτήρι', price: 3.5 },
+      { name: 'Τσίπουρο ποτήρι', price: 3.5 },
       { name: 'Μεζέδες', price: 3 },
       { name: 'Μπουκάλι Ούζο', price: 6 },
       { name: 'Αποστολάκι', price: 10 },
