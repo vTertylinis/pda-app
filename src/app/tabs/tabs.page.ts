@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 import { TableService } from '../services/table.service';
@@ -10,13 +10,10 @@ import { TableService } from '../services/table.service';
   standalone: true,
   imports: [IonicModule]
 })
-export class TabsPage implements OnInit {
+export class TabsPage {
+  private tableService = inject(TableService);
+
 
   connected$ = this.tableService.connected$;
-
-  constructor(private tableService: TableService) { }
-
-  ngOnInit() {
-  }
 
 }

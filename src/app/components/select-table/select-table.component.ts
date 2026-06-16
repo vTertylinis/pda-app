@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 
 import { CartService } from '../../services/cart.service';
@@ -15,6 +15,12 @@ import { takeUntil } from 'rxjs/operators';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SelectTableComponent implements OnInit, OnDestroy {
+  private modalCtrl = inject(ModalController);
+  private cartService = inject(CartService);
+  private tableService = inject(TableService);
+  private alertController = inject(AlertController);
+  private cdr = inject(ChangeDetectorRef);
+
   @Input() table: any;
   @Input() selectedItems: any[] = [];
   @Input() cartItems: any[] = [];
@@ -34,14 +40,6 @@ export class SelectTableComponent implements OnInit, OnDestroy {
   customTables: { [key: string]: CustomTable } = {};
   toTable: string | null = null;
   toTableDisplayName: string | null = null;
-
-  constructor(
-    private modalCtrl: ModalController,
-    private cartService: CartService,
-    private tableService: TableService,
-    private alertController: AlertController,
-    private cdr: ChangeDetectorRef
-  ) {}
 
   ngOnInit() {
     // Subscribe to custom tables updates
