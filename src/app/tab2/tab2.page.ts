@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CartService } from '../services/cart.service';
 import { TableService } from '../services/table.service';
 import { AlertController, ModalController, IonicModule, ViewWillLeave } from '@ionic/angular';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { TableManagementModalComponent } from '../components/table-management-modal/table-management-modal.component';
 import { Subject, EMPTY } from 'rxjs';
@@ -13,22 +13,20 @@ import { debounceTime, takeUntil, switchMap, catchError } from 'rxjs/operators';
   templateUrl: './tab2.page.html',
   styleUrls: ['./tab2.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [IonicModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
+  private cartService = inject(CartService);
+  private tableService = inject(TableService);
+  private modalCtrl = inject(ModalController);
+  private alertController = inject(AlertController);
+  private cdr = inject(ChangeDetectorRef);
+
   activeTables: string[] = [];
   tableMetadata: { [tableId: string]: { name: string; isCustom: boolean } } = {};
   private destroy$ = new Subject<void>();
   private loadTrigger$ = new Subject<void>();
-
-  constructor(
-    private cartService: CartService,
-    private tableService: TableService,
-    private modalCtrl: ModalController,
-    private alertController: AlertController,
-    private cdr: ChangeDetectorRef
-  ) {}
 
   ngOnInit() {
     // Debounce all load triggers, use switchMap to cancel in-flight requests

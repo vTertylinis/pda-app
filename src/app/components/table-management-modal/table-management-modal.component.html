@@ -10,61 +10,80 @@
 
     <ion-title>
       Table {{ tableName || table }}
-      <ion-text *ngIf="totalPrice" color="medium" style="display: block; font-size: 0.9em; margin-top: 4px">
-        Total: {{ totalPrice | currency : "EUR" : "symbol" }}
-      </ion-text>
+      @if (totalPrice) {
+        <ion-text color="medium" style="display: block; font-size: 0.9em; margin-top: 4px">
+          Total: {{ totalPrice | currency : "EUR" : "symbol" }}
+        </ion-text>
+      }
     </ion-title>
 
     <ion-buttons slot="end">
       <ion-button size="small" (click)="moveTable()">
         <ion-icon name="swap-horizontal-outline"></ion-icon>
         Move
-        <ion-badge *ngIf="selectedItems.size > 0" color="danger">{{ selectedItems.size }}</ion-badge>
+        @if (selectedItems.size > 0) {
+          <ion-badge color="danger">{{ selectedItems.size }}</ion-badge>
+        }
       </ion-button>
       <ion-button size="large" (click)="close()">
         <ion-icon name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
-    
+
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <ion-list>
-    <ion-item *ngFor="let item of groupedItems; trackBy: trackByIndex">
-      <ion-checkbox
-        *ngIf="selectionMode"
-        slot="start"
-        [checked]="isItemSelected(item)"
-        (ionChange)="toggleItemSelection(item)"
-      ></ion-checkbox>
-      <ion-label>
-        <h2>
-          {{ item.name }}
-          <ion-badge color="primary" *ngIf="item.quantity > 1" style="margin-left: 8px;">
-            ×{{ item.quantity }}
-          </ion-badge>
-        </h2>
-        <p>Τιμή: {{ item.price | number : "1.2-2" }} € <span *ngIf="item.quantity > 1">(Σύνολο: {{ item.price * item.quantity | number : "1.2-2" }} €)</span></p>
-        <p *ngIf="item.coffeeSize">Coffee Size: {{ item.coffeeSize }}</p>
-        <p *ngIf="item.coffeePreference">
-          Προτίμηση: {{ item.coffeePreference }}
-        </p>
-        <p *ngIf="item.extras?.length">
-          Extras:
-          <ng-container *ngFor="let extra of item.extras; let i = index">
-            {{ extra.name }}<span *ngIf="i < item.extras.length - 1">, </span>
-          </ng-container>
-        </p>
-        <p *ngIf="item.comments">Comments: {{ item.comments }}</p>
+    @for (item of groupedItems; track $index) {
+      <ion-item>
+        @if (selectionMode) {
+          <ion-checkbox
+            slot="start"
+            [checked]="isItemSelected(item)"
+            (ionChange)="toggleItemSelection(item)"
+          ></ion-checkbox>
+        }
+        <ion-label>
+          <h2>
+            {{ item.name }}
+            @if (item.quantity > 1) {
+              <ion-badge color="primary" style="margin-left: 8px;">
+                ×{{ item.quantity }}
+              </ion-badge>
+            }
+          </h2>
+          <p>Τιμή: {{ item.price | number : "1.2-2" }} € @if (item.quantity > 1) {
+            <span>(Σύνολο: {{ item.price * item.quantity | number : "1.2-2" }} €)</span>
+          }</p>
+          @if (item.coffeeSize) {
+            <p>Coffee Size: {{ item.coffeeSize }}</p>
+          }
+          @if (item.coffeePreference) {
+            <p>
+              Προτίμηση: {{ item.coffeePreference }}
+            </p>
+          }
+          @if (item.extras?.length) {
+            <p>
+              Extras:
+              @for (extra of item.extras; track extra; let i = $index) {
+                {{ extra.name }}@if (i < item.extras.length - 1) {
+                <span>, </span>
+              }
+            }
+          </p>
+        }
+        @if (item.comments) {
+          <p>Comments: {{ item.comments }}</p>
+        }
       </ion-label>
-
       <div slot="end" style="display: flex; flex-direction: column; gap: 4px;">
         <ion-button
           size="small"
           color="secondary"
           (click)="duplicateItem(item)"
-        >
+          >
           <ion-icon slot="start" name="copy-outline"></ion-icon>
           Duplicate
         </ion-button>
@@ -72,7 +91,7 @@
           size="small"
           color="primary"
           (click)="editItem(item, item.category)"
-        >
+          >
           <ion-icon slot="start" name="create-outline"></ion-icon>
           Edit
         </ion-button>
@@ -80,7 +99,7 @@
           size="small"
           color="warning"
           (click)="cancelItem(item)"
-        >
+          >
           <ion-icon slot="start" name="close-circle-outline"></ion-icon>
           Cancel
         </ion-button>
@@ -90,7 +109,8 @@
         </ion-button>
       </div>
     </ion-item>
-  </ion-list>
+  }
+</ion-list>
 
 </ion-content>
 
@@ -99,8 +119,8 @@
     <ion-button
       expand="block"
       (click)="submit()"
-    >
-    <ion-icon slot="start" name="print-outline"></ion-icon>
+      >
+      <ion-icon slot="start" name="print-outline"></ion-icon>
       Εκτύπωση
     </ion-button>
   </ion-toolbar>

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Platform, IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 import { AndroidFullScreen } from '@awesome-cordova-plugins/android-full-screen/ngx';
@@ -14,11 +14,11 @@ import { TableService } from './services/table.service';
   providers: [AndroidFullScreen]
 })
 export class AppComponent {
-  constructor(
-    private platform: Platform,
-    private androidFullScreen: AndroidFullScreen,
-    private tableService: TableService
-  ) {
+  private platform = inject(Platform);
+  private androidFullScreen = inject(AndroidFullScreen);
+  private tableService = inject(TableService);
+
+  constructor() {
     this.platform.ready().then(() => {
       if (this.platform.is('android')) {
         const ua = navigator.userAgent.toLowerCase();

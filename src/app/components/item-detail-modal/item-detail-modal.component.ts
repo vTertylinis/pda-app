@@ -1,8 +1,8 @@
-import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 import { ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { EXTRALIST, EXTRALISTSWEET } from 'src/app/models/categories';
+import { EXTRALIST, EXTRALISTSWEET } from '../../models/categories';
 
 @Component({
   selector: 'app-item-detail-modal',
@@ -13,6 +13,8 @@ import { EXTRALIST, EXTRALISTSWEET } from 'src/app/models/categories';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ItemDetailModalComponent implements OnInit {
+  private modalCtrl = inject(ModalController);
+
   @Input() item: any;
   @Input() editMode: any;
   @Input() categoryName?: string;
@@ -33,8 +35,6 @@ export class ItemDetailModalComponent implements OnInit {
     this._searchTerm = value;
     this.updateFilteredExtras();
   }
-
-  constructor(private modalCtrl: ModalController) {}
 
   ngOnInit() {
     if (this.editMode) {

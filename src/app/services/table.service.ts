@@ -1,4 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable, NgZone, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, shareReplay, delay } from 'rxjs/operators';
@@ -17,6 +17,9 @@ export interface CustomTable {
   providedIn: 'root'
 })
 export class TableService {
+  private http = inject(HttpClient);
+  private ngZone = inject(NgZone);
+
   private apiUrl = environment.apiUrl;
   private socket: Socket | null = null;
   private customTablesSubject = new BehaviorSubject<{ [key: string]: CustomTable }>({});
@@ -33,7 +36,7 @@ export class TableService {
     shareReplay(1)
   );
 
-  constructor(private http: HttpClient, private ngZone: NgZone) {
+  constructor() {
     this.initializeSocket();
     this.loadCustomTables();
   }

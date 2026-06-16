@@ -4,10 +4,10 @@
       Επιλέξτε τραπέζι μεταφοράς
     </ion-title>
     <ion-buttons slot="end">
-  <ion-button size="large" (click)="close()">
-    <ion-icon name="close"></ion-icon>
-  </ion-button>
-</ion-buttons>
+      <ion-button size="large" (click)="close()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
 
   </ion-toolbar>
 </ion-header>
@@ -16,22 +16,30 @@
   <ion-list  [inset]="true">
     <!-- Predefined tables -->
     <ion-item-group>
-      <ion-item-divider *ngIf="customTablesList.length > 0">
-        <ion-label>Predefined Tables</ion-label>
-      </ion-item-divider>
-      <ion-item *ngFor="let table of predefinedTablesList; trackBy: trackByName" 
-                 (click)="onSelectTable(table)">
-        <ion-label>{{ table.name }}</ion-label>
-      </ion-item>
+      @if (customTablesList.length > 0) {
+        <ion-item-divider>
+          <ion-label>Predefined Tables</ion-label>
+        </ion-item-divider>
+      }
+      @for (table of predefinedTablesList; track trackByName($index, table)) {
+        <ion-item
+          (click)="onSelectTable(table)">
+          <ion-label>{{ table.name }}</ion-label>
+        </ion-item>
+      }
     </ion-item-group>
 
     <!-- Custom tables -->
-    <ion-item-group *ngIf="customTablesList.length > 0">
-      <ion-item-divider>
-        <ion-label>Custom Tables</ion-label>
-      </ion-item-divider>
-      <ion-item *ngFor="let table of customTablesList; trackBy: trackByName" 
-                 (click)="onSelectTable(table)">
-        <ion-label>{{ table.displayName || table.name }}</ion-label>
-      </ion-item>
-    </ion-item-group>
+    @if (customTablesList.length > 0) {
+      <ion-item-group>
+        <ion-item-divider>
+          <ion-label>Custom Tables</ion-label>
+        </ion-item-divider>
+        @for (table of customTablesList; track trackByName($index, table)) {
+          <ion-item
+            (click)="onSelectTable(table)">
+            <ion-label>{{ table.displayName || table.name }}</ion-label>
+          </ion-item>
+        }
+      </ion-item-group>
+    }

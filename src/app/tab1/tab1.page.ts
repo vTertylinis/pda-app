@@ -1,6 +1,6 @@
-import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { concat, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -15,10 +15,16 @@ import { CATEGORIES } from '../models/categories';
   templateUrl: './tab1.page.html',
   styleUrls: ['./tab1.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [IonicModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Tab1Page implements OnDestroy {
+  private modalCtrl = inject(ModalController);
+  private cartService = inject(CartService);
+  private tableService = inject(TableService);
+  private alertController = inject(AlertController);
+  private cdr = inject(ChangeDetectorRef);
+
   private customTablesSub?: Subscription;
 
   predefinedTables = [
@@ -41,13 +47,7 @@ export class Tab1Page implements OnDestroy {
   newTableName: string = '';
   showNewTableInput: boolean = false;
 
-  constructor(
-    private modalCtrl: ModalController,
-    private cartService: CartService,
-    private tableService: TableService,
-    private alertController: AlertController,
-    private cdr: ChangeDetectorRef
-  ) {
+  constructor() {
     this.initializeTables();
   }
 

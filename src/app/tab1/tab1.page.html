@@ -1,136 +1,150 @@
 <ion-content color="light" class="ion-padding">
   <!-- List 1: Tables -->
-  <ion-list *ngIf="!selectedTableName" [inset]="true">
-    <ion-list-header>
-      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-        <span>Tables</span>
-        <ion-button 
-          (click)="showNewTableInput = !showNewTableInput"
-          title="Add custom table">
-          <ion-icon name="add-circle-outline"></ion-icon>
-        </ion-button>
-      </div>
-    </ion-list-header>
-
-    <!-- New table input -->
-    <ion-item *ngIf="showNewTableInput" class="new-table-input">
-      <ion-label position="floating">New table name</ion-label>
-      <ion-input 
-        [(ngModel)]="newTableName" 
-        placeholder="Enter table name"
-        (keyup.enter)="createNewTable()">
-      </ion-input>
-      <ion-button 
-        slot="end" 
-        (click)="createNewTable()"
-        title="Create table">
-        <ion-icon name="checkmark"></ion-icon>
-      </ion-button>
-      <ion-button 
-        slot="end" 
-        (click)="showNewTableInput = false; newTableName = ''"
-        title="Cancel">
-        <ion-icon name="close"></ion-icon>
-      </ion-button>
-    </ion-item>
-
-    <!-- Predefined tables -->
-    <ion-item-group>
-      <ion-item-divider *ngIf="customTablesList.length > 0">
-        <ion-label>Predefined Tables</ion-label>
-      </ion-item-divider>
-      <ion-item *ngFor="let table of predefinedTablesList; trackBy: trackByName" 
-                 (click)="onSelectTable(table.name)">
-        <ion-label>{{ table.name }}</ion-label>
-      </ion-item>
-    </ion-item-group>
-
-    <!-- Custom tables -->
-    <ion-item-group *ngIf="customTablesList.length > 0">
-      <ion-item-divider>
-        <ion-label>Custom Tables</ion-label>
-      </ion-item-divider>
-      <ion-item *ngFor="let table of customTablesList; trackBy: trackByName" 
-                 class="custom-table-item">
-        <ion-label (click)="onSelectTable(table.name)">
-          {{ table.displayName || table.name }}
-        </ion-label>
-        <ion-button 
-          slot="end" 
-          fill="clear" 
-          size="small"
-          color="danger"
-          (click)="deleteCustomTable(table.customTableId)"
-          title="Delete table">
-          <ion-icon name="trash-outline"></ion-icon>
-        </ion-button>
-      </ion-item>
-    </ion-item-group>
-  </ion-list>
+  @if (!selectedTableName) {
+    <ion-list [inset]="true">
+      <ion-list-header>
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          <span>Tables</span>
+          <ion-button
+            (click)="showNewTableInput = !showNewTableInput"
+            title="Add custom table">
+            <ion-icon name="add-circle-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-list-header>
+      <!-- New table input -->
+      @if (showNewTableInput) {
+        <ion-item class="new-table-input">
+          <ion-label position="floating">New table name</ion-label>
+          <ion-input
+            [(ngModel)]="newTableName"
+            placeholder="Enter table name"
+            (keyup.enter)="createNewTable()">
+          </ion-input>
+          <ion-button
+            slot="end"
+            (click)="createNewTable()"
+            title="Create table">
+            <ion-icon name="checkmark"></ion-icon>
+          </ion-button>
+          <ion-button
+            slot="end"
+            (click)="showNewTableInput = false; newTableName = ''"
+            title="Cancel">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+        </ion-item>
+      }
+      <!-- Predefined tables -->
+      <ion-item-group>
+        @if (customTablesList.length > 0) {
+          <ion-item-divider>
+            <ion-label>Predefined Tables</ion-label>
+          </ion-item-divider>
+        }
+        @for (table of predefinedTablesList; track trackByName($index, table)) {
+          <ion-item
+            (click)="onSelectTable(table.name)">
+            <ion-label>{{ table.name }}</ion-label>
+          </ion-item>
+        }
+      </ion-item-group>
+      <!-- Custom tables -->
+      @if (customTablesList.length > 0) {
+        <ion-item-group>
+          <ion-item-divider>
+            <ion-label>Custom Tables</ion-label>
+          </ion-item-divider>
+          @for (table of customTablesList; track trackByName($index, table)) {
+            <ion-item
+              class="custom-table-item">
+              <ion-label (click)="onSelectTable(table.name)">
+                {{ table.displayName || table.name }}
+              </ion-label>
+              <ion-button
+                slot="end"
+                fill="clear"
+                size="small"
+                color="danger"
+                (click)="deleteCustomTable(table.customTableId)"
+                title="Delete table">
+                <ion-icon name="trash-outline"></ion-icon>
+              </ion-button>
+            </ion-item>
+          }
+        </ion-item-group>
+      }
+    </ion-list>
+  }
 
   <!-- List 2: Categories -->
- <ion-list *ngIf="selectedTableName && !selectedCategory" [inset]="true" class="sub-list">
-  <ion-list-header>
-    <ion-button fill="clear" (click)="onBack()">
-      <ion-icon name="arrow-back-outline"></ion-icon>
-    </ion-button>
-    Menu - Table: {{ selectedTableName }}
-  </ion-list-header>
-
-  <!-- Search bar -->
-  <ion-searchbar
-    debounce="300"
-    (ionInput)="onSearch($event)"
-    [value]="searchQuery"
-    placeholder="Search items"
-    showCancelButton="focus">
-  </ion-searchbar>
-
-  <!-- Show categories if no search query -->
-  <ng-container *ngIf="!searchQuery; else searchResults">
-    <ion-item *ngFor="let sub of categories; trackBy: trackByCategoryName" (click)="onSelectCategory(sub)">
-      <ion-label>{{ sub.name }}</ion-label>
-    </ion-item>
-  </ng-container>
-
-  <!-- Show search results if query exists -->
-  <ng-template #searchResults>
-    <ion-item *ngFor="let item of filteredItems; trackBy: trackByName" (click)="openItemModal(item, item.categoryName)">
-      <ion-label>
-        {{ item.name }} <small>({{ item.categoryName }})</small>
-      </ion-label>
-    </ion-item>
-  </ng-template>
-</ion-list>
+  @if (selectedTableName && !selectedCategory) {
+    <ion-list [inset]="true" class="sub-list">
+      <ion-list-header>
+        <ion-button fill="clear" (click)="onBack()">
+          <ion-icon name="arrow-back-outline"></ion-icon>
+        </ion-button>
+        Menu - Table: {{ selectedTableName }}
+      </ion-list-header>
+      <!-- Search bar -->
+      <ion-searchbar
+        debounce="300"
+        (ionInput)="onSearch($event)"
+        [value]="searchQuery"
+        placeholder="Search items"
+        showCancelButton="focus">
+      </ion-searchbar>
+      <!-- Show categories if no search query -->
+      @if (!searchQuery) {
+        @for (sub of categories; track trackByCategoryName($index, sub)) {
+          <ion-item (click)="onSelectCategory(sub)">
+            <ion-label>{{ sub.name }}</ion-label>
+          </ion-item>
+        }
+      } @else {
+        @for (item of filteredItems; track trackByName($index, item)) {
+          <ion-item (click)="openItemModal(item, item.categoryName)">
+            <ion-label>
+              {{ item.name }} <small>({{ item.categoryName }})</small>
+            </ion-label>
+          </ion-item>
+        }
+      }
+      <!-- Show search results if query exists -->
+    </ion-list>
+  }
 
   <!-- List 3: Items in Selected Category -->
- <ion-list *ngIf="selectedCategory" [inset]="true" class="sub-list">
-  <ion-list-header>
-    <ion-button fill="clear" (click)="onBackToCategories()">
-      <ion-icon name="arrow-back-outline"></ion-icon>
-    </ion-button>
-    {{ selectedCategory.name }}
-  </ion-list-header>
-
-  <ion-item *ngFor="let item of selectedCategory.items; trackBy: trackByName" (click)="openItemModal(item, selectedCategory.name)">
-    <ion-label>
-      {{ item.name }}
-    </ion-label>
-  </ion-item>
-</ion-list>
+  @if (selectedCategory) {
+    <ion-list [inset]="true" class="sub-list">
+      <ion-list-header>
+        <ion-button fill="clear" (click)="onBackToCategories()">
+          <ion-icon name="arrow-back-outline"></ion-icon>
+        </ion-button>
+        {{ selectedCategory.name }}
+      </ion-list-header>
+      @for (item of selectedCategory.items; track trackByName($index, item)) {
+        <ion-item (click)="openItemModal(item, selectedCategory.name)">
+          <ion-label>
+            {{ item.name }}
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  }
 
 </ion-content>
 
 <style>
   .new-table-input {
-    margin-bottom: 10px;
-  }
+  margin-bottom: 10px;
+}
 
-  .custom-table-item {
-    cursor: pointer;
-  }
+.custom-table-item {
+cursor: pointer;
+}
 
-  ionicon {
-    cursor: pointer;
-  }
+ionicon {
+cursor: pointer;
+}
 </style>

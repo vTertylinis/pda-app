@@ -1,11 +1,11 @@
-import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { CartService } from 'src/app/services/cart.service';
+import { CartService } from '../../services/cart.service';
 import { ItemDetailModalComponent } from '../item-detail-modal/item-detail-modal.component';
 import { SelectTableComponent } from '../select-table/select-table.component';
 import { ItemSelectionModalComponent } from '../item-selection-modal/item-selection-modal.component';
-import { CATEGORIES } from 'src/app/models/categories';
+import { CATEGORIES } from '../../models/categories';
 import { concat } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
@@ -18,6 +18,11 @@ import { finalize } from 'rxjs/operators';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableManagementModalComponent implements OnInit {
+  private modalCtrl = inject(ModalController);
+  private cartService = inject(CartService);
+  private alertController = inject(AlertController);
+  private cdr = inject(ChangeDetectorRef);
+
   @Input() table: any;
   @Input() tableName: string = '';
   cartItems: any[] = [];
@@ -26,13 +31,6 @@ export class TableManagementModalComponent implements OnInit {
   categories = CATEGORIES;
   selectedItems: Set<any> = new Set();
   selectionMode: boolean = false;
-
-  constructor(
-    private modalCtrl: ModalController,
-    private cartService: CartService,
-    private alertController: AlertController,
-    private cdr: ChangeDetectorRef
-  ) {}
 
   ngOnInit() {
     this.loadTable();
