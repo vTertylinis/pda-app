@@ -10,23 +10,26 @@
 </ion-header>
 
 <ion-content>
-  <ion-list *ngIf="activeTables.length > 0; else noTables" [inset]="true">
-    <ion-list-header> Tables with Orders </ion-list-header>
-    <ion-item *ngFor="let table of activeTables; trackBy: trackByTable">
-      <ion-label>{{ tableMetadata[table].name || table }}</ion-label>
-      <ion-button slot="end" (click)="openTableModal(table)" style="margin-right: 10px;">
-        <ion-icon slot="start" name="enter"></ion-icon>
-        Info
-      </ion-button>
-      <ion-button slot="end" color="danger" (click)="deleteItem(table)">
-        Delete
-      </ion-button>
-    </ion-item>
-  </ion-list>
-
-  <ng-template #noTables>
+  @if (activeTables.length > 0) {
+    <ion-list [inset]="true">
+      <ion-list-header> Tables with Orders </ion-list-header>
+      @for (table of activeTables; track trackByTable($index, table)) {
+        <ion-item>
+          <ion-label>{{ tableMetadata[table].name || table }}</ion-label>
+          <ion-button slot="end" (click)="openTableModal(table)" style="margin-right: 10px;">
+            <ion-icon slot="start" name="enter"></ion-icon>
+            Info
+          </ion-button>
+          <ion-button slot="end" color="danger" (click)="deleteItem(table)">
+            Delete
+          </ion-button>
+        </ion-item>
+      }
+    </ion-list>
+  } @else {
     <ion-text color="medium">
       <p>No tables with orders.</p>
     </ion-text>
-  </ng-template>
+  }
+
 </ion-content>
