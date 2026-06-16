@@ -118,10 +118,6 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
     }
   }
 
-  onSelectTable(tableName: string) {
-    // this.selectedTableName = tableName;
-  }
-
   async deleteItem(table: any) {
     const isCustom = this.tableMetadata[table]?.isCustom || false;
     const tableName = this.getTableDisplayName(table);

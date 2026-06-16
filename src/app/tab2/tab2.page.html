@@ -15,7 +15,7 @@
       <ion-list-header> Tables with Orders </ion-list-header>
       @for (table of activeTables; track trackByTable($index, table)) {
         <ion-item>
-          <ion-label>{{ tableMetadata[table].name || table }}</ion-label>
+          <ion-label>{{ tableMetadata[table]?.name || table }}</ion-label>
           <ion-button slot="end" (click)="openTableModal(table)" style="margin-right: 10px;">
             <ion-icon slot="start" name="enter"></ion-icon>
             Info

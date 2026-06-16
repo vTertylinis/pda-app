@@ -1,7 +1,7 @@
 import { Injectable, NgZone, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, shareReplay, delay } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap, shareReplay, delay, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { io, Socket } from 'socket.io-client';
 
@@ -38,7 +38,7 @@ export class TableService {
 
   constructor() {
     this.initializeSocket();
-    this.loadCustomTables();
+    this.loadCustomTables().subscribe();
   }
 
   // Initialize Socket.io connection
@@ -108,20 +108,12 @@ export class TableService {
 
   // Load custom tables from API
   loadCustomTables(): Observable<{ [key: string]: CustomTable }> {
-    return new Observable(observer => {
-      this.http.get<{ [key: string]: CustomTable }>(`${this.apiUrl}/custom-tables`)
-        .subscribe({
-          next: (tables) => {
-            this.customTablesSubject.next(tables);
-            observer.next(tables);
-            observer.complete();
-          },
-          error: (err) => {
-            console.error('Failed to load custom tables:', err);
-            observer.error(err);
-          }
-        });
-    });
+    return this.http.get<{ [key: string]: CustomTable }>(`${this.apiUrl}/custom-tables`).pipe(
+      tap({
+        next: (tables) => this.customTablesSubject.next(tables),
+        error: (err) => console.error('Failed to load custom tables:', err)
+      })
+    );
   }
 
   // Create a new custom table

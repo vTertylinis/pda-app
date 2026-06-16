@@ -479,8 +479,4 @@ async moveTable() {
     }
   }
 
-  trackByIndex(index: number): number {
-    return index;
-  }
-
 }
