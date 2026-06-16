@@ -22,6 +22,17 @@ allprojects {
         google()
         mavenCentral()
     }
+    // Kotlin 1.8+ merged kotlin-stdlib-jdk7 and kotlin-stdlib-jdk8 into
+    // kotlin-stdlib. Force all three to the same version to eliminate the
+    // duplicate class errors that appear when older transitive deps pull
+    // in the pre-merge separate artifacts.
+    configurations.all {
+        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+            if (details.requested.group == 'org.jetbrains.kotlin') {
+                details.useVersion rootProject.ext.kotlinVersion
+            }
+        }
+    }
 }
 
 task clean(type: Delete) {
