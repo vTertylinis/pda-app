@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CartService } from '../services/cart.service';
 import { TableService } from '../services/table.service';
 import { AlertController, ModalController, IonicModule, ViewWillLeave } from '@ionic/angular';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { TableManagementModalComponent } from '../components/table-management-modal/table-management-modal.component';
 import { Subject, EMPTY } from 'rxjs';
@@ -13,7 +13,7 @@ import { debounceTime, takeUntil, switchMap, catchError } from 'rxjs/operators';
   templateUrl: './tab2.page.html',
   styleUrls: ['./tab2.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, FormsModule]
 })
 export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
   activeTables: string[] = [];

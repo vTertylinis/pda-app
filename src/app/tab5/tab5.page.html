@@ -1,74 +1,94 @@
 <ion-header>
-    <ion-toolbar>
-        <ion-title>Cancelled Orders</ion-title>
-        <ion-buttons slot="end">
-            <ion-button (click)="refreshOrders()">
-                <ion-icon name="refresh"></ion-icon>
-            </ion-button>
-        </ion-buttons>
-    </ion-toolbar>
+  <ion-toolbar>
+    <ion-title>Cancelled Orders</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="refreshOrders()">
+        <ion-icon name="refresh"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content>
-    <ion-refresher slot="fixed" (ionRefresh)="refreshOrders(); $event.detail.complete()">
-        <ion-refresher-content></ion-refresher-content>
-    </ion-refresher>
+  <ion-refresher slot="fixed" (ionRefresh)="refreshOrders(); $event.detail.complete()">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
 
-    <div *ngIf="loading" class="ion-padding ion-text-center">
-        <ion-spinner></ion-spinner>
-        <p>Loading cancelled orders...</p>
+  @if (loading) {
+    <div class="ion-padding ion-text-center">
+      <ion-spinner></ion-spinner>
+      <p>Loading cancelled orders...</p>
     </div>
+  }
 
-    <div *ngIf="error && !loading" class="ion-padding ion-text-center">
-        <p style="color: red;">{{ error }}</p>
-        <ion-button (click)="refreshOrders()">Retry</ion-button>
+  @if (error && !loading) {
+    <div class="ion-padding ion-text-center">
+      <p style="color: red;">{{ error }}</p>
+      <ion-button (click)="refreshOrders()">Retry</ion-button>
     </div>
+  }
 
-    <div *ngIf="!loading && !error && cancelledOrders.length === 0" class="ion-padding ion-text-center">
-        <p>No cancelled orders found</p>
+  @if (!loading && !error && cancelledOrders.length === 0) {
+    <div class="ion-padding ion-text-center">
+      <p>No cancelled orders found</p>
     </div>
+  }
 
-    <ion-list *ngIf="!loading && !error && cancelledOrders.length > 0">
-        <ion-item-divider>
-            <ion-label><strong>Last {{ cancelledOrders.length }} Cancelled Orders</strong></ion-label>
-        </ion-item-divider>
-
-        <ion-card *ngFor="let order of cancelledOrders; trackBy: trackByCancelledAt" class="order-card">
-            <ion-card-header>
-                <ion-card-title>
-                    <strong>Table: {{ order.tableName || 'N/A' }}</strong>
-                </ion-card-title>
-                <ion-card-subtitle>
-                    Cancelled: {{ order.cancelledAtDisplay }}
-                </ion-card-subtitle>
-            </ion-card-header>
-
-            <ion-card-content>
-                <div class="order-info">
-                    <ion-text color="dark">
-                        <p><strong>Item:</strong></p>
-                        <div class="item-details">
-                            <p>
-                                <span *ngIf="order.item.name">{{ order.item.name }}</span>
-                                <span *ngIf="order.item.coffeePreference"> - {{ order.item.coffeePreference }}</span>
-                                <span *ngIf="order.item.coffeeSize"> ({{ order.item.coffeeSize }})</span>
-                            </p>
-                            <p *ngIf="order.extrasDisplay" class="extras">
-                                <strong>Extras:</strong> {{ order.extrasDisplay }}
-                            </p>
-                            <p *ngIf="order.item.comments" class="comments">
-                                <strong>Comments:</strong> {{ order.item.comments }}
-                            </p>
-                            <p class="price">
-                                <strong>Price:</strong> €{{ getItemPrice(order.item).toFixed(2) }}
-                            </p>
-                            <p *ngIf="order.wasPrinted" class="was-printed">
-                                <ion-badge color="warning">Printed before cancellation</ion-badge>
-                            </p>
-                        </div>
-                    </ion-text>
+  @if (!loading && !error && cancelledOrders.length > 0) {
+    <ion-list>
+      <ion-item-divider>
+        <ion-label><strong>Last {{ cancelledOrders.length }} Cancelled Orders</strong></ion-label>
+      </ion-item-divider>
+      @for (order of cancelledOrders; track trackByCancelledAt($index, order)) {
+        <ion-card class="order-card">
+          <ion-card-header>
+            <ion-card-title>
+              <strong>Table: {{ order.tableName || 'N/A' }}</strong>
+            </ion-card-title>
+            <ion-card-subtitle>
+              Cancelled: {{ order.cancelledAtDisplay }}
+            </ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="order-info">
+              <ion-text color="dark">
+                <p><strong>Item:</strong></p>
+                <div class="item-details">
+                  <p>
+                    @if (order.item.name) {
+                      <span>{{ order.item.name }}</span>
+                    }
+                    @if (order.item.coffeePreference) {
+                      <span> - {{ order.item.coffeePreference }}</span>
+                    }
+                    @if (order.item.coffeeSize) {
+                      <span> ({{ order.item.coffeeSize }})</span>
+                    }
+                  </p>
+                  @if (order.extrasDisplay) {
+                    <p class="extras">
+                      <strong>Extras:</strong> {{ order.extrasDisplay }}
+                    </p>
+                  }
+                  @if (order.item.comments) {
+                    <p class="comments">
+                      <strong>Comments:</strong> {{ order.item.comments }}
+                    </p>
+                  }
+                  <p class="price">
+                    <strong>Price:</strong> €{{ getItemPrice(order.item).toFixed(2) }}
+                  </p>
+                  @if (order.wasPrinted) {
+                    <p class="was-printed">
+                      <ion-badge color="warning">Printed before cancellation</ion-badge>
+                    </p>
+                  }
                 </div>
-            </ion-card-content>
+              </ion-text>
+            </div>
+          </ion-card-content>
         </ion-card>
+      }
     </ion-list>
+  }
 </ion-content>

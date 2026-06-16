@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
-import { CommonModule } from '@angular/common';
+
 import { CartService } from 'src/app/services/cart.service';
 import { TableService, CustomTable } from 'src/app/services/table.service';
 
@@ -9,7 +9,7 @@ import { TableService, CustomTable } from 'src/app/services/table.service';
   templateUrl: './select-table.component.html',
   styleUrls: ['./select-table.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule]
+  imports: [IonicModule]
 })
 export class SelectTableComponent implements OnInit {
   @Input() table: any;

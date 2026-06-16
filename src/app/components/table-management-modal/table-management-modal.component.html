@@ -10,21 +10,23 @@
     <ion-title>
       Table {{ tableName || table }}
 
-      <ion-text
-        *ngIf="totalPrice"
-        color="primary"
-        style="display: block; font-size: 1.2em; font-weight: bold;"
-      >
-        Total: {{ totalPrice | currency : "EUR" : "symbol" }}
-      </ion-text>
+      @if (totalPrice) {
+        <ion-text
+          color="primary"
+          style="display: block; font-size: 1.2em; font-weight: bold;"
+          >
+          Total: {{ totalPrice | currency : "EUR" : "symbol" }}
+        </ion-text>
+      }
 
-      <ion-text
-        *ngIf="hasSelection"
-        color="success"
-        style="display: block; font-size: 1em; font-weight: bold;"
-      >
-        Selected: {{ selectedTotal | currency : "EUR" : "symbol" }}
-      </ion-text>
+      @if (hasSelection) {
+        <ion-text
+          color="success"
+          style="display: block; font-size: 1em; font-weight: bold;"
+          >
+          Selected: {{ selectedTotal | currency : "EUR" : "symbol" }}
+        </ion-text>
+      }
     </ion-title>
 
     <ion-buttons slot="end">
@@ -41,84 +43,96 @@
 
 <ion-content>
   <ion-list>
-    <ion-item *ngFor="let item of groupedItems">
-      <ion-label>
-        <h1>
-          {{ item.name }}
-          <ion-badge color="primary" *ngIf="item.quantity > 1" style="margin-left: 8px;">
-            ×{{ item.quantity }}
-          </ion-badge>
-        </h1>
-
-        <p>
-          Τιμή: {{ item.price | number : "1.2-2" }} €
-          <span *ngIf="item.quantity > 1">
-            (Σύνολο: {{ item.price * item.quantity | number : "1.2-2" }} €)
-          </span>
-        </p>
-
-        <p *ngIf="item.coffeeSize">Coffee Size: {{ item.coffeeSize }}</p>
-
-        <p *ngIf="item.coffeePreference">
-          Προτίμηση: {{ item.coffeePreference }}
-        </p>
-
-        <p *ngIf="item.extras?.length">
-          Extras:
-          <ng-container *ngFor="let extra of item.extras; let i = index">
-            {{ extra.name }}<span *ngIf="i < item.extras.length - 1">, </span>
-          </ng-container>
-        </p>
-
-        <p *ngIf="item.comments">Comments: {{ item.comments }}</p>
-        
+    @for (item of groupedItems; track item) {
+      <ion-item>
+        <ion-label>
+          <h1>
+            {{ item.name }}
+            @if (item.quantity > 1) {
+              <ion-badge color="primary" style="margin-left: 8px;">
+                ×{{ item.quantity }}
+              </ion-badge>
+            }
+          </h1>
+          <p>
+            Τιμή: {{ item.price | number : "1.2-2" }} €
+            @if (item.quantity > 1) {
+              <span>
+                (Σύνολο: {{ item.price * item.quantity | number : "1.2-2" }} €)
+              </span>
+            }
+          </p>
+          @if (item.coffeeSize) {
+            <p>Coffee Size: {{ item.coffeeSize }}</p>
+          }
+          @if (item.coffeePreference) {
+            <p>
+              Προτίμηση: {{ item.coffeePreference }}
+            </p>
+          }
+          @if (item.extras?.length) {
+            <p>
+              Extras:
+              @for (extra of item.extras; track extra; let i = $index) {
+                {{ extra.name }}@if (i < item.extras.length - 1) {
+                <span>, </span>
+              }
+            }
+          </p>
+        }
+        @if (item.comments) {
+          <p>Comments: {{ item.comments }}</p>
+        }
         <div style="margin-top: 10px; max-width: 220px;">
-          <ion-item *ngIf="item.quantity === 1" button detail="false" lines="none"
-            style="--inner-padding-end: 0; --padding-start: 0;"
-            (click)="item.selectedQuantity = item.selectedQuantity === 1 ? 0 : 1; updateSelectedTotal()">
-            <ion-checkbox slot="start" [checked]="item.selectedQuantity === 1"></ion-checkbox>
-            <ion-label>Επιλέξτε στοιχείο</ion-label>
-          </ion-item>
-        
-          <ion-item *ngIf="item.quantity > 1" lines="none" style="--inner-padding-end: 0; --padding-start: 0;">
-            <ion-label position="stacked">Επιλέξτε ποσότητα</ion-label>
-            <ion-select interface="popover" [value]="item.selectedQuantity || 0"
-              (ionChange)="onSelectedQuantityChange(item, $event)">
-              <ion-select-option [value]="0">0</ion-select-option>
-              <ion-select-option *ngFor="let qty of [].constructor(item.quantity); let i = index" [value]="i + 1">
-                {{ i + 1 }}
-              </ion-select-option>
-            </ion-select>
-          </ion-item>
+          @if (item.quantity === 1) {
+            <ion-item button detail="false" lines="none"
+              style="--inner-padding-end: 0; --padding-start: 0;"
+              (click)="item.selectedQuantity = item.selectedQuantity === 1 ? 0 : 1; updateSelectedTotal()">
+              <ion-checkbox slot="start" [checked]="item.selectedQuantity === 1"></ion-checkbox>
+              <ion-label>Επιλέξτε στοιχείο</ion-label>
+            </ion-item>
+          }
+          @if (item.quantity > 1) {
+            <ion-item lines="none" style="--inner-padding-end: 0; --padding-start: 0;">
+              <ion-label position="stacked">Επιλέξτε ποσότητα</ion-label>
+              <ion-select interface="popover" [value]="item.selectedQuantity || 0"
+                (ionChange)="onSelectedQuantityChange(item, $event)">
+                <ion-select-option [value]="0">0</ion-select-option>
+                @for (qty of [].constructor(item.quantity); track qty; let i = $index) {
+                  <ion-select-option [value]="i + 1">
+                    {{ i + 1 }}
+                  </ion-select-option>
+                }
+              </ion-select>
+            </ion-item>
+          }
         </div>
-        </ion-label>
-
+      </ion-label>
       <div slot="end" style="display: flex; flex-direction: column; gap: 4px;">
         <ion-button
           size="small"
           color="secondary"
           (click)="duplicateItem(item)"
-        >
+          >
           <ion-icon slot="start" name="copy-outline"></ion-icon>
           Duplicate
         </ion-button>
-
         <ion-button
           size="small"
           color="primary"
           (click)="editItem(item, item.category)"
-        >
+          >
           <ion-icon slot="start" name="create-outline"></ion-icon>
           Edit
         </ion-button>
-
         <ion-button size="small" color="danger" (click)="deleteItem(item)">
           <ion-icon slot="start" name="trash-outline"></ion-icon>
           Delete
         </ion-button>
       </div>
     </ion-item>
-  </ion-list>
+  }
+</ion-list>
 </ion-content>
 
 <ion-footer>
@@ -134,7 +148,7 @@
         color="success"
         [disabled]="!hasSelection"
         (click)="handleSelectedItems()"
-      >
+        >
         <ion-icon slot="start" name="checkmark-done-outline"></ion-icon>
         Αφαίρεση επιλεγμένων
       </ion-button>

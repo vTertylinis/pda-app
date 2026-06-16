@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { IonicModule, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
   templateUrl: './tab4.page.html',
   styleUrls: ['./tab4.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [IonicModule],
 })
 export class Tab4Page implements OnInit, ViewWillEnter, ViewWillLeave {
   printedOrders: any[] = [];

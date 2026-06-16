@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { IonicModule, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
 import { CancelledOrdersService } from '../services/cancelled-orders.service';
 
@@ -8,7 +8,7 @@ import { CancelledOrdersService } from '../services/cancelled-orders.service';
   templateUrl: './tab5.page.html',
   styleUrls: ['./tab5.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [IonicModule],
 })
 export class Tab5Page implements OnInit, ViewWillEnter, ViewWillLeave {
   cancelledOrders: any[] = [];

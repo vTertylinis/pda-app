@@ -28,120 +28,135 @@
     </p>
 
     <!-- Coffee Sweetness Options -->
-    <div *ngIf="categoryName === 'Καφέδες'" class="ion-margin-top">
-      <ion-label class="ion-margin-bottom" position="stacked"
-        >Επιλέξτε γλυκύτητα:</ion-label
-      >
-      <ion-radio-group [(ngModel)]="coffeePreference">
-        <ion-item
-          *ngFor="
-            let option of ['Σκέτο', 'Ολίγη', 'Μέτριο', 'Πρός Γλυκό', 'Γλυκό']
-          "
-        >
-          <ion-radio slot="start" [value]="option">{{ option }}</ion-radio>
+    @if (categoryName === 'Καφέδες') {
+      <div class="ion-margin-top">
+        <ion-label class="ion-margin-bottom" position="stacked"
+          >Επιλέξτε γλυκύτητα:</ion-label
+          >
+          <ion-radio-group [(ngModel)]="coffeePreference">
+            @for (
+              option of ['Σκέτο', 'Ολίγη', 'Μέτριο', 'Πρός Γλυκό', 'Γλυκό']
+              ; track
+              option) {
+              <ion-item
+                >
+                <ion-radio slot="start" [value]="option">{{ option }}</ion-radio>
+              </ion-item>
+            }
+          </ion-radio-group>
+        </div>
+      }
+
+      @if (categoryName === 'Ποτά - Κρασιά' && (item?.name === 'Λειβαδιώτη μπουκαλάκι' || item?.name === 'Κρασί ποτήρι')) {
+        <div class="ion-margin-top">
+          <ion-label class="ion-margin-bottom" position="stacked"
+            >Επιλέξτε:</ion-label
+            >
+            <ion-radio-group [(ngModel)]="comments">
+              @for (
+                option of ['Λευκό Ξηρό', 'Λευκό Ημίγλυκο', 'Ερυθρό Ξηρό', 'Ερυθρό Ημίγλυκο', 'Ροζέ Ημίγλυκο', 'Ροζέ Ξηρό']
+                ; track
+                option) {
+                <ion-item
+                  >
+                  <ion-radio slot="start" [value]="option">{{ option }}</ion-radio>
+                </ion-item>
+              }
+            </ion-radio-group>
+          </div>
+        }
+
+        <!-- Single/Double Option -->
+        @if (supportsSingleOrDouble) {
+          <div class="ion-margin-top">
+            <ion-label position="stacked">Επιλογή:</ion-label>
+            <ion-radio-group [(ngModel)]="coffeeSize">
+              <ion-item>
+                <ion-radio slot="start" value="single">Μονός</ion-radio>
+              </ion-item>
+              <ion-item>
+                <ion-radio slot="start" value="double">Διπλός (+0.50€)</ion-radio>
+              </ion-item>
+            </ion-radio-group>
+          </div>
+        }
+
+        <!-- Extra Ingredients Section -->
+        @if (item.materials || item.materialsSweet) {
+          <ion-item class="ion-margin-top">
+            <ion-label position="stacked">Extra Υλικά</ion-label>
+            <ion-searchbar
+              [(ngModel)]="searchTerm"
+              placeholder="Αναζήτηση έξτρα"
+            ></ion-searchbar>
+          </ion-item>
+          <div class="extras-scrollable">
+            @for (extra of filteredExtraList(); track extra) {
+              <ion-item>
+                <ion-checkbox
+                  slot="start"
+                  [(ngModel)]="extra.selected"
+                  (ionChange)="onExtraSelectionChange(extra)"
+                ></ion-checkbox>
+                <ion-label>
+                  {{ extra.name }} (+{{ extra.price | currency: 'EUR':'symbol':'1.2-2' }})
+                </ion-label>
+              </ion-item>
+            }
+          </div>
+        }
+
+
+        <!-- Ouzo drink option to be appended to comments -->
+        @if (isOuzoOptionTarget) {
+          <div class="ion-margin-top">
+            <ion-label class="ion-margin-bottom" position="stacked">Επιλέξτε:</ion-label>
+            <ion-radio-group [(ngModel)]="drinkCommentOption">
+              <ion-item>
+                <ion-radio slot="start" value="Με">Με</ion-radio>
+              </ion-item>
+              <ion-item>
+                <ion-radio slot="start" value="Χωρίς">Χωρίς</ion-radio>
+              </ion-item>
+            </ion-radio-group>
+          </div>
+        }
+
+        <!-- Καραφάκι Κρασί 1/2 options (Ημίγλυκο / Ξηρό) appended to comments -->
+        @if (isKarafakiOptionTarget) {
+          <div class="ion-margin-top">
+            <ion-label class="ion-margin-bottom" position="stacked">Επιλέξτε:</ion-label>
+            <ion-radio-group [(ngModel)]="drinkCommentOption">
+              <ion-item>
+                <ion-radio slot="start" value="Ημίγλυκο">Ημίγλυκο</ion-radio>
+              </ion-item>
+              <ion-item>
+                <ion-radio slot="start" value="Ξηρό">Ξηρό</ion-radio>
+              </ion-item>
+            </ion-radio-group>
+          </div>
+        }
+
+
+        <!-- Comments Input -->
+        <ion-item class="ion-margin-top">
+          <ion-label position="stacked">Σχόλια</ion-label>
+          <ion-input
+            [(ngModel)]="comments"
+            placeholder="Προσθέστε σχόλια για την παραγγελία σας"
+          ></ion-input>
         </ion-item>
-      </ion-radio-group>
-    </div>
+      </ion-card-content>
+    </ion-content>
 
-    <div *ngIf="categoryName === 'Ποτά - Κρασιά' && (item?.name === 'Λειβαδιώτη μπουκαλάκι' || item?.name === 'Κρασί ποτήρι')" class="ion-margin-top">
-      <ion-label class="ion-margin-bottom" position="stacked"
-        >Επιλέξτε:</ion-label
-      >
-      <ion-radio-group [(ngModel)]="comments">
-        <ion-item
-          *ngFor="
-            let option of ['Λευκό Ξηρό', 'Λευκό Ημίγλυκο', 'Ερυθρό Ξηρό', 'Ερυθρό Ημίγλυκο', 'Ροζέ Ημίγλυκο', 'Ροζέ Ξηρό']
-          "
-        >
-          <ion-radio slot="start" [value]="option">{{ option }}</ion-radio>
-        </ion-item>
-      </ion-radio-group>
-    </div>
-
-    <!-- Single/Double Option -->
-    <div *ngIf="supportsSingleOrDouble" class="ion-margin-top">
-      <ion-label position="stacked">Επιλογή:</ion-label>
-      <ion-radio-group [(ngModel)]="coffeeSize">
-        <ion-item>
-          <ion-radio slot="start" value="single">Μονός</ion-radio>
-        </ion-item>
-        <ion-item>
-          <ion-radio slot="start" value="double">Διπλός (+0.50€)</ion-radio>
-        </ion-item>
-      </ion-radio-group>
-    </div>
-
-    <!-- Extra Ingredients Section -->
-<ng-container *ngIf="item.materials || item.materialsSweet">
-  <ion-item class="ion-margin-top">
-    <ion-label position="stacked">Extra Υλικά</ion-label>
-    <ion-searchbar
-      [(ngModel)]="searchTerm"
-      placeholder="Αναζήτηση έξτρα"
-    ></ion-searchbar>
-  </ion-item>
-
-  <div class="extras-scrollable">
-    <ion-item *ngFor="let extra of filteredExtraList()">
-      <ion-checkbox
-        slot="start"
-        [(ngModel)]="extra.selected"
-        (ionChange)="onExtraSelectionChange(extra)"
-      ></ion-checkbox>
-      <ion-label>
-        {{ extra.name }} (+{{ extra.price | currency: 'EUR':'symbol':'1.2-2' }})
-      </ion-label>
-    </ion-item>
-  </div>
-</ng-container>
-
-
-    <!-- Ouzo drink option to be appended to comments -->
-    <div *ngIf="isOuzoOptionTarget" class="ion-margin-top">
-      <ion-label class="ion-margin-bottom" position="stacked">Επιλέξτε:</ion-label>
-      <ion-radio-group [(ngModel)]="drinkCommentOption">
-        <ion-item>
-          <ion-radio slot="start" value="Με">Με</ion-radio>
-        </ion-item>
-        <ion-item>
-          <ion-radio slot="start" value="Χωρίς">Χωρίς</ion-radio>
-        </ion-item>
-      </ion-radio-group>
-    </div>
-
-    <!-- Καραφάκι Κρασί 1/2 options (Ημίγλυκο / Ξηρό) appended to comments -->
-    <div *ngIf="isKarafakiOptionTarget" class="ion-margin-top">
-      <ion-label class="ion-margin-bottom" position="stacked">Επιλέξτε:</ion-label>
-      <ion-radio-group [(ngModel)]="drinkCommentOption">
-        <ion-item>
-          <ion-radio slot="start" value="Ημίγλυκο">Ημίγλυκο</ion-radio>
-        </ion-item>
-        <ion-item>
-          <ion-radio slot="start" value="Ξηρό">Ξηρό</ion-radio>
-        </ion-item>
-      </ion-radio-group>
-    </div>
-
-
-    <!-- Comments Input -->
-    <ion-item class="ion-margin-top">
-      <ion-label position="stacked">Σχόλια</ion-label>
-      <ion-input
-        [(ngModel)]="comments"
-        placeholder="Προσθέστε σχόλια για την παραγγελία σας"
-      ></ion-input>
-    </ion-item>
-  </ion-card-content>
-</ion-content>
-
-<ion-footer>
-  <ion-toolbar>
-    <ion-button
-      expand="block"
-      (click)="submit()"
-      [disabled]="!isFormValid()"
-    >
-      Υποβολή
-    </ion-button>
-  </ion-toolbar>
-</ion-footer>
+    <ion-footer>
+      <ion-toolbar>
+        <ion-button
+          expand="block"
+          (click)="submit()"
+          [disabled]="!isFormValid()"
+          >
+          Υποβολή
+        </ion-button>
+      </ion-toolbar>
+    </ion-footer>

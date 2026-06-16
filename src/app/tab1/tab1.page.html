@@ -1,115 +1,114 @@
 <ion-content color="light" class="tablet">
   <!-- VIEW 1: TABLES -->
-  <ng-container *ngIf="!selectedTableName">
+  @if (!selectedTableName) {
     <div class="page-header">
       <div class="title">Tables</div>
-
       <ion-button
         fill="clear"
         class="icon-btn"
         (click)="showNewTableInput = !showNewTableInput"
         aria-label="Add custom table"
         title="Add custom table"
-      >
+        >
         <ion-icon name="add-circle-outline"></ion-icon>
       </ion-button>
     </div>
-
     <!-- New table input -->
-    <ion-card *ngIf="showNewTableInput" class="new-table-card">
-      <ion-card-content class="new-table-content">
-        <ion-item lines="none">
-          <ion-label position="floating">New table name</ion-label>
-          <ion-input
-            [(ngModel)]="newTableName"
-            placeholder="Enter table name"
-            (keyup.enter)="createNewTable()"
-          ></ion-input>
-
-          <ion-button
-            slot="end"
-            fill="solid"
-            (click)="createNewTable()"
-            aria-label="Create table"
-            title="Create table"
-          >
-            <ion-icon name="checkmark"></ion-icon>
-          </ion-button>
-
-          <ion-button
-            slot="end"
-            fill="clear"
-            (click)="showNewTableInput = false; newTableName = ''"
-            aria-label="Cancel"
-            title="Cancel"
-          >
-            <ion-icon name="close"></ion-icon>
-          </ion-button>
-        </ion-item>
-      </ion-card-content>
-    </ion-card>
-
+    @if (showNewTableInput) {
+      <ion-card class="new-table-card">
+        <ion-card-content class="new-table-content">
+          <ion-item lines="none">
+            <ion-label position="floating">New table name</ion-label>
+            <ion-input
+              [(ngModel)]="newTableName"
+              placeholder="Enter table name"
+              (keyup.enter)="createNewTable()"
+            ></ion-input>
+            <ion-button
+              slot="end"
+              fill="solid"
+              (click)="createNewTable()"
+              aria-label="Create table"
+              title="Create table"
+              >
+              <ion-icon name="checkmark"></ion-icon>
+            </ion-button>
+            <ion-button
+              slot="end"
+              fill="clear"
+              (click)="showNewTableInput = false; newTableName = ''"
+              aria-label="Cancel"
+              title="Cancel"
+              >
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+    }
     <!-- Predefined Tables -->
-    <div class="section" *ngIf="predefinedTablesList.length">
-
-      <ion-grid class="grid" fixed>
-        <ion-row>
-          <ion-col size="3" *ngFor="let table of predefinedTablesList">
-            <ion-card class="card tappable" (click)="onSelectTable(table.name)">
-              <ion-card-content class="card-content">
-                <div class="card-title">{{ table.name }}</div>
-              </ion-card-content>
-            </ion-card>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </div>
-
+    @if (predefinedTablesList.length) {
+      <div class="section">
+        <ion-grid class="grid" fixed>
+          <ion-row>
+            @for (table of predefinedTablesList; track table) {
+              <ion-col size="3">
+                <ion-card class="card tappable" (click)="onSelectTable(table.name)">
+                  <ion-card-content class="card-content">
+                    <div class="card-title">{{ table.name }}</div>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+            }
+          </ion-row>
+        </ion-grid>
+      </div>
+    }
     <!-- Custom Tables -->
-    <div class="section" *ngIf="customTablesList.length">
-      <div class="section-title">Custom Tables</div>
-
-      <ion-grid class="grid" fixed>
-        <ion-row>
-          <ion-col size="3" *ngFor="let table of customTablesList">
-            <ion-card class="card">
-              <ion-card-content class="card-content card-split">
-                <div
-                  class="card-title tappable"
-                  (click)="onSelectTable(table.name)"
-                >
-                  {{ table.displayName || table.name }}
-                </div>
-
-                <ion-button
-                  size="small"
-                  color="danger"
-                  class="trash-btn"
-                  (click)="deleteCustomTable(table.customTableId); $event.stopPropagation()"
-                  aria-label="Delete table"
-                  title="Delete table"
-                >
-                  <ion-icon name="trash-outline"></ion-icon>
-                </ion-button>
-              </ion-card-content>
-            </ion-card>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </div>
-  </ng-container>
+    @if (customTablesList.length) {
+      <div class="section">
+        <div class="section-title">Custom Tables</div>
+        <ion-grid class="grid" fixed>
+          <ion-row>
+            @for (table of customTablesList; track table) {
+              <ion-col size="3">
+                <ion-card class="card">
+                  <ion-card-content class="card-content card-split">
+                    <div
+                      class="card-title tappable"
+                      (click)="onSelectTable(table.name)"
+                      >
+                      {{ table.displayName || table.name }}
+                    </div>
+                    <ion-button
+                      size="small"
+                      color="danger"
+                      class="trash-btn"
+                      (click)="deleteCustomTable(table.customTableId); $event.stopPropagation()"
+                      aria-label="Delete table"
+                      title="Delete table"
+                      >
+                      <ion-icon name="trash-outline"></ion-icon>
+                    </ion-button>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+            }
+          </ion-row>
+        </ion-grid>
+      </div>
+    }
+  }
 
   <!-- VIEW 2: CATEGORIES + SEARCH -->
-  <ng-container *ngIf="selectedTableName && !selectedCategory">
+  @if (selectedTableName && !selectedCategory) {
     <div class="page-header">
       <ion-button fill="clear" class="icon-btn" (click)="onBack()" aria-label="Back">
         <ion-icon name="arrow-back-outline"></ion-icon>
       </ion-button>
-
       <div class="title">Menu</div>
       <div class="spacer"></div>
     </div>
-
     <ion-searchbar
       class="search"
       debounce="300"
@@ -118,71 +117,72 @@
       placeholder="Search items"
       showCancelButton="focus"
     ></ion-searchbar>
-
     <!-- Categories grid (when no search) -->
-    <ng-container *ngIf="!searchQuery; else searchResults">
+    @if (!searchQuery) {
       <ion-grid class="grid" fixed>
         <ion-row>
-          <ion-col size="3" *ngFor="let sub of categories">
-            <ion-card class="card tappable" (click)="onSelectCategory(sub)">
-              <ion-card-content class="card-content">
-                <div class="card-title">{{ sub.name }}</div>
-              </ion-card-content>
-            </ion-card>
-          </ion-col>
+          @for (sub of categories; track sub) {
+            <ion-col size="3">
+              <ion-card class="card tappable" (click)="onSelectCategory(sub)">
+                <ion-card-content class="card-content">
+                  <div class="card-title">{{ sub.name }}</div>
+                </ion-card-content>
+              </ion-card>
+            </ion-col>
+          }
         </ion-row>
       </ion-grid>
-    </ng-container>
-
+    } @else {
+      <ion-grid class="grid" fixed>
+        <ion-row>
+          @for (item of filteredItems; track item) {
+            <ion-col size="3">
+              <ion-card
+                class="card tappable"
+                (click)="openItemModal(item, item.categoryName)"
+                >
+                <ion-card-content class="card-content">
+                  <div class="card-title">{{ item.name }}</div>
+                  <div class="card-subtitle">{{ item.categoryName }}</div>
+                </ion-card-content>
+              </ion-card>
+            </ion-col>
+          }
+        </ion-row>
+      </ion-grid>
+    }
     <!-- Search results grid -->
-    <ng-template #searchResults>
-      <ion-grid class="grid" fixed>
-        <ion-row>
-          <ion-col size="3" *ngFor="let item of filteredItems">
-            <ion-card
-              class="card tappable"
-              (click)="openItemModal(item, item.categoryName)"
-            >
-              <ion-card-content class="card-content">
-                <div class="card-title">{{ item.name }}</div>
-                <div class="card-subtitle">{{ item.categoryName }}</div>
-              </ion-card-content>
-            </ion-card>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </ng-template>
-  </ng-container>
+  }
 
   <!-- VIEW 3: ITEMS IN SELECTED CATEGORY -->
-  <ng-container *ngIf="selectedCategory">
+  @if (selectedCategory) {
     <div class="page-header">
       <ion-button
         fill="clear"
         class="icon-btn"
         (click)="onBackToCategories()"
         aria-label="Back"
-      >
+        >
         <ion-icon name="arrow-back-outline"></ion-icon>
       </ion-button>
-
       <div class="title">{{ selectedCategory.name }}</div>
       <div class="spacer"></div>
     </div>
-
     <ion-grid class="grid" fixed>
       <ion-row>
-        <ion-col size="3" *ngFor="let item of selectedCategory.items">
-          <ion-card
-            class="card tappable"
-            (click)="openItemModal(item, selectedCategory.name)"
-          >
-            <ion-card-content class="card-content">
-              <div class="card-title">{{ item.name }}</div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
+        @for (item of selectedCategory.items; track item) {
+          <ion-col size="3">
+            <ion-card
+              class="card tappable"
+              (click)="openItemModal(item, selectedCategory.name)"
+              >
+              <ion-card-content class="card-content">
+                <div class="card-title">{{ item.name }}</div>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        }
       </ion-row>
     </ion-grid>
-  </ng-container>
+  }
 </ion-content>

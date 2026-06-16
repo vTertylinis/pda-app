@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { IonicModule, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
   templateUrl: './tab3.page.html',
   styleUrls: ['./tab3.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [IonicModule],
 })
 export class Tab3Page implements OnInit, ViewWillEnter, ViewWillLeave {
   onlineOrders: any[] = [];
