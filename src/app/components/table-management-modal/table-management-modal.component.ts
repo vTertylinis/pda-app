@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { CartService } from 'src/app/services/cart.service';
@@ -15,6 +15,10 @@ import { CATEGORIES } from 'src/app/models/categories';
   imports: [IonicModule, CommonModule]
 })
 export class TableManagementModalComponent implements OnInit {
+  private modalCtrl = inject(ModalController);
+  private cartService = inject(CartService);
+  private alertController = inject(AlertController);
+
   @Input() table: any;
   @Input() tableName: string = '';
   cartItems: any[] = [];
@@ -22,12 +26,6 @@ export class TableManagementModalComponent implements OnInit {
   totalPrice: any;
   selectedTotal: number = 0;
   categories = CATEGORIES;
-
-  constructor(
-    private modalCtrl: ModalController,
-    private cartService: CartService,
-    private alertController: AlertController
-  ) {}
 
   ngOnInit() {
     this.loadTable();

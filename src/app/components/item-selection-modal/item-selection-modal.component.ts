@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,15 +10,13 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule]
 })
-export class ItemSelectionModalComponent implements OnInit {
+export class ItemSelectionModalComponent {
+  private modalCtrl = inject(ModalController);
+
   @Input() categories: any[] = [];
   selectedCategory: any = null;
   searchQuery: string = '';
   filteredItems: any[] = [];
-
-  constructor(private modalCtrl: ModalController) {}
-
-  ngOnInit() {}
 
   onSelectCategory(category: any) {
     this.selectedCategory = category;

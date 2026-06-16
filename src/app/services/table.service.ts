@@ -1,4 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable, NgZone, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -16,6 +16,9 @@ export interface CustomTable {
   providedIn: 'root'
 })
 export class TableService {
+  private http = inject(HttpClient);
+  private ngZone = inject(NgZone);
+
   private apiUrl = environment.apiUrl;
   private socket: Socket | null = null;
   private customTablesSubject = new BehaviorSubject<{ [key: string]: CustomTable }>({});
@@ -25,7 +28,7 @@ export class TableService {
   private cartUpdatesSubject = new Subject<any>();
   public cartUpdates$ = this.cartUpdatesSubject.asObservable();
 
-  constructor(private http: HttpClient, private ngZone: NgZone) {
+  constructor() {
     this.initializeSocket();
     this.loadCustomTables();
   }

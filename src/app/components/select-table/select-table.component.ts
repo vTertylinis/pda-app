@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 
 import { CartService } from 'src/app/services/cart.service';
@@ -12,6 +12,11 @@ import { TableService, CustomTable } from 'src/app/services/table.service';
   imports: [IonicModule]
 })
 export class SelectTableComponent implements OnInit {
+  private modalCtrl = inject(ModalController);
+  private cartService = inject(CartService);
+  private tableService = inject(TableService);
+  private alertController = inject(AlertController);
+
   @Input() table: any;
 
   predefinedTables = [
@@ -28,13 +33,6 @@ export class SelectTableComponent implements OnInit {
   customTables: { [key: string]: CustomTable } = {};
   toTable: string | null = null;
   toTableDisplayName: string | null = null;
-
-  constructor(
-    private modalCtrl: ModalController,
-    private cartService: CartService,
-    private tableService: TableService,
-    private alertController: AlertController
-  ) {}
 
   ngOnInit() {
     // Subscribe to custom tables updates

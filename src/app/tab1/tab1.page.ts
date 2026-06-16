@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 
 import { FormsModule } from '@angular/forms';
@@ -17,6 +17,11 @@ import { CATEGORIES } from '../models/categories';
   imports: [IonicModule, FormsModule]
 })
 export class Tab1Page implements OnDestroy {
+  private modalCtrl = inject(ModalController);
+  private cartService = inject(CartService);
+  private tableService = inject(TableService);
+  private alertController = inject(AlertController);
+
   private customTablesSub?: Subscription;
 
   predefinedTables = [
@@ -39,12 +44,7 @@ export class Tab1Page implements OnDestroy {
   newTableName: string = '';
   showNewTableInput: boolean = false;
 
-  constructor(
-    private modalCtrl: ModalController,
-    private cartService: CartService,
-    private tableService: TableService,
-    private alertController: AlertController
-  ) {
+  constructor() {
     this.initializeTables();
   }
 

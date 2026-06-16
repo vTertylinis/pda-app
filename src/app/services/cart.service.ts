@@ -1,14 +1,13 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
 
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
-  private apiUrl = environment.apiUrl;
+  private http = inject(HttpClient);
 
-  constructor(private http: HttpClient) {
-  }
+  private apiUrl = environment.apiUrl;
 
   getCart(tableId: any) {
     return this.http.get(`${this.apiUrl}/cart/${tableId}`);

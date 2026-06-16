@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Platform, IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 import { AndroidFullScreen } from '@awesome-cordova-plugins/android-full-screen/ngx';
@@ -12,7 +12,10 @@ import { AndroidFullScreen } from '@awesome-cordova-plugins/android-full-screen/
   providers: [AndroidFullScreen]
 })
 export class AppComponent {
-  constructor(private platform: Platform, private androidFullScreen: AndroidFullScreen) {
+  private platform = inject(Platform);
+  private androidFullScreen = inject(AndroidFullScreen);
+
+  constructor() {
     this.platform.ready().then(() => {
       if (this.platform.is('android')) {
         this.androidFullScreen.immersiveMode()

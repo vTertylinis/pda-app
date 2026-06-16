@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 
 import { IonicModule, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
 import { CancelledOrdersService } from '../services/cancelled-orders.service';
@@ -10,15 +10,12 @@ import { CancelledOrdersService } from '../services/cancelled-orders.service';
   standalone: true,
   imports: [IonicModule],
 })
-export class Tab5Page implements OnInit, ViewWillEnter, ViewWillLeave {
+export class Tab5Page implements ViewWillEnter, ViewWillLeave {
+  private cancelledOrdersService = inject(CancelledOrdersService);
+
   cancelledOrders: any[] = [];
   loading: boolean = true;
   error: string | null = null;
-
-  constructor(private cancelledOrdersService: CancelledOrdersService) {}
-
-  ngOnInit() {
-  }
 
   ionViewWillEnter() {
     this.loadCancelledOrders();

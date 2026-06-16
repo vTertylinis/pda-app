@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 
 import { IonicModule, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
@@ -11,16 +11,13 @@ import { environment } from '../../environments/environment';
   standalone: true,
   imports: [IonicModule],
 })
-export class Tab3Page implements OnInit, ViewWillEnter, ViewWillLeave {
+export class Tab3Page implements ViewWillEnter, ViewWillLeave {
+  private http = inject(HttpClient);
+
   onlineOrders: any[] = [];
   loading: boolean = true;
   error: string | null = null;
   private apiUrl = environment.apiUrl;
-
-  constructor(private http: HttpClient) {}
-
-  ngOnInit() {
-  }
 
   ionViewWillEnter() {
     this.loadOnlineOrders();

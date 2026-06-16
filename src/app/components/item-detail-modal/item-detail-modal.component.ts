@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,6 +12,8 @@ import { EXTRALIST, EXTRALISTSWEET } from 'src/app/models/categories';
   imports: [IonicModule, CommonModule, FormsModule]
 })
 export class ItemDetailModalComponent implements OnInit {
+  private modalCtrl = inject(ModalController);
+
   @Input() item: any;
   @Input() editMode: any;
   @Input() categoryName?: string;
@@ -23,8 +25,6 @@ export class ItemDetailModalComponent implements OnInit {
   extraList = EXTRALIST.map((extra) => ({ ...extra }));
   extraListSweet = EXTRALISTSWEET.map((extra) => ({ ...extra }));
   quantity = 1;
-
-  constructor(private modalCtrl: ModalController) {}
 
   ngOnInit() {
     if (this.editMode) {

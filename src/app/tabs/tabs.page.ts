@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 
@@ -9,11 +9,8 @@ import { IonicModule } from '@ionic/angular';
   standalone: true,
   imports: [IonicModule]
 })
-export class TabsPage implements OnInit {
+export class TabsPage {
 
   constructor() { }
-
-  ngOnInit() {
-  }
 
 }
