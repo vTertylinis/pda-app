@@ -2,7 +2,7 @@ import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core
 import { ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { EXTRALIST, EXTRALISTSWEET } from 'src/app/models/categories';
+import { EXTRALIST, EXTRALISTSWEET } from '../../models/categories';
 
 @Component({
   selector: 'app-item-detail-modal',

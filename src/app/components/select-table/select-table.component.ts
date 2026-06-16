@@ -1,8 +1,8 @@
 import { Component, Input, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 
-import { CartService } from 'src/app/services/cart.service';
-import { TableService, CustomTable } from 'src/app/services/table.service';
+import { CartService } from '../../services/cart.service';
+import { TableService, CustomTable } from '../../services/table.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
