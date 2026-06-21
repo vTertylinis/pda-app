@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit, inject } from '@angular/core';
 
-import { IonicModule, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
+import { IonicModule, ToastController } from '@ionic/angular';
+import { Subscription } from 'rxjs';
+import { TableService } from '../services/table.service';
 
 @Component({
   selector: 'app-tab3',
@@ -11,21 +11,42 @@ import { environment } from '../../environments/environment';
   standalone: true,
   imports: [IonicModule],
 })
-export class Tab3Page implements ViewWillEnter, ViewWillLeave {
-  private http = inject(HttpClient);
+export class Tab3Page implements OnInit, OnDestroy {
+  private tableService = inject(TableService);
+  private toastCtrl = inject(ToastController);
+  private ngZone = inject(NgZone);
 
   onlineOrders: any[] = [];
   loading: boolean = true;
   error: string | null = null;
-  private apiUrl = environment.apiUrl;
+  // Quick-response presets (minutes)
+  readonly waitingPresets = [10, 15, 20, 30, 45, 60];
+  private sub?: Subscription;
 
-  ionViewWillEnter() {
-    this.loadOnlineOrders();
+  ngOnInit() {
+    // The service holds the persistent list — just subscribe to it
+    this.sub = this.tableService.onlineOrders$.subscribe((orders) => {
+      this.onlineOrders = orders.map((o) => ({
+        ...o,
+        timestampDisplay: this.formatOrderDate(o.timestamp),
+        cart: (o.cart || []).map((item: any) => ({
+          ...item,
+          ingredientsDisplay:
+            item.ingredients?.map((ing: any) => ing.name).join(', ') || '',
+        })),
+      }));
+    });
+    this.refreshOrders();
   }
 
-  ionViewWillLeave() {
-    this.onlineOrders = [];
-    this.error = null;
+  ngOnDestroy() {
+    this.sub?.unsubscribe();
+  }
+
+  get pendingResponseCount(): number {
+    return this.onlineOrders.filter(
+      (o) => o.needsResponse && o.respondedWaitingTime == null
+    ).length;
   }
 
   private formatOrderDate(timestamp: any): string {
@@ -37,24 +58,11 @@ export class Tab3Page implements ViewWillEnter, ViewWillLeave {
     }
   }
 
-  loadOnlineOrders() {
+  refreshOrders() {
     this.loading = true;
     this.error = null;
-
-    this.http.get<any[]>(`${this.apiUrl}/online-orders/last-20`).subscribe({
-      next: (data) => {
-        this.onlineOrders = (data || []).map((order) => ({
-          ...order,
-          timestampDisplay: this.formatOrderDate(order.timestamp),
-          items: (order.items || []).map((item: any) => ({
-            ...item,
-            ingredientsDisplay:
-              item.ingredients?.map((ing: any) => ing.name).join(', ') || '',
-          })),
-        }));
-
-        this.loading = false;
-      },
+    this.tableService.loadOnlineOrders().subscribe({
+      next: () => (this.loading = false),
       error: (err) => {
         console.error('Error loading online orders:', err);
         this.error = 'Failed to load online orders';
@@ -63,8 +71,42 @@ export class Tab3Page implements ViewWillEnter, ViewWillLeave {
     });
   }
 
-  refreshOrders() {
-    this.loadOnlineOrders();
+  // Send the estimated waiting time back to the customer
+  respond(order: any, minutes: number) {
+    if (!order?.orderId) {
+      this.showToast('Αυτή η παραγγελία δεν υποστηρίζει απάντηση', 'warning');
+      return;
+    }
+    const orderId = order.orderId;
+    this.tableService.setOnlineOrderResponding(orderId, true);
+    this.tableService.respondToOnlineOrder(orderId, minutes).subscribe({
+      next: () => {
+        this.ngZone.run(() => this.tableService.setOnlineOrderResponse(orderId, minutes));
+        this.showToast(`Στάλθηκε: ${minutes} λεπτά`, 'success');
+      },
+      error: (err) => {
+        console.error('Failed to respond to online order:', err);
+        this.ngZone.run(() => this.tableService.setOnlineOrderResponding(orderId, false));
+        this.showToast('Αποτυχία αποστολής', 'danger');
+      },
+    });
+  }
+
+  // Clear a sent response so the cashier can pick a different waiting time
+  changeResponse(order: any) {
+    if (order?.orderId) {
+      this.tableService.setOnlineOrderResponse(order.orderId, null);
+    }
+  }
+
+  private async showToast(message: string, color: string) {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 2500,
+      color,
+      position: 'top',
+    });
+    await toast.present();
   }
 
   getItemsDisplay(order: any): string {
@@ -85,7 +127,7 @@ export class Tab3Page implements ViewWillEnter, ViewWillLeave {
     window.open(url, '_blank'); // opens in browser / system
   }
 
-  trackByTimestamp(index: number, order: any): string {
-    return order.timestamp;
+  trackByOrder(index: number, order: any): string {
+    return order.orderId || order.timestamp;
   }
 }

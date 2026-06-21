@@ -14,6 +14,13 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
+  @if (pendingResponseCount > 0) {
+    <div class="alert-banner">
+      <ion-icon name="alarm-outline"></ion-icon>
+      <span>{{ pendingResponseCount }} νέα παραγγελία(ες) — επιλέξτε χρόνο αναμονής για σίγαση</span>
+    </div>
+  }
+
   @if (loading) {
     <div class="ion-padding ion-text-center">
       <ion-spinner></ion-spinner>
@@ -39,7 +46,7 @@
       <ion-item-divider>
         <ion-label><strong>Last {{ onlineOrders.length }} Online Orders</strong></ion-label>
       </ion-item-divider>
-      @for (order of onlineOrders; track trackByTimestamp($index, order)) {
+      @for (order of onlineOrders; track trackByOrder($index, order)) {
         <ion-card class="order-card">
           <ion-card-header>
             <ion-card-title>
@@ -80,6 +87,39 @@
               <ion-text color="success">
                 <p><strong style="font-size: 1.2em;">Total: €{{ order.total.toFixed(2) }}</strong></p>
               </ion-text>
+
+              <!-- Waiting-time response -->
+              <div class="waiting-response">
+                @if (order.orderId) {
+                  @if (order.respondedWaitingTime != null) {
+                    <ion-chip color="success" outline="true">
+                      <ion-icon name="time-outline"></ion-icon>
+                      <ion-label>Απάντηση: {{ order.respondedWaitingTime }} λεπτά</ion-label>
+                    </ion-chip>
+                    <ion-button size="small" fill="clear" [disabled]="order.responding"
+                      (click)="changeResponse(order)">
+                      Αλλαγή
+                    </ion-button>
+                  } @else {
+                    <p><strong>Χρόνος αναμονής:</strong></p>
+                    @if (order.responding) {
+                      <ion-spinner name="dots"></ion-spinner>
+                    } @else {
+                      <div class="preset-buttons">
+                        @for (m of waitingPresets; track m) {
+                          <ion-button size="small" fill="outline" (click)="respond(order, m)">
+                            {{ m }}'
+                          </ion-button>
+                        }
+                      </div>
+                    }
+                  }
+                } @else {
+                  <ion-text color="medium">
+                    <p><em>Ιστορική παραγγελία (χωρίς δυνατότητα απάντησης)</em></p>
+                  </ion-text>
+                }
+              </div>
             </div>
           </ion-card-content>
         </ion-card>

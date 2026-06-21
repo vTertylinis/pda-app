@@ -1,3 +1,38 @@
+.alert-banner {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--ion-color-danger, #eb445a);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.05em;
+  animation: alert-pulse 1s ease-in-out infinite;
+
+  ion-icon {
+    font-size: 1.6em;
+    flex-shrink: 0;
+  }
+}
+
+@keyframes alert-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.preset-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.waiting-response {
+  margin-top: 10px;
+}
+
 .order-card {
   margin: 10px 0;
   
