@@ -90,7 +90,17 @@
 
               <!-- Waiting-time response -->
               <div class="waiting-response">
-                @if (order.orderId) {
+                @if (order.cancelledByCustomer) {
+                  <ion-chip color="danger">
+                    <ion-icon name="close-circle-outline"></ion-icon>
+                    <ion-label>Ακυρώθηκε από τον πελάτη</ion-label>
+                  </ion-chip>
+                } @else if (order.rejected) {
+                  <ion-chip color="medium">
+                    <ion-icon name="ban-outline"></ion-icon>
+                    <ion-label>Απορρίφθηκε</ion-label>
+                  </ion-chip>
+                } @else if (order.orderId) {
                   @if (order.respondedWaitingTime != null) {
                     <ion-chip color="success" outline="true">
                       <ion-icon name="time-outline"></ion-icon>
@@ -114,6 +124,13 @@
                       </div>
                     }
                   }
+                  <div class="reject-row">
+                    <ion-button size="small" fill="outline" color="danger"
+                      [disabled]="order.responding" (click)="rejectOrder(order)">
+                      <ion-icon name="ban-outline" slot="start"></ion-icon>
+                      Απόρριψη
+                    </ion-button>
+                  </div>
                 } @else {
                   <ion-text color="medium">
                     <p><em>Ιστορική παραγγελία (χωρίς δυνατότητα απάντησης)</em></p>

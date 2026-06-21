@@ -26,6 +26,9 @@ export interface OnlineOrder {
   // True only for orders that arrived live this session and still require a
   // response. Drives the mandatory looping alarm; historical orders are false.
   needsResponse?: boolean;
+  // Set when the store rejected the order, or the customer cancelled it.
+  rejected?: boolean;
+  cancelledByCustomer?: boolean;
   [key: string]: any;
 }
 
@@ -121,6 +124,12 @@ export class TableService {
           // Jump straight to the Online Orders tab so the cashier sees it
           this.router.navigate(['/tabs/tab3']);
         });
+      });
+
+      // Listen for orders the customer cancelled (so the cashier stops preparing)
+      this.socket.on('online-order:cancelled', (status: any) => {
+        console.log('Online order cancelled by customer:', status);
+        this.ngZone.run(() => this.markOnlineOrderCancelled(status?.orderId));
       });
 
       this.socket.on('connect', () => {
@@ -248,6 +257,35 @@ export class TableService {
       `${this.apiUrl}/online-order/${orderId}/respond`,
       { waitingTime }
     );
+  }
+
+  // Store rejects an online order (too busy to accept it)
+  rejectOnlineOrder(orderId: string, reason?: string): Observable<{ success: boolean; status: any }> {
+    return this.http.post<{ success: boolean; status: any }>(
+      `${this.apiUrl}/online-order/${orderId}/reject`,
+      { reason: reason || null }
+    );
+  }
+
+  // Mark an order as rejected by the store and silence its alarm contribution
+  setOnlineOrderRejected(orderId: string) {
+    const updated = this.onlineOrdersSubject.value.map((o) =>
+      o.orderId === orderId
+        ? { ...o, rejected: true, needsResponse: false, responding: false }
+        : o
+    );
+    this.emitOnlineOrders(updated);
+  }
+
+  // Mark an order the customer cancelled (pushed from the server)
+  private markOnlineOrderCancelled(orderId?: string) {
+    if (!orderId) return;
+    const updated = this.onlineOrdersSubject.value.map((o) =>
+      o.orderId === orderId
+        ? { ...o, cancelledByCustomer: true, needsResponse: false, responding: false }
+        : o
+    );
+    this.emitOnlineOrders(updated);
   }
 
   // Persist the selected waiting time and update the in-memory list

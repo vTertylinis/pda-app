@@ -1,6 +1,6 @@
 import { Component, NgZone, OnDestroy, OnInit, inject } from '@angular/core';
 
-import { IonicModule, ToastController } from '@ionic/angular';
+import { AlertController, IonicModule, ToastController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { TableService } from '../services/table.service';
 
@@ -14,6 +14,7 @@ import { TableService } from '../services/table.service';
 export class Tab3Page implements OnInit, OnDestroy {
   private tableService = inject(TableService);
   private toastCtrl = inject(ToastController);
+  private alertCtrl = inject(AlertController);
   private ngZone = inject(NgZone);
 
   onlineOrders: any[] = [];
@@ -97,6 +98,38 @@ export class Tab3Page implements OnInit, OnDestroy {
     if (order?.orderId) {
       this.tableService.setOnlineOrderResponse(order.orderId, null);
     }
+  }
+
+  // Store rejects an order (too busy) — confirm first
+  async rejectOrder(order: any) {
+    if (!order?.orderId) return;
+    const orderId = order.orderId;
+    const alert = await this.alertCtrl.create({
+      header: 'Απόρριψη παραγγελίας;',
+      message: `Σίγουρα θέλετε να απορρίψετε την παραγγελία του ${order.address?.name || ''};`,
+      buttons: [
+        { text: 'Όχι', role: 'cancel' },
+        {
+          text: 'Απόρριψη',
+          role: 'destructive',
+          handler: () => {
+            this.tableService.setOnlineOrderResponding(orderId, true);
+            this.tableService.rejectOnlineOrder(orderId).subscribe({
+              next: () => {
+                this.ngZone.run(() => this.tableService.setOnlineOrderRejected(orderId));
+                this.showToast('Η παραγγελία απορρίφθηκε', 'medium');
+              },
+              error: (err) => {
+                console.error('Failed to reject online order:', err);
+                this.ngZone.run(() => this.tableService.setOnlineOrderResponding(orderId, false));
+                this.showToast('Αποτυχία απόρριψης', 'danger');
+              },
+            });
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 
   private async showToast(message: string, color: string) {
