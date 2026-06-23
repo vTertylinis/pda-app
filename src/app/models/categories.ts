@@ -189,7 +189,7 @@ export const CATEGORIES = [
       { name: 'Ούζο ποτήρι', price: 3.5 },
       { name: 'Τσίπουρο ποτήρι', price: 3.5 },
       { name: 'Μεζέδες', price: 3 },
-      { name: 'Μπουκάλι Ούζο', price: 6 },
+      { name: 'Μπουκάλι Ούζο', price: 9 },
       { name: 'Αποστολάκι', price: 10 },
       { name: 'Ηδωνικό', price: 10 },
       { name: 'Καραφάκι Κρασί 1/2', price: 12 },
