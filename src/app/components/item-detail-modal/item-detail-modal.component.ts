@@ -63,11 +63,14 @@ export class ItemDetailModalComponent implements OnInit {
           this.comments = parts.join(' - ');
         }
       }
-      // Parse formatted extra names (e.g., "cheese ×2" → "cheese", quantity: 2)
+      // Parse formatted extra names (e.g., "cheese ×2" → "cheese", quantity: 2).
+      // Accept both the Unicode "×" and the ASCII "x" separator: submit() writes
+      // the quantity suffix as "x{qty}", so a second edit must be able to parse it
+      // back, otherwise the quantity (and its surcharge) is silently lost.
       let extrasToSelect = this.item.extras;
       if (extrasToSelect) {
         extrasToSelect = extrasToSelect.map((extra: any) => {
-          const match = extra.name.match(/^(.*?)\s×(\d+)$/);
+          const match = extra.name.match(/^(.*?)\s[×x](\d+)$/);
           if (match) {
             return {
               name: match[1],
