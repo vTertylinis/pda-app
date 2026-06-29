@@ -14,12 +14,15 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
+<!-- TODO: online order time-response not ready yet — re-enable when server side is done.
   @if (pendingResponseCount > 0) {
     <div class="alert-banner">
       <ion-icon name="alarm-outline"></ion-icon>
       <span>{{ pendingResponseCount }} νέα παραγγελία(ες) — επιλέξτε χρόνο αναμονής για σίγαση</span>
     </div>
   }
+  -->
+
 
   @if (loading) {
     <div class="ion-padding ion-text-center">
@@ -88,7 +91,9 @@
                 <p><strong style="font-size: 1.2em;">Total: €{{ order.total.toFixed(2) }}</strong></p>
               </ion-text>
 
-              <!-- Waiting-time response -->
+              <!-- TODO: online order time-response (respond / reject / waiting-time) is
+                   not ready yet — tab3 is view-only for now. Re-enable when the server
+                   side is finished.
               <div class="waiting-response">
                 @if (order.cancelledByCustomer) {
                   <ion-chip color="danger">
@@ -137,6 +142,8 @@
                   </ion-text>
                 }
               </div>
+              -->
+
             </div>
           </ion-card-content>
         </ion-card>

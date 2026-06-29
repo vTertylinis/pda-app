@@ -199,14 +199,18 @@ export class TableService {
   // The alarm plays while ANY live order still requires a response.
   private emitOnlineOrders(orders: OnlineOrder[]) {
     this.onlineOrdersSubject.next(orders);
-    const hasUnanswered = orders.some(
-      (o) => o.needsResponse && o.respondedWaitingTime == null
-    );
-    if (hasUnanswered) {
-      this.alertSound.start();
-    } else {
-      this.alertSound.stop();
-    }
+    // TODO: online order time-response not ready yet — tab3 is view-only, so the
+    // forced "respond to silence" alarm is disabled. Re-enable the block below
+    // (and the needsResponse flag in prependOnlineOrder) when the flow is ready.
+    this.alertSound.stop();
+    // const hasUnanswered = orders.some(
+    //   (o) => o.needsResponse && o.respondedWaitingTime == null
+    // );
+    // if (hasUnanswered) {
+    //   this.alertSound.start();
+    // } else {
+    //   this.alertSound.stop();
+    // }
   }
 
   // Decorate a raw order with display + response fields
@@ -244,38 +248,43 @@ export class TableService {
   // Live arrivals require a response (mandatory alarm) unless already answered.
   private prependOnlineOrder(order: OnlineOrder) {
     const decorated = this.decorateOnlineOrder(order);
-    decorated.needsResponse = decorated.respondedWaitingTime == null;
+    // TODO: online order time-response not ready yet — don't flag live orders as
+    // needing a response (which would trigger the forced alarm). Re-enable when ready.
+    // decorated.needsResponse = decorated.respondedWaitingTime == null;
     const current = this.onlineOrdersSubject.value.filter(
       (o) => !o.orderId || o.orderId !== decorated.orderId
     );
     this.emitOnlineOrders([decorated, ...current]);
   }
 
-  // Respond to an online order with an estimated waiting time (minutes)
-  respondToOnlineOrder(orderId: string, waitingTime: number): Observable<{ success: boolean; status: any }> {
-    return this.http.post<{ success: boolean; status: any }>(
-      `${this.apiUrl}/online-order/${orderId}/respond`,
-      { waitingTime }
-    );
-  }
+  // TODO: online order time-response (PDA → server) not ready yet — these methods
+  // send the waiting-time / reject reply back to the customer and are disabled
+  // until the server side is finished. Re-enable together with the tab3 UI.
+  // // Respond to an online order with an estimated waiting time (minutes)
+  // respondToOnlineOrder(orderId: string, waitingTime: number): Observable<{ success: boolean; status: any }> {
+  //   return this.http.post<{ success: boolean; status: any }>(
+  //     `${this.apiUrl}/online-order/${orderId}/respond`,
+  //     { waitingTime }
+  //   );
+  // }
 
-  // Store rejects an online order (too busy to accept it)
-  rejectOnlineOrder(orderId: string, reason?: string): Observable<{ success: boolean; status: any }> {
-    return this.http.post<{ success: boolean; status: any }>(
-      `${this.apiUrl}/online-order/${orderId}/reject`,
-      { reason: reason || null }
-    );
-  }
+  // // Store rejects an online order (too busy to accept it)
+  // rejectOnlineOrder(orderId: string, reason?: string): Observable<{ success: boolean; status: any }> {
+  //   return this.http.post<{ success: boolean; status: any }>(
+  //     `${this.apiUrl}/online-order/${orderId}/reject`,
+  //     { reason: reason || null }
+  //   );
+  // }
 
-  // Mark an order as rejected by the store and silence its alarm contribution
-  setOnlineOrderRejected(orderId: string) {
-    const updated = this.onlineOrdersSubject.value.map((o) =>
-      o.orderId === orderId
-        ? { ...o, rejected: true, needsResponse: false, responding: false }
-        : o
-    );
-    this.emitOnlineOrders(updated);
-  }
+  // // Mark an order as rejected by the store and silence its alarm contribution
+  // setOnlineOrderRejected(orderId: string) {
+  //   const updated = this.onlineOrdersSubject.value.map((o) =>
+  //     o.orderId === orderId
+  //       ? { ...o, rejected: true, needsResponse: false, responding: false }
+  //       : o
+  //   );
+  //   this.emitOnlineOrders(updated);
+  // }
 
   // Mark an order the customer cancelled (pushed from the server)
   private markOnlineOrderCancelled(orderId?: string) {
@@ -288,29 +297,31 @@ export class TableService {
     this.emitOnlineOrders(updated);
   }
 
-  // Persist the selected waiting time and update the in-memory list
-  setOnlineOrderResponse(orderId: string, waitingTime: number | null) {
-    if (waitingTime == null) {
-      delete this.responses[orderId];
-    } else {
-      this.responses[orderId] = waitingTime;
-    }
-    this.saveResponses();
-    const updated = this.onlineOrdersSubject.value.map((o) =>
-      o.orderId === orderId
-        ? { ...o, respondedWaitingTime: waitingTime, responding: false, needsResponse: waitingTime == null ? o.needsResponse : false }
-        : o
-    );
-    this.emitOnlineOrders(updated);
-  }
+  // TODO: online order time-response not ready yet — these in-memory helpers back
+  // the disabled respond flow (waiting-time persistence + spinner). Re-enable with it.
+  // // Persist the selected waiting time and update the in-memory list
+  // setOnlineOrderResponse(orderId: string, waitingTime: number | null) {
+  //   if (waitingTime == null) {
+  //     delete this.responses[orderId];
+  //   } else {
+  //     this.responses[orderId] = waitingTime;
+  //   }
+  //   this.saveResponses();
+  //   const updated = this.onlineOrdersSubject.value.map((o) =>
+  //     o.orderId === orderId
+  //       ? { ...o, respondedWaitingTime: waitingTime, responding: false, needsResponse: waitingTime == null ? o.needsResponse : false }
+  //       : o
+  //   );
+  //   this.emitOnlineOrders(updated);
+  // }
 
-  // Mark an order as in-flight (spinner) without changing its saved response
-  setOnlineOrderResponding(orderId: string, responding: boolean) {
-    const updated = this.onlineOrdersSubject.value.map((o) =>
-      o.orderId === orderId ? { ...o, responding } : o
-    );
-    this.onlineOrdersSubject.next(updated);
-  }
+  // // Mark an order as in-flight (spinner) without changing its saved response
+  // setOnlineOrderResponding(orderId: string, responding: boolean) {
+  //   const updated = this.onlineOrdersSubject.value.map((o) =>
+  //     o.orderId === orderId ? { ...o, responding } : o
+  //   );
+  //   this.onlineOrdersSubject.next(updated);
+  // }
 
   private loadResponses(): { [orderId: string]: number } {
     try {
