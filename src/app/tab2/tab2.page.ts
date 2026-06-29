@@ -23,6 +23,7 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
 
   activeTables: string[] = [];
   tableMetadata: { [tableId: string]: { name: string; isCustom: boolean } } = {};
+  tableCarts: { [tableId: string]: any[] } = {};
   private destroy$ = new Subject<void>();
   private loadTrigger$ = new Subject<void>();
 
@@ -41,6 +42,7 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
       takeUntil(this.destroy$)
     ).subscribe((res) => {
       this.tableMetadata = res.tableMetadata;
+      this.tableCarts = res.carts;
 
       this.activeTables = Object.keys(res.carts).sort((a, b) => {
         const aCustom = this.tableMetadata[a]?.isCustom;
@@ -84,6 +86,7 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
   ionViewWillLeave() {
     this.activeTables = [];
     this.tableMetadata = {};
+    this.tableCarts = {};
   }
 
   ionViewWillEnter() {
@@ -96,6 +99,11 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
 
   getTableDisplayName(tableId: string): string {
     return this.tableMetadata[tableId]?.name || tableId;
+  }
+
+  getTableTotal(tableId: string): number {
+    const cart = this.tableCarts[tableId] || [];
+    return cart.reduce((sum, item) => sum + (item?.price || 0), 0);
   }
 
   async openTableModal(table: any) {

@@ -22,6 +22,9 @@
                   <div class="table-name">
                     {{ getTableDisplayName(table) }}
                   </div>
+                  <div class="table-total">
+                    €{{ getTableTotal(table).toFixed(2) }}
+                  </div>
                 </div>
               </ion-card-header>
               <ion-card-content>

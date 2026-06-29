@@ -12,6 +12,13 @@ ion-content.tablet {
   border-radius: 12px;
 }
 
+.table-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .table-name {
   font-size: 22px;
   font-weight: 800;
@@ -21,6 +28,15 @@ ion-content.tablet {
   overflow: hidden;
   text-overflow: ellipsis;
   color: white;
+}
+
+.table-total {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.65;
+  color: var(--ion-color-medium, #92949c);
+  white-space: nowrap;
 }
 
 ion-card-header {
