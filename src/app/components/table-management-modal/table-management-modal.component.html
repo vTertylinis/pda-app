@@ -34,9 +34,9 @@
 </ion-header>
 
 <ion-content>
-  <ion-list>
+  <ion-list class="items-list" lines="full">
     @for (item of groupedItems; track $index) {
-      <ion-item>
+      <ion-item class="item-row" [class.selected]="isItemSelected(item)">
         @if (selectionMode) {
           <ion-checkbox
             slot="start"
@@ -44,73 +44,51 @@
             (ionChange)="toggleItemSelection(item)"
           ></ion-checkbox>
         }
-        <ion-label>
-          <h2>
-            {{ item.name }}
+        <ion-label class="item-label">
+          <div class="item-title">
+            <span class="item-name">{{ item.name }}</span>
             @if (item.quantity > 1) {
-              <ion-badge color="primary" style="margin-left: 8px;">
-                ×{{ item.quantity }}
-              </ion-badge>
+              <ion-badge color="primary" class="qty-badge">×{{ item.quantity }}</ion-badge>
             }
-          </h2>
-          <p>Τιμή: {{ item.price | number : "1.2-2" }} € @if (item.quantity > 1) {
-            <span>(Σύνολο: {{ item.price * item.quantity | number : "1.2-2" }} €)</span>
-          }</p>
-          @if (item.coffeeSize) {
-            <p>Coffee Size: {{ item.coffeeSize }}</p>
-          }
-          @if (item.coffeePreference) {
-            <p>
-              Προτίμηση: {{ item.coffeePreference }}
-            </p>
-          }
-          @if (item.extras?.length) {
-            <p>
-              Extras:
-              @for (extra of item.extras; track extra; let i = $index) {
-                {{ extra.name }}@if (i < item.extras.length - 1) {
-                <span>, </span>
+            <span class="item-price">
+              {{ item.price * item.quantity | number : "1.2-2" }} €
+            </span>
+          </div>
+
+          @if (item.coffeeSize || item.coffeePreference || item.extras?.length || item.comments) {
+            <div class="item-meta">
+              @if (item.coffeeSize) {
+                <span class="meta-pill">{{ item.coffeeSize }}</span>
               }
-            }
-          </p>
-        }
-        @if (item.comments) {
-          <p>Comments: {{ item.comments }}</p>
-        }
-      </ion-label>
-      <div slot="end" style="display: flex; flex-direction: column; gap: 4px;">
-        <ion-button
-          size="small"
-          color="secondary"
-          (click)="duplicateItem(item)"
-          >
-          <ion-icon slot="start" name="copy-outline"></ion-icon>
-          Duplicate
-        </ion-button>
-        <ion-button
-          size="small"
-          color="primary"
-          (click)="editItem(item, item.category)"
-          >
-          <ion-icon slot="start" name="create-outline"></ion-icon>
-          Edit
-        </ion-button>
-        <ion-button
-          size="small"
-          color="warning"
-          (click)="cancelItem(item)"
-          >
-          <ion-icon slot="start" name="close-circle-outline"></ion-icon>
-          Cancel
-        </ion-button>
-        <ion-button size="small" color="danger" (click)="deleteItem(item)">
-          <ion-icon slot="start" name="trash-outline"></ion-icon>
-          Delete
-        </ion-button>
-      </div>
-    </ion-item>
-  }
-</ion-list>
+              @if (item.coffeePreference) {
+                <span class="meta-pill">{{ item.coffeePreference }}</span>
+              }
+              @if (item.extras?.length) {
+                <span class="meta-pill">
+                  +
+                  @for (extra of item.extras; track extra; let i = $index) {
+                    {{ extra.name }}@if (i < item.extras.length - 1) {<span>, </span>}
+                  }
+                </span>
+              }
+              @if (item.comments) {
+                <span class="meta-pill comment">💬 {{ item.comments }}</span>
+              }
+            </div>
+          }
+        </ion-label>
+
+        <button
+          type="button"
+          slot="end"
+          class="action-trigger"
+          (click)="openItemActions(item, $event)"
+          aria-label="Actions">
+          <ion-icon name="ellipsis-vertical"></ion-icon>
+        </button>
+      </ion-item>
+    }
+  </ion-list>
 
 </ion-content>
 

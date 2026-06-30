@@ -1,3 +1,106 @@
+/* ---- Compact item list (mobile) ---- */
+.items-list {
+  padding: 0;
+}
+
+.item-row {
+  --padding-start: 10px;
+  --inner-padding-end: 8px;
+  --padding-top: 4px;
+  --padding-bottom: 4px;
+  --min-height: 56px;
+
+  &.selected {
+    --background: rgba(56, 128, 255, 0.08);
+  }
+}
+
+.item-label {
+  margin: 6px 0;
+}
+
+.item-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.item-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.25;
+  /* Show the full name, wrap instead of truncating. */
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.qty-badge {
+  font-size: 0.72rem;
+  padding: 2px 6px;
+}
+
+.item-price {
+  margin-left: auto;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ion-color-success, #2dd36f);
+  white-space: nowrap;
+}
+
+.item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.meta-pill {
+  font-size: 0.72rem;
+  line-height: 1.25;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.06);
+  color: #555;
+  /* Never hide content — wrap the full text. */
+  white-space: normal;
+  overflow-wrap: anywhere;
+
+  &.comment {
+    background: rgba(255, 196, 9, 0.18);
+    color: #8a6d00;
+  }
+}
+
+/* Single action trigger per row — the four actions open in a bottom sheet,
+   so the whole row width is free for full item info. */
+.action-trigger {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  width: 44px;
+  height: 44px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+
+  ion-icon {
+    font-size: 1.5rem;
+    color: var(--ion-color-medium, #92949c);
+  }
+
+  &:active {
+    transform: scale(0.9);
+    background: rgba(0, 0, 0, 0.12);
+  }
+}
+
 ::ng-deep .move-options-alert {
   .alert-button-group {
     display: flex;

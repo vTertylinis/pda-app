@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
-import { AlertController, ModalController, IonicModule } from '@ionic/angular';
+import { ActionSheetController, AlertController, ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { CartService } from '../../services/cart.service';
 import { TableService } from '../../services/table.service';
@@ -23,6 +23,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   private cartService = inject(CartService);
   private tableService = inject(TableService);
   private alertController = inject(AlertController);
+  private actionSheetController = inject(ActionSheetController);
   private cdr = inject(ChangeDetectorRef);
 
   @Input() table: any;
@@ -135,6 +136,49 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
 
   isItemSelected(item: any): boolean {
     return this.selectedItems.has(item);
+  }
+
+  /**
+   * Opens a bottom action sheet with the per-item actions, so each row only
+   * needs a single trigger button and the full item info stays visible.
+   */
+  async openItemActions(item: any, event?: Event) {
+    event?.stopPropagation();
+
+    const actionSheet = await this.actionSheetController.create({
+      header: item.name,
+      cssClass: 'item-actions-sheet',
+      buttons: [
+        {
+          text: 'Duplicate',
+          icon: 'copy-outline',
+          handler: () => { this.duplicateItem(item); },
+        },
+        {
+          text: 'Edit',
+          icon: 'create-outline',
+          handler: () => { this.editItem(item, item.category); },
+        },
+        {
+          text: 'Cancel order',
+          icon: 'close-circle-outline',
+          handler: () => { this.cancelItem(item); },
+        },
+        {
+          text: 'Delete',
+          role: 'destructive',
+          icon: 'trash-outline',
+          handler: () => { this.deleteItem(item); },
+        },
+        {
+          text: 'Close',
+          role: 'cancel',
+          icon: 'close',
+        },
+      ],
+    });
+
+    await actionSheet.present();
   }
 
   async editItem(groupedItem: any, categoryName: any) {
