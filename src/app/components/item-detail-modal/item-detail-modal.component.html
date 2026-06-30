@@ -142,6 +142,50 @@
         }
 
 
+        <!-- Ποτό quick-pick chips: liquor + mixer + prep -->
+        @if (isPotoOptionTarget) {
+          <div class="ion-margin-top poto-quickpick">
+            <ion-label class="poto-group-label">Ποτό:</ion-label>
+            <div class="chip-row">
+              @for (option of potoLiquorOptions; track trackByValue($index, option)) {
+                <ion-chip
+                  [outline]="potoLiquor !== option"
+                  [color]="potoLiquor === option ? 'primary' : 'medium'"
+                  (click)="selectPotoLiquor(option)"
+                >
+                  <ion-label>{{ option }}</ion-label>
+                </ion-chip>
+              }
+            </div>
+
+            <ion-label class="poto-group-label">Μίξερ:</ion-label>
+            <div class="chip-row">
+              @for (option of potoMixerOptions; track trackByValue($index, option)) {
+                <ion-chip
+                  [outline]="potoMixer !== option"
+                  [color]="potoMixer === option ? 'primary' : 'medium'"
+                  (click)="selectPotoMixer(option)"
+                >
+                  <ion-label>{{ option }}</ion-label>
+                </ion-chip>
+              }
+            </div>
+
+            <ion-label class="poto-group-label">Σερβίρισμα:</ion-label>
+            <div class="chip-row">
+              @for (option of potoPrepOptions; track trackByValue($index, option)) {
+                <ion-chip
+                  [outline]="!isPotoPrepSelected(option)"
+                  [color]="isPotoPrepSelected(option) ? 'primary' : 'medium'"
+                  (click)="togglePotoPrep(option)"
+                >
+                  <ion-label>{{ option }}</ion-label>
+                </ion-chip>
+              }
+            </div>
+          </div>
+        }
+
         <!-- Ποτό mixer option (+1€) -->
         @if (isPotoOptionTarget) {
           <div class="ion-margin-top">
@@ -165,8 +209,8 @@
           ></ion-input>
         </ion-item>
 
-        <!-- Live preview for poto mixer + comments -->
-        @if (isPotoOptionTarget && potoMixOption) {
+        <!-- Live preview for poto chips + mixer + comments -->
+        @if (isPotoOptionTarget && potoLivePreview) {
           <ion-item lines="none">
             <ion-note color="medium">Προεπισκόπηση: <strong>{{ potoLivePreview }}</strong></ion-note>
           </ion-item>

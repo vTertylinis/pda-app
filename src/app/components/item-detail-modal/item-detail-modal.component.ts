@@ -24,6 +24,14 @@ export class ItemDetailModalComponent implements OnInit {
   drinkCommentOption: string = '';
   potoMixOption: string = '';
   private _editPotoMixOption: string = '';
+
+  // Structured quick-pick selections for Ποτό items. Built from the most
+  // common free-text comments in the order history (liquor + mixer + prep),
+  // so staff tap instead of type. The free-text `comments` field is appended
+  // for anything not covered by the chips.
+  potoLiquor: string = '';
+  potoMixer: string = '';
+  potoPrep: string[] = [];
   private _searchTerm: string = '';
   cachedFilteredExtras: ItemWithSelected[] = [];
   extraList: ItemWithSelected[] = EXTRALIST.map((extra) => ({ ...extra, quantity: 1, selected: false }));
@@ -248,8 +256,12 @@ export class ItemDetailModalComponent implements OnInit {
     let combined: string | undefined;
     if (this.isOuzoOptionTarget || this.isKarafakiOptionTarget) {
       combined = [this.drinkCommentOption, this.comments].filter((value) => !!value).join(' - ');
-    } else if (this.isPotoOptionTarget && this.potoMixOption) {
-      combined = [this.potoMixOption, this.comments].filter((value) => !!value).join(' - ');
+    } else if (this.isPotoOptionTarget) {
+      // Order on the ticket: chip selection (liquor/mixer/prep), then the paid
+      // premium mixer, then any free-text the user still typed.
+      combined = [this.potoChipString(), this.potoMixOption, this.comments]
+        .filter((value) => !!value)
+        .join(' - ');
     } else {
       combined = this.comments;
     }
@@ -339,7 +351,9 @@ export class ItemDetailModalComponent implements OnInit {
   }
 
   get potoLivePreview(): string {
-    return [this.comments, this.potoMixOption].filter(Boolean).join(' ');
+    return [this.potoChipString(), this.potoMixOption, this.comments]
+      .filter(Boolean)
+      .join(' ');
   }
 
   get supportsSingleOrDouble(): boolean {
@@ -370,6 +384,83 @@ export class ItemDetailModalComponent implements OnInit {
   get isPotoOptionTarget(): boolean {
     const potoItems = ['Ποτό Απλό', 'Ποτό Σπέσιαλ', 'Ποτό Πρίμιουμ'];
     return this.categoryName === 'Ποτά - Κρασιά' && potoItems.includes(this.item?.name);
+  }
+
+  // --- Ποτό quick-pick chips -------------------------------------------------
+  // Liquor lists are ordered by real frequency in the order history, per item.
+  private static readonly POTO_LIQUORS: Record<string, string[]> = {
+    'Ποτό Απλό': [
+      'Τζιν', 'Βότκα', 'Τζέιμσον', 'Καμπάρι', 'Τουλαμόρ',
+      'Τζόνι', 'Κάτι Σαρκ', 'Μπακάρντι', 'Τζακ',
+    ],
+    'Ποτό Σπέσιαλ': [
+      'Τζόνι Μαύρο', 'Τζιν', 'Σίβας', 'Τζακ', 'Βότκα',
+      'Αβάνα', 'Ντιπλοματικό', 'Μπόμπεϊ', 'Ταγκερέι', 'Καμπάρι',
+    ],
+    'Ποτό Πρίμιουμ': [
+      'Μπελβεντέρε', 'Γκρέι Γκουζ', 'Μπλακ Μπάρελ', 'Ντιπλοματικό',
+      'Ζακάπα', 'Μακάλαν', 'Τζιν',
+    ],
+  };
+
+  private static readonly POTO_MIXERS: string[] = [
+    'Τόνικ', 'Λεμονάδα', 'Κόλα', 'Σόδα', 'Πορτοκάλι', 'Βύσσινο', 'Σπράιτ',
+  ];
+
+  private static readonly POTO_PREP: string[] = [
+    'Πάγο', 'Χωρίς πάγο', 'Στημένο', 'Σκέτο', 'Διπλό',
+  ];
+
+  get potoLiquorOptions(): string[] {
+    return ItemDetailModalComponent.POTO_LIQUORS[this.item?.name] ?? [];
+  }
+
+  get potoMixerOptions(): string[] {
+    return ItemDetailModalComponent.POTO_MIXERS;
+  }
+
+  get potoPrepOptions(): string[] {
+    return ItemDetailModalComponent.POTO_PREP;
+  }
+
+  selectPotoLiquor(option: string) {
+    this.potoLiquor = this.potoLiquor === option ? '' : option;
+  }
+
+  selectPotoMixer(option: string) {
+    this.potoMixer = this.potoMixer === option ? '' : option;
+  }
+
+  togglePotoPrep(option: string) {
+    const i = this.potoPrep.indexOf(option);
+    if (i > -1) {
+      this.potoPrep.splice(i, 1);
+    } else {
+      // "Πάγο" and "Χωρίς πάγο" are mutually exclusive
+      if (option === 'Πάγο') this.removePrep('Χωρίς πάγο');
+      if (option === 'Χωρίς πάγο') this.removePrep('Πάγο');
+      this.potoPrep.push(option);
+    }
+  }
+
+  private removePrep(option: string) {
+    const i = this.potoPrep.indexOf(option);
+    if (i > -1) this.potoPrep.splice(i, 1);
+  }
+
+  isPotoPrepSelected(option: string): boolean {
+    return this.potoPrep.includes(option);
+  }
+
+  // Order matters for readability on the printed ticket: liquor, mixer, prep.
+  private potoChipString(): string {
+    return [this.potoLiquor, this.potoMixer, ...this.potoPrep]
+      .filter(Boolean)
+      .join(' ');
+  }
+
+  get potoChipPreview(): string {
+    return [this.potoChipString(), this.comments].filter(Boolean).join(' ');
   }
 
   trackByExtraName(index: number, extra: ItemWithSelected): string {
