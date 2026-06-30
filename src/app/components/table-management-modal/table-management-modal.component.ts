@@ -1,11 +1,14 @@
-import { Component, Input, OnInit, inject } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, inject } from '@angular/core';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { CartService } from 'src/app/services/cart.service';
+import { TableService } from 'src/app/services/table.service';
 import { ItemDetailModalComponent } from '../item-detail-modal/item-detail-modal.component';
 import { SelectTableComponent } from '../select-table/select-table.component';
 import { ItemSelectionModalComponent } from '../item-selection-modal/item-selection-modal.component';
 import { CATEGORIES } from 'src/app/models/categories';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-table-management-modal',
@@ -14,9 +17,10 @@ import { CATEGORIES } from 'src/app/models/categories';
   standalone: true,
   imports: [IonicModule, CommonModule]
 })
-export class TableManagementModalComponent implements OnInit {
+export class TableManagementModalComponent implements OnInit, OnDestroy {
   private modalCtrl = inject(ModalController);
   private cartService = inject(CartService);
+  private tableService = inject(TableService);
   private alertController = inject(AlertController);
 
   @Input() table: any;
@@ -26,9 +30,50 @@ export class TableManagementModalComponent implements OnInit {
   totalPrice: any;
   selectedTotal: number = 0;
   categories = CATEGORIES;
+  private destroy$ = new Subject<void>();
 
   ngOnInit() {
     this.loadTable();
+
+    // React to cart changes pushed from the server (e.g. another device edits
+    // this table). The socket lives in TableService; tab2 already listens the
+    // same way. Refresh only when the event concerns THIS table, and skip while
+    // the user has a selection in progress so we don't wipe their work.
+    this.tableService.cartUpdates$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (data: any) => {
+        if (!this.isUpdateForThisTable(data)) {
+          return;
+        }
+        if (this.hasSelection) {
+          return;
+        }
+        this.loadTable();
+      },
+      error: (err) => console.error('Error subscribing to cart updates:', err),
+    });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /**
+   * The server emits { tableId } for cart edits and { fromTable, toTable } for
+   * moves. Treat any of those matching our table as relevant.
+   */
+  private isUpdateForThisTable(data: any): boolean {
+    if (!data) {
+      return false;
+    }
+    const table = String(this.table);
+    return (
+      String(data.tableId) === table ||
+      String(data.fromTable) === table ||
+      String(data.toTable) === table
+    );
   }
 
   /**
