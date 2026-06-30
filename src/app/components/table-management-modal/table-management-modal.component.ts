@@ -1,13 +1,14 @@
-import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { CartService } from '../../services/cart.service';
+import { TableService } from '../../services/table.service';
 import { ItemDetailModalComponent } from '../item-detail-modal/item-detail-modal.component';
 import { SelectTableComponent } from '../select-table/select-table.component';
 import { ItemSelectionModalComponent } from '../item-selection-modal/item-selection-modal.component';
 import { CATEGORIES } from '../../models/categories';
-import { concat } from 'rxjs';
-import { finalize } from 'rxjs/operators';
+import { concat, Subject } from 'rxjs';
+import { finalize, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-table-management-modal',
@@ -17,9 +18,10 @@ import { finalize } from 'rxjs/operators';
   imports: [IonicModule, CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TableManagementModalComponent implements OnInit {
+export class TableManagementModalComponent implements OnInit, OnDestroy {
   private modalCtrl = inject(ModalController);
   private cartService = inject(CartService);
+  private tableService = inject(TableService);
   private alertController = inject(AlertController);
   private cdr = inject(ChangeDetectorRef);
 
@@ -31,9 +33,52 @@ export class TableManagementModalComponent implements OnInit {
   categories = CATEGORIES;
   selectedItems: Set<any> = new Set();
   selectionMode: boolean = false;
+  private destroy$ = new Subject<void>();
 
   ngOnInit() {
     this.loadTable();
+
+    // React to cart changes pushed from the server (e.g. another device edits
+    // this table). The socket lives in TableService; tab2 already listens the
+    // same way. Refresh only when the event concerns THIS table.
+    this.tableService.cartUpdates$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (data: any) => {
+        if (!this.isUpdateForThisTable(data)) {
+          return;
+        }
+        // Skip while the user is selecting items to move: loadTable() rebuilds
+        // groupedItems with new object references, which would orphan the
+        // selectedItems Set and break the in-progress flow.
+        if (this.selectionMode || this.selectedItems.size > 0) {
+          return;
+        }
+        this.loadTable();
+      },
+      error: (err) => console.error('Error subscribing to cart updates:', err),
+    });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /**
+   * The server emits { tableId } for cart edits and { fromTable, toTable } for
+   * moves. Treat any of those matching our table as relevant.
+   */
+  private isUpdateForThisTable(data: any): boolean {
+    if (!data) {
+      return false;
+    }
+    const table = String(this.table);
+    return (
+      String(data.tableId) === table ||
+      String(data.fromTable) === table ||
+      String(data.toTable) === table
+    );
   }
 
   /**
