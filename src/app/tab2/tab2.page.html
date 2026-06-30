@@ -1,9 +1,14 @@
-<ion-header>
+<ion-header class="page-header">
   <ion-toolbar>
-    <ion-title>Tables</ion-title>
+    <ion-title>
+      Tables
+      @if (activeTables.length > 0) {
+        <span class="title-count">{{ activeTables.length }}</span>
+      }
+    </ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="refresh()" aria-label="Refresh tables">
-        <ion-icon name="refresh-outline"></ion-icon>
+        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -11,43 +16,39 @@
 
 <ion-content class="tablet">
   @if (activeTables.length > 0) {
-    <!-- Tablet landscape: show cards in a 2-column grid for better use of 1280x800 -->
-    <ion-grid class="table-grid" fixed>
-      <ion-row>
-        @for (table of activeTables; track table) {
-          <ion-col size="3">
-            <ion-card class="table-card">
-              <ion-card-header>
-                <div class="table-title">
-                  <div class="table-name">
-                    {{ getTableDisplayName(table) }}
-                  </div>
-                  <div class="table-total">
-                    €{{ getTableTotal(table).toFixed(2) }}
-                  </div>
-                </div>
-              </ion-card-header>
-              <ion-card-content>
-                <div class="actions">
-                  <ion-button size="small" fill="outline" (click)="openTableModal(table)">
-                    <ion-icon name="enter"></ion-icon>
-                  </ion-button>
-                  <ion-button size="small" color="danger" (click)="deleteItem(table)">
-                    <ion-icon name="trash"></ion-icon>
-                  </ion-button>
-                </div>
-              </ion-card-content>
-            </ion-card>
-          </ion-col>
-        }
-      </ion-row>
-    </ion-grid>
+    <div class="tables-grid">
+      @for (table of activeTables; track table) {
+        <article class="table-card"
+                 [class.is-custom]="tableMetadata[table]?.isCustom"
+                 (click)="openTableModal(table)">
+          <header class="card-head">
+            <h2 class="card-name" [title]="getTableDisplayName(table)">
+              {{ getTableDisplayName(table) }}
+            </h2>
+            <div class="card-total">€{{ getTableTotal(table).toFixed(2) }}</div>
+          </header>
+
+          <footer class="card-actions">
+            <button type="button"
+                    class="act act-open"
+                    (click)="openTableModal(table); $event.stopPropagation()">
+              <ion-icon name="enter-outline"></ion-icon>
+              <span>Open</span>
+            </button>
+            <button type="button"
+                    class="act act-delete"
+                    aria-label="Delete table"
+                    (click)="deleteItem(table); $event.stopPropagation()">
+              <ion-icon name="trash-outline"></ion-icon>
+            </button>
+          </footer>
+        </article>
+      }
+    </div>
   } @else {
     <div class="empty-state">
-      <ion-text color="medium">
-        <p>No tables with orders.</p>
-      </ion-text>
+      <ion-icon name="restaurant-outline"></ion-icon>
+      <p>No tables with orders.</p>
     </div>
   }
-
 </ion-content>

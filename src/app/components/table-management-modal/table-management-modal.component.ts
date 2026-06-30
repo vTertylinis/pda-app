@@ -75,6 +75,22 @@ export class TableManagementModalComponent implements OnInit {
     this.modalCtrl.dismiss({});
   }
 
+  /**
+   * Toggles selection when tapping anywhere on a row.
+   * Single-quantity items toggle on/off; multi-quantity items toggle
+   * between none selected and all selected.
+   */
+  onRowToggle(groupedItem: any) {
+    if (groupedItem.quantity === 1) {
+      groupedItem.selectedQuantity = groupedItem.selectedQuantity === 1 ? 0 : 1;
+    } else {
+      const allSelected = (groupedItem.selectedQuantity || 0) >= groupedItem.quantity;
+      groupedItem.selectedQuantity = allSelected ? 0 : groupedItem.quantity;
+    }
+
+    this.updateSelectedTotal();
+  }
+
   onSelectedQuantityChange(groupedItem: any, event: any) {
     const value = Number(event?.detail?.value ?? 0);
 

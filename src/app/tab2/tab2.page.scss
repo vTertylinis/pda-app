@@ -1,79 +1,155 @@
-/* 1280x800 landscape - 4 column optimized */
+/* tab2 — Tables overview (tablet landscape 1280x800 friendly) */
 
 ion-content.tablet {
-  --padding-start: 18px;
-  --padding-end: 18px;
-  --padding-top: 12px;
-  --padding-bottom: 12px;
+  --background: #0d0f14;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+}
+
+.page-header ion-toolbar {
+  --background: #14171f;
+  --border-width: 0;
+}
+
+.title-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 22px;
+  margin-left: 8px;
+  padding: 0 7px;
+  border-radius: 11px;
+  background: var(--ion-color-primary, #3880ff);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+/* Responsive grid: fills the row with as many ~210px cards as fit. */
+.tables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+  max-width: 1180px;
+  margin: 0 auto;
 }
 
 .table-card {
-  margin: 8px;
-  border-radius: 12px;
-}
-
-.table-title {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #1b1f2a;
+  border: 1px solid #272c3a;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:hover {
+    border-color: #3a4156;
+    background: #1f2430;
+  }
+
+  /* Accent stripe for staff-created custom tables. */
+  &.is-custom {
+    border-left: 3px solid var(--ion-color-primary, #3880ff);
+  }
 }
 
-.table-name {
-  font-size: 22px;
+.card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.card-name {
+  margin: 0;
+  /* Fluid: shrinks on narrow cards, big on wide tablet cards. */
+  font-size: clamp(18px, 4.2vw, 26px);
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: 0.2px;
+  color: #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: white;
 }
 
-.table-total {
-  flex-shrink: 0;
-  font-size: 12px;
-  font-weight: 500;
-  opacity: 0.65;
-  color: var(--ion-color-medium, #92949c);
-  white-space: nowrap;
+.card-total {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ion-color-success, #2dd36f);
 }
 
-ion-card-header {
-  padding-top: 14px;
-  padding-bottom: 10px;
-}
-
-.actions {
+.card-actions {
   display: flex;
-  justify-content: space-between;
+  gap: 8px;
+}
+
+.act {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   gap: 6px;
-}
+  height: 42px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.12s ease;
 
-.actions ion-button {
-  height: 38px;
-  font-size: 14px;
-}
+  ion-icon {
+    font-size: 18px;
+  }
 
-/* Apply ONLY for landscape tablet */
-@media (min-width: 1024px) and (orientation: landscape) {
-  ion-col {
-    padding: 6px;
+  &:active {
+    filter: brightness(0.9);
   }
 }
 
-/* Fine tune exactly for 1280x800 */
-@media (width: 1280px) and (height: 800px) and (orientation: landscape) {
-  .table-card {
-    margin: 6px;
+.act-open {
+  flex: 1 1 auto;
+  background: var(--ion-color-primary, #3880ff);
+  color: #fff;
+}
+
+.act-delete {
+  flex: 0 0 46px;
+  background: rgba(235, 68, 90, 0.15);
+  color: var(--ion-color-danger, #eb445a);
+
+  ion-icon {
+    font-size: 20px;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 60vh;
+  color: var(--ion-color-medium, #92949c);
+
+  ion-icon {
+    font-size: 52px;
+    opacity: 0.5;
   }
 
-  .table-name {
-    font-size: 21px;
-  }
-
-  .actions ion-button {
-    height: 36px;
-    font-size: 13px;
+  p {
+    margin: 0;
+    font-size: 16px;
   }
 }

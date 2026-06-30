@@ -1,4 +1,110 @@
-ion-item p {
-  font-size: 1.1rem;  // try 1.2rem or 1.3rem if you want it larger
+.items-list {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
+.item-row {
+  --padding-start: 12px;
+  --inner-padding-end: 8px;
+  --min-height: 56px;
+
+  &.item-selected {
+    --background: rgba(var(--ion-color-success-rgb), 0.12);
+  }
+}
+
+/* Selection control (checkbox / quantity select) */
+.select-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  margin-inline-end: 8px;
+
+  ion-checkbox {
+    --size: 26px;
+  }
+
+  .qty-select {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--ion-color-medium);
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    --padding-start: 8px;
+    --padding-end: 8px;
+  }
+}
+
+/* Item text block */
+.item-info {
+  margin-top: 6px;
+  margin-bottom: 6px;
+
+  .item-name {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: normal;
+
+    ion-badge {
+      font-size: 0.85rem;
+    }
+  }
+
+  .item-price {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+    margin: 2px 0 0;
+
+    .item-price-total {
+      font-weight: 400;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  /* Single condensed line for size / preference / extras / comments */
+  .item-meta {
+    font-size: 0.85rem;
+    color: var(--ion-color-medium-shade);
+    margin: 2px 0 0;
+
+    span + span::before {
+      content: "·";
+      margin: 0 5px;
+      color: var(--ion-color-medium);
+    }
+
+    .item-comment {
+      font-style: italic;
+    }
+  }
+}
+
+/* Action buttons: horizontal row of icon buttons with big tap targets */
+.item-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+
+  .action-btn {
+    --padding-start: 6px;
+    --padding-end: 6px;
+    width: 44px;
+    height: 44px;
+    margin: 0;
+
+    ion-icon {
+      font-size: 1.5rem;
+    }
+  }
+}

@@ -42,97 +42,111 @@
 </ion-header>
 
 <ion-content>
-  <ion-list>
+  <ion-list class="items-list">
     @for (item of groupedItems; track item) {
-      <ion-item>
-        <ion-label>
-          <h1>
+      <ion-item
+        class="item-row"
+        [class.item-selected]="(item.selectedQuantity || 0) > 0"
+        lines="full"
+        button
+        detail="false"
+        (click)="onRowToggle(item)"
+      >
+        <!-- Selection control -->
+        <div slot="start" class="select-control" (click)="$event.stopPropagation()">
+          @if (item.quantity === 1) {
+            <ion-checkbox
+              [checked]="item.selectedQuantity === 1"
+              (ionChange)="item.selectedQuantity = $event.detail.checked ? 1 : 0; updateSelectedTotal()"
+            ></ion-checkbox>
+          } @else {
+            <ion-select
+              class="qty-select"
+              interface="popover"
+              [value]="item.selectedQuantity || 0"
+              (ionChange)="onSelectedQuantityChange(item, $event)"
+            >
+              <ion-select-option [value]="0">0</ion-select-option>
+              @for (qty of [].constructor(item.quantity); track qty; let i = $index) {
+                <ion-select-option [value]="i + 1">{{ i + 1 }}</ion-select-option>
+              }
+            </ion-select>
+          }
+        </div>
+
+        <ion-label class="item-info">
+          <h2 class="item-name">
             {{ item.name }}
             @if (item.quantity > 1) {
-              <ion-badge color="primary" style="margin-left: 8px;">
-                ×{{ item.quantity }}
-              </ion-badge>
+              <ion-badge color="primary">×{{ item.quantity }}</ion-badge>
             }
-          </h1>
-          <p>
-            Τιμή: {{ item.price | number : "1.2-2" }} €
+          </h2>
+
+          <p class="item-price">
+            {{ item.price | number : "1.2-2" }} €
             @if (item.quantity > 1) {
-              <span>
+              <span class="item-price-total">
                 (Σύνολο: {{ item.price * item.quantity | number : "1.2-2" }} €)
               </span>
             }
           </p>
-          @if (item.coffeeSize) {
-            <p>Coffee Size: {{ item.coffeeSize }}</p>
-          }
-          @if (item.coffeePreference) {
-            <p>
-              Προτίμηση: {{ item.coffeePreference }}
+
+          @if (item.coffeeSize || item.coffeePreference || item.extras?.length || item.comments) {
+            <p class="item-meta">
+              @if (item.coffeeSize) {
+                <span>{{ item.coffeeSize }}</span>
+              }
+              @if (item.coffeePreference) {
+                <span>{{ item.coffeePreference }}</span>
+              }
+              @if (item.extras?.length) {
+                <span>
+                  +
+                  @for (extra of item.extras; track extra; let i = $index) {
+                    {{ extra.name }}@if (i < item.extras.length - 1) {<span>, </span>}
+                  }
+                </span>
+              }
+              @if (item.comments) {
+                <span class="item-comment">“{{ item.comments }}”</span>
+              }
             </p>
           }
-          @if (item.extras?.length) {
-            <p>
-              Extras:
-              @for (extra of item.extras; track extra; let i = $index) {
-                {{ extra.name }}@if (i < item.extras.length - 1) {
-                <span>, </span>
-              }
-            }
-          </p>
-        }
-        @if (item.comments) {
-          <p>Comments: {{ item.comments }}</p>
-        }
-        <div style="margin-top: 10px; max-width: 220px;">
-          @if (item.quantity === 1) {
-            <ion-item button detail="false" lines="none"
-              style="--inner-padding-end: 0; --padding-start: 0;"
-              (click)="item.selectedQuantity = item.selectedQuantity === 1 ? 0 : 1; updateSelectedTotal()">
-              <ion-checkbox slot="start" [checked]="item.selectedQuantity === 1"></ion-checkbox>
-              <ion-label>Επιλέξτε στοιχείο</ion-label>
-            </ion-item>
-          }
-          @if (item.quantity > 1) {
-            <ion-item lines="none" style="--inner-padding-end: 0; --padding-start: 0;">
-              <ion-label position="stacked">Επιλέξτε ποσότητα</ion-label>
-              <ion-select interface="popover" [value]="item.selectedQuantity || 0"
-                (ionChange)="onSelectedQuantityChange(item, $event)">
-                <ion-select-option [value]="0">0</ion-select-option>
-                @for (qty of [].constructor(item.quantity); track qty; let i = $index) {
-                  <ion-select-option [value]="i + 1">
-                    {{ i + 1 }}
-                  </ion-select-option>
-                }
-              </ion-select>
-            </ion-item>
-          }
+        </ion-label>
+
+        <!-- Action buttons: compact icon buttons with large tap targets -->
+        <div slot="end" class="item-actions" (click)="$event.stopPropagation()">
+          <ion-button
+            class="action-btn"
+            fill="clear"
+            color="secondary"
+            (click)="duplicateItem(item)"
+            title="Duplicate"
+          >
+            <ion-icon slot="icon-only" name="copy-outline"></ion-icon>
+          </ion-button>
+          <ion-button
+            class="action-btn"
+            fill="clear"
+            color="primary"
+            (click)="editItem(item, item.category)"
+            title="Edit"
+          >
+            <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+          </ion-button>
+          <ion-button
+            class="action-btn"
+            fill="clear"
+            color="danger"
+            (click)="deleteItem(item)"
+            title="Delete"
+          >
+            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          </ion-button>
         </div>
-      </ion-label>
-      <div slot="end" style="display: flex; flex-direction: column; gap: 4px;">
-        <ion-button
-          size="small"
-          color="secondary"
-          (click)="duplicateItem(item)"
-          >
-          <ion-icon slot="start" name="copy-outline"></ion-icon>
-          Duplicate
-        </ion-button>
-        <ion-button
-          size="small"
-          color="primary"
-          (click)="editItem(item, item.category)"
-          >
-          <ion-icon slot="start" name="create-outline"></ion-icon>
-          Edit
-        </ion-button>
-        <ion-button size="small" color="danger" (click)="deleteItem(item)">
-          <ion-icon slot="start" name="trash-outline"></ion-icon>
-          Delete
-        </ion-button>
-      </div>
-    </ion-item>
-  }
-</ion-list>
+      </ion-item>
+    }
+  </ion-list>
 </ion-content>
 
 <ion-footer>
