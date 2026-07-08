@@ -1,0 +1,65 @@
+<div class="grid-section">
+  <div class="section-label">Τραπέζια</div>
+  <div class="table-grid">
+    @for (table of numberTables; track trackByName($index, table)) {
+      <button
+        type="button"
+        class="table-cell"
+        [class.occupied]="isOccupied(table)"
+        [class.disabled]="table.name === disabledTable"
+        (click)="select(table)">
+        <span class="cell-name">{{ table.displayName }}</span>
+        @if (isOccupied(table)) {
+          <span class="cell-count">{{ itemCount(table) }}</span>
+        }
+      </button>
+    }
+  </div>
+</div>
+
+<div class="grid-section">
+  <div class="section-label">Μπάρα</div>
+  <div class="table-grid bar-grid">
+    @for (table of barTables; track trackByName($index, table)) {
+      <button
+        type="button"
+        class="table-cell bar-cell"
+        [class.occupied]="isOccupied(table)"
+        [class.disabled]="table.name === disabledTable"
+        (click)="select(table)">
+        <span class="cell-name">{{ table.displayName }}</span>
+        @if (isOccupied(table)) {
+          <span class="cell-count">{{ itemCount(table) }}</span>
+        }
+      </button>
+    }
+  </div>
+</div>
+
+@if (customTableOptions.length > 0) {
+  <div class="grid-section">
+    <div class="section-label">Προσωρινά Τραπέζια</div>
+    <div class="table-grid custom-grid">
+      @for (table of customTableOptions; track trackByName($index, table)) {
+        <button
+          type="button"
+          class="table-cell custom-cell"
+          [class.occupied]="isOccupied(table)"
+          [class.disabled]="table.name === disabledTable"
+          (click)="select(table)">
+          <span class="cell-name">{{ table.displayName }}</span>
+          @if (isOccupied(table)) {
+            <span class="cell-count">{{ itemCount(table) }}</span>
+          }
+          @if (allowDelete) {
+            <ion-icon
+              class="cell-delete"
+              name="trash-outline"
+              (click)="onDelete(table, $event)">
+            </ion-icon>
+          }
+        </button>
+      }
+    </div>
+  </div>
+}

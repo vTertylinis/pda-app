@@ -1,133 +1,91 @@
-<ion-content color="light" class="ion-padding">
-  <!-- List 1: Tables -->
-  @if (!selectedTableName) {
-    <ion-list [inset]="true">
-      <ion-list-header>
-        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-          <span>Tables</span>
-          <ion-button
-            (click)="showNewTableInput = !showNewTableInput"
-            title="Add custom table">
-            <ion-icon name="add-circle-outline"></ion-icon>
-          </ion-button>
-        </div>
-      </ion-list-header>
-      <!-- New table input -->
-      @if (showNewTableInput) {
-        <ion-item class="new-table-input">
-          <ion-label position="floating">New table name</ion-label>
-          <ion-input
-            [(ngModel)]="newTableName"
-            placeholder="Enter table name"
-            (keyup.enter)="createNewTable()">
-          </ion-input>
-          <ion-button
-            slot="end"
-            (click)="createNewTable()"
-            title="Create table">
-            <ion-icon name="checkmark"></ion-icon>
-          </ion-button>
-          <ion-button
-            slot="end"
-            (click)="showNewTableInput = false; newTableName = ''"
-            title="Cancel">
-            <ion-icon name="close"></ion-icon>
-          </ion-button>
-        </ion-item>
-      }
-      <!-- Predefined tables -->
-      <ion-item-group>
-        @if (customTablesList.length > 0) {
-          <ion-item-divider>
-            <ion-label>Predefined Tables</ion-label>
-          </ion-item-divider>
-        }
-        @for (table of predefinedTablesList; track trackByName($index, table)) {
-          <ion-item
-            (click)="onSelectTable(table.name)">
-            <ion-label>{{ table.name }}</ion-label>
-          </ion-item>
-        }
-      </ion-item-group>
-      <!-- Custom tables -->
-      @if (customTablesList.length > 0) {
-        <ion-item-group>
-          <ion-item-divider>
-            <ion-label>Custom Tables</ion-label>
-          </ion-item-divider>
-          @for (table of customTablesList; track trackByName($index, table)) {
-            <ion-item
-              class="custom-table-item">
-              <ion-label (click)="onSelectTable(table.name)">
-                {{ table.displayName || table.name }}
-              </ion-label>
-              <ion-button
-                slot="end"
-                fill="clear"
-                size="small"
-                color="danger"
-                (click)="deleteCustomTable(table.customTableId)"
-                title="Delete table">
-                <ion-icon name="trash-outline"></ion-icon>
-              </ion-button>
-            </ion-item>
-          }
-        </ion-item-group>
-      }
-    </ion-list>
-  }
-
-  <!-- List 2: Categories -->
-  @if (selectedTableName && !selectedCategory) {
-    <ion-list [inset]="true" class="sub-list">
-      <ion-list-header>
-        <ion-button fill="clear" (click)="onBack()">
-          <ion-icon name="arrow-back-outline"></ion-icon>
+<ion-header>
+  <ion-toolbar>
+    @if (selectedTable) {
+      <ion-buttons slot="start">
+        <ion-button (click)="selectedCategory ? onBackToCategories() : onBack()">
+          <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
         </ion-button>
-        Menu - Table: {{ selectedTableName }}
-      </ion-list-header>
-      <!-- Search bar -->
-      <ion-searchbar
-        debounce="300"
-        (ionInput)="onSearch($event)"
-        [value]="searchQuery"
-        placeholder="Search items"
-        showCancelButton="focus">
-      </ion-searchbar>
-      <!-- Show categories if no search query -->
-      @if (!searchQuery) {
-        @for (sub of categories; track trackByCategoryName($index, sub)) {
-          <ion-item (click)="onSelectCategory(sub)">
-            <ion-label>{{ sub.name }}</ion-label>
-          </ion-item>
-        }
+      </ion-buttons>
+    }
+    <ion-title>
+      @if (!selectedTable) {
+        Νέα Παραγγελία
+      } @else if (!selectedCategory) {
+        Τραπέζι {{ selectedTable.displayName }}
       } @else {
-        @for (item of filteredItems; track trackByName($index, item)) {
-          <ion-item (click)="openItemModal(item, item.categoryName)">
-            <ion-label>
-              {{ item.name }} <small>({{ item.categoryName }})</small>
-            </ion-label>
-          </ion-item>
-        }
+        {{ selectedCategory.name }} — Τρ. {{ selectedTable.displayName }}
       }
-      <!-- Show search results if query exists -->
-    </ion-list>
+    </ion-title>
+    @if (!selectedTable) {
+      <ion-buttons slot="end">
+        <ion-button (click)="promptNewTable()" title="Νέο προσωρινό τραπέζι">
+          <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" class="ion-padding">
+
+  <!-- Step 1: Pick a table -->
+  @if (!selectedTable) {
+    <app-table-grid
+      [customTables]="customTables"
+      [activity]="activity"
+      [allowDelete]="true"
+      (tableSelected)="onSelectTable($event)"
+      (deleteTable)="deleteCustomTable($event)">
+    </app-table-grid>
   }
 
-  <!-- List 3: Items in Selected Category -->
-  @if (selectedCategory) {
-    <ion-list [inset]="true" class="sub-list">
-      <ion-list-header>
-        <ion-button fill="clear" (click)="onBackToCategories()">
-          <ion-icon name="arrow-back-outline"></ion-icon>
-        </ion-button>
-        {{ selectedCategory.name }}
-      </ion-list-header>
+  <!-- Step 2: Pick a category (or search across the whole menu) -->
+  @if (selectedTable && !selectedCategory) {
+    <ion-searchbar
+      class="menu-search"
+      debounce="300"
+      (ionInput)="onSearch($event)"
+      [value]="searchQuery"
+      placeholder="Αναζήτηση προϊόντος"
+      showCancelButton="focus">
+    </ion-searchbar>
+
+    @if (!searchQuery) {
+      <div class="category-grid">
+        @for (category of categories; track trackByCategoryName($index, category)) {
+          <button type="button" class="category-card" (click)="onSelectCategory(category)">
+            <span class="category-name">{{ category.name }}</span>
+            <span class="category-count">{{ category.items.length }} είδη</span>
+          </button>
+        }
+      </div>
+    } @else {
+      <ion-list [inset]="true" class="results-list">
+        @for (item of filteredItems; track trackByName($index, item)) {
+          <ion-item button detail="false" (click)="openItemModal(item, item.categoryName)">
+            <ion-label>
+              <h3>{{ item.name }}</h3>
+              <p>{{ item.categoryName }}</p>
+            </ion-label>
+            <ion-note slot="end" color="success">{{ item.price | number : "1.2-2" }} €</ion-note>
+          </ion-item>
+        }
+        @if (filteredItems.length === 0) {
+          <ion-item lines="none">
+            <ion-label color="medium">Δεν βρέθηκαν προϊόντα</ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    }
+  }
+
+  <!-- Step 3: Pick an item from the selected category -->
+  @if (selectedTable && selectedCategory) {
+    <ion-list [inset]="true" class="results-list">
       @for (item of selectedCategory.items; track trackByName($index, item)) {
-        <ion-item (click)="openItemModal(item, selectedCategory.name)">
-          <ion-label>
-            {{ item.name }}
-          </ion-label>
+        <ion-item button detail="false" (click)="openItemModal(item, selectedCategory.name)">
+          <ion-label>{{ item.name }}</ion-label>
+          <ion-note slot="end" color="success">{{ item.price | number : "1.2-2" }} €</ion-note>
         </ion-item>
       }
     </ion-list>
@@ -135,16 +93,18 @@
 
 </ion-content>
 
-<style>
-  .new-table-input {
-  margin-bottom: 10px;
+<!-- Cart summary bar: visible while ordering on a table that has items -->
+@if (selectedTable && selectedActivity) {
+  <ion-footer class="cart-bar-footer">
+    <button type="button" class="cart-bar" (click)="openCurrentTableOrder()">
+      <ion-icon name="receipt-outline"></ion-icon>
+      <span class="cart-bar-text">
+        {{ selectedActivity.count }} είδη · {{ selectedActivity.total | number : "1.2-2" }} €
+      </span>
+      @if (selectedActivity.unprinted > 0) {
+        <ion-badge color="warning">{{ selectedActivity.unprinted }} νέα</ion-badge>
+      }
+      <span class="cart-bar-action">Προβολή</span>
+    </button>
+  </ion-footer>
 }
-
-.custom-table-item {
-cursor: pointer;
-}
-
-ionicon {
-cursor: pointer;
-}
-</style>

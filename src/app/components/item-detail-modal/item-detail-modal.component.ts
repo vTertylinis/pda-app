@@ -135,7 +135,17 @@ export class ItemDetailModalComponent implements OnInit {
     this.modalCtrl.dismiss({});
   }
 
-  submit() {
+  /** Currently ticked extras (savoury list wins over sweet, as before). */
+  private getSelectedExtras(): ItemWithSelected[] {
+    const hasSelectedExtras = this.extraList?.some((extra) => extra.selected);
+    const extrasSource = hasSelectedExtras
+      ? this.extraList
+      : this.extraListSweet;
+    return extrasSource?.filter((extra) => extra.selected) || [];
+  }
+
+  /** Price of ONE unit with all current selections applied. */
+  computeFinalPrice(): number {
     let finalPrice = this.item.price;
     // In edit mode, revert previously added values to get base price
     if (this.editMode) {
@@ -156,7 +166,6 @@ export class ItemDetailModalComponent implements OnInit {
       if (this.isPotoOptionTarget && this._editPotoMixOption) {
         finalPrice -= 1;
       }
-
     }
 
     if (this.supportsSingleOrDouble && this.coffeeSize === 'double') {
@@ -167,17 +176,22 @@ export class ItemDetailModalComponent implements OnInit {
       finalPrice += 1;
     }
 
-    const hasSelectedExtras = this.extraList?.some((extra) => extra.selected);
-    const extrasSource = hasSelectedExtras
-      ? this.extraList
-      : this.extraListSweet;
-    const selectedExtras =
-      extrasSource?.filter((extra) => extra.selected) || [];
-
-    selectedExtras.forEach((extra) => {
+    this.getSelectedExtras().forEach((extra) => {
       const qty = extra.quantity || 1;
       finalPrice += extra.price * qty;
     });
+
+    return finalPrice;
+  }
+
+  /** Live total shown in the footer: unit price × quantity. */
+  get liveTotal(): number {
+    return this.computeFinalPrice() * this.quantity;
+  }
+
+  submit() {
+    const finalPrice = this.computeFinalPrice();
+    const selectedExtras = this.getSelectedExtras();
 
     const barCategories = [
       'Καφέδες',

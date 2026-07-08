@@ -2,18 +2,28 @@ import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRe
 import { CartService } from '../services/cart.service';
 import { TableService } from '../services/table.service';
 import { AlertController, ModalController, IonicModule, ViewWillLeave } from '@ionic/angular';
+import { DecimalPipe } from '@angular/common';
 
 import { FormsModule } from '@angular/forms';
 import { TableManagementModalComponent } from '../components/table-management-modal/table-management-modal.component';
 import { Subject, EMPTY } from 'rxjs';
 import { debounceTime, takeUntil, switchMap, catchError } from 'rxjs/operators';
 
+interface TableSummary {
+  id: string;
+  name: string;
+  isCustom: boolean;
+  itemCount: number;
+  total: number;
+  unprinted: number;
+}
+
 @Component({
   selector: 'app-tab2',
   templateUrl: './tab2.page.html',
   styleUrls: ['./tab2.page.scss'],
   standalone: true,
-  imports: [IonicModule, FormsModule],
+  imports: [IonicModule, FormsModule, DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
@@ -23,8 +33,7 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
   private alertController = inject(AlertController);
   private cdr = inject(ChangeDetectorRef);
 
-  activeTables: string[] = [];
-  tableMetadata: { [tableId: string]: { name: string; isCustom: boolean } } = {};
+  tableSummaries: TableSummary[] = [];
   private destroy$ = new Subject<void>();
   private loadTrigger$ = new Subject<void>();
 
@@ -42,18 +51,26 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
       ),
       takeUntil(this.destroy$)
     ).subscribe((res) => {
-      this.tableMetadata = res.tableMetadata;
+      const metadata = res.tableMetadata || {};
 
-      this.activeTables = Object.keys(res.carts).sort((a, b) => {
-        const aCustom = this.tableMetadata[a]?.isCustom;
-        const bCustom = this.tableMetadata[b]?.isCustom;
-
-        if (aCustom !== bCustom) {
-          return aCustom ? 1 : -1;
-        }
-
-        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
-      });
+      this.tableSummaries = Object.keys(res.carts)
+        .map((tableId) => {
+          const items = res.carts[tableId] || [];
+          return {
+            id: tableId,
+            name: metadata[tableId]?.name || tableId,
+            isCustom: metadata[tableId]?.isCustom || false,
+            itemCount: items.length,
+            total: items.reduce((sum: number, item: any) => sum + (Number(item.price) || 0), 0),
+            unprinted: items.filter((item: any) => !item.printed).length
+          };
+        })
+        .sort((a, b) => {
+          if (a.isCustom !== b.isCustom) {
+            return a.isCustom ? 1 : -1;
+          }
+          return a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' });
+        });
 
       this.cdr.markForCheck();
     });
@@ -86,8 +103,7 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
   }
 
   ionViewWillLeave() {
-    this.activeTables = [];
-    this.tableMetadata = {};
+    this.tableSummaries = [];
   }
 
   ionViewWillEnter() {
@@ -98,55 +114,35 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
     this.loadTrigger$.next();
   }
 
-  getTableDisplayName(tableId: string): string {
-    return this.tableMetadata[tableId]?.name || tableId;
-  }
-
-  async openTableModal(table: any) {
-    const displayName = this.getTableDisplayName(table);
+  async openTableModal(summary: TableSummary) {
     const modal = await this.modalCtrl.create({
       component: TableManagementModalComponent,
-      componentProps: { table, tableName: displayName },
+      componentProps: { table: summary.id, tableName: summary.name },
     });
     await modal.present();
 
-    const { data } = await modal.onDidDismiss();
+    await modal.onDidDismiss();
     this.loadTrigger$.next();
-
-    if (data?.finalItem) {
-      console.log('Received from modal:', data.finalItem);
-    }
   }
 
-  async deleteItem(table: any) {
-    const isCustom = this.tableMetadata[table]?.isCustom || false;
-    const tableName = this.getTableDisplayName(table);
+  async deleteTable(summary: TableSummary, event: Event) {
+    event.stopPropagation();
 
     const alert = await this.alertController.create({
       header: 'Επιβεβαίωση Διαγραφής',
-      message: `Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το τραπέζι${isCustom ? ' "' + tableName + '"' : ''}?`,
+      message: `Είστε σίγουροι ότι θέλετε να διαγράψετε το τραπέζι "${summary.name}";`,
       buttons: [
-        {
-          text: 'Οχι',
-          role: 'cancel',
-          handler: () => {
-            console.log('Deletion cancelled');
-          },
-        },
+        { text: 'Όχι', role: 'cancel' },
         {
           text: 'Ναι',
+          role: 'destructive',
           handler: () => {
-            this.cartService.clearCart(table).subscribe({
-              next: (res) => {
-                console.log('deleted cart:', res);
-
+            this.cartService.clearCart(summary.id).subscribe({
+              next: () => {
                 // If it's a custom table, also delete it from the service
-                if (isCustom) {
-                  this.tableService.deleteCustomTable(table).subscribe({
-                    next: () => {
-                      console.log('Custom table deleted successfully');
-                      this.loadTrigger$.next();
-                    },
+                if (summary.isCustom) {
+                  this.tableService.deleteCustomTable(summary.id).subscribe({
+                    next: () => this.loadTrigger$.next(),
                     error: (err) => {
                       console.error('Failed to delete custom table:', err);
                       this.loadTrigger$.next();
@@ -174,7 +170,7 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
     this.destroy$.complete();
   }
 
-  trackByTable(index: number, table: string): string {
-    return table;
+  trackByTableId(index: number, summary: TableSummary): string {
+    return summary.id;
   }
 }

@@ -3,6 +3,7 @@ import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 
 import { CartService } from '../../services/cart.service';
 import { TableService, CustomTable } from '../../services/table.service';
+import { TableGridComponent, TableOption, TableActivity } from '../table-grid/table-grid.component';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -11,7 +12,7 @@ import { takeUntil } from 'rxjs/operators';
   templateUrl: './select-table.component.html',
   styleUrls: ['./select-table.component.scss'],
   standalone: true,
-  imports: [IonicModule],
+  imports: [IonicModule, TableGridComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SelectTableComponent implements OnInit, OnDestroy {
@@ -24,76 +25,60 @@ export class SelectTableComponent implements OnInit, OnDestroy {
   @Input() table: any;
   @Input() selectedItems: any[] = [];
   @Input() cartItems: any[] = [];
-  private destroy$ = new Subject<void>();
 
-  predefinedTables = [
-    ...Array.from({ length: 40 }, (_, i) => ({ name: (i + 1).toString(), isCustom: false })),
-    { name: 'bar1', isCustom: false },
-    { name: 'bar2', isCustom: false },
-    { name: 'bar3', isCustom: false },
-    { name: 'bar4', isCustom: false }
-  ];
-
-  tables: any[] = [];
-  predefinedTablesList: any[] = [];
-  customTablesList: any[] = [];
   customTables: { [key: string]: CustomTable } = {};
+  activity: { [tableId: string]: TableActivity } = {};
   toTable: string | null = null;
   toTableDisplayName: string | null = null;
 
+  private destroy$ = new Subject<void>();
+
   ngOnInit() {
-    // Subscribe to custom tables updates
     this.tableService.getCustomTables().pipe(
       takeUntil(this.destroy$)
     ).subscribe(customTables => {
       this.customTables = customTables;
-      this.updateTablesList();
       this.cdr.markForCheck();
     });
-    this.updateTablesList();
-  }
 
-  // Update the combined tables list
-  updateTablesList() {
-    // Start with predefined tables
-    this.predefinedTablesList = this.predefinedTables.map(t => ({
-      name: t.name,
-      isCustom: false
-    }));
-
-    // Add custom tables
-    this.customTablesList = Object.values(this.customTables)
-      .filter(ct => ct.active)
-      .map(customTable => ({
-        name: customTable.id,
-        displayName: customTable.name,
-        isCustom: true,
-        customTableId: customTable.id
-      }));
-
-    // Combine for reference
-    this.tables = [...this.predefinedTablesList, ...this.customTablesList];
+    // Show which target tables already have orders (helps when merging tables)
+    this.cartService.getActiveTables().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (res) => {
+        const activity: { [tableId: string]: TableActivity } = {};
+        for (const tableId of Object.keys(res.carts)) {
+          const items = res.carts[tableId] || [];
+          activity[tableId] = {
+            count: items.length,
+            total: items.reduce((sum: number, item: any) => sum + (Number(item.price) || 0), 0),
+            unprinted: items.filter((item: any) => !item.printed).length
+          };
+        }
+        this.activity = activity;
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error('Failed to load table activity:', err)
+    });
   }
 
   close() {
     this.modalCtrl.dismiss({});
   }
 
-  async onSelectTable(table: any) {
+  async onSelectTable(table: TableOption) {
     this.toTable = table.name;
-    this.toTableDisplayName = table.displayName || table.name;
+    this.toTableDisplayName = table.displayName;
+
+    const merging = (this.activity[table.name]?.count || 0) > 0;
 
     const alert = await this.alertController.create({
       header: 'Επιβεβαίωση',
-      message: `Είστε σίγουροι ότι θέλετε να μεταφέρετε τις παραγγελίες στο τραπέζι ${this.toTableDisplayName};`,
+      message: merging
+        ? `Το τραπέζι ${this.toTableDisplayName} έχει ήδη παραγγελίες. Οι παραγγελίες θα συγχωνευθούν. Συνέχεια;`
+        : `Είστε σίγουροι ότι θέλετε να μεταφέρετε τις παραγγελίες στο τραπέζι ${this.toTableDisplayName};`,
       buttons: [
-        {
-          text: 'Όχι',
-          role: 'cancel',
-          handler: () => {
-            console.log('Μεταφορά ακυρώθηκε');
-          },
-        },
+        { text: 'Όχι', role: 'cancel' },
         {
           text: 'Ναι',
           handler: () => {
@@ -115,7 +100,7 @@ export class SelectTableComponent implements OnInit, OnDestroy {
     // If specific items were selected, calculate their indices and move only those
     if (this.selectedItems.length > 0 && this.cartItems.length > 0) {
       const indicesToMove: number[] = [];
-      
+
       // For each selected item, find its indices in cartItems
       for (const selectedItem of this.selectedItems) {
         // Get all indices that match this grouped item
@@ -124,14 +109,14 @@ export class SelectTableComponent implements OnInit, OnDestroy {
       }
 
       request.indicesToMove = indicesToMove.sort((a, b) => b - a); // Sort descending to avoid index shifting
-      
+
       this.cartService.moveTableItems(request).subscribe({
         next: (res) => {
           this.modalCtrl.dismiss({ res });
         },
         error: async (err) => {
           console.error(`Move Failed`, err);
-          await this.alertModal(`Failed to move items`);
+          await this.alertModal(`Αποτυχία μεταφοράς προϊόντων`);
         },
       });
     } else {
@@ -142,7 +127,7 @@ export class SelectTableComponent implements OnInit, OnDestroy {
         },
         error: async (err) => {
           console.error(`Move Failed`, err);
-          await this.alertModal(`Failed to move Table`);
+          await this.alertModal(`Αποτυχία μεταφοράς τραπεζιού`);
         },
       });
     }
@@ -150,17 +135,9 @@ export class SelectTableComponent implements OnInit, OnDestroy {
 
   async alertModal(message: string) {
     const alert = await this.alertController.create({
-      header: 'Error',
+      header: 'Σφάλμα',
       message: message,
-      buttons: [
-        {
-          text: 'OK',
-          role: 'cancel',
-          handler: () => {
-            console.log('Error alert dismissed');
-          },
-        },
-      ],
+      buttons: [{ text: 'OK', role: 'cancel' }],
     });
 
     await alert.present();
@@ -169,9 +146,5 @@ export class SelectTableComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  trackByName(index: number, item: any): string {
-    return item.name;
   }
 }

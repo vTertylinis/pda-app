@@ -10,22 +10,27 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-card-header>
-    <ion-card-title>
-      {{ item?.name }}
-
-      <div style="display: inline-flex; align-items: center; margin-left: 10px">
-        <ion-button size="small" (click)="decrement()">-</ion-button>
-        <span style="margin: 0 8px">{{ quantity }}</span>
-        <ion-button size="small" (click)="increment()">+</ion-button>
+  <ion-card-header class="item-header">
+    <div class="item-head-row">
+      <div class="item-head-info">
+        <ion-card-title>{{ item?.name }}</ion-card-title>
+        <ion-note color="medium">{{ item?.price | currency : "EUR" : "symbol" }}</ion-note>
       </div>
-    </ion-card-title>
+      @if (!editMode) {
+        <div class="qty-stepper">
+          <ion-button size="small" fill="outline" (click)="decrement()" [disabled]="quantity <= 1">
+            <ion-icon slot="icon-only" name="remove"></ion-icon>
+          </ion-button>
+          <span class="qty-value">{{ quantity }}</span>
+          <ion-button size="small" fill="outline" (click)="increment()">
+            <ion-icon slot="icon-only" name="add"></ion-icon>
+          </ion-button>
+        </div>
+      }
+    </div>
   </ion-card-header>
 
   <ion-card-content>
-    <p>
-      <strong>Τιμή:</strong> {{ item?.price | currency : "EUR" : "symbol" }}
-    </p>
 
     <!-- Coffee Sweetness Options -->
     @if (categoryName === 'Καφέδες') {
@@ -225,7 +230,11 @@
           (click)="submit()"
           [disabled]="!isFormValid()"
           >
-          Υποβολή
+          @if (editMode) {
+            Αποθήκευση · {{ liveTotal | currency : "EUR" : "symbol" }}
+          } @else {
+            Προσθήκη @if (quantity > 1) {×{{ quantity }}} · {{ liveTotal | currency : "EUR" : "symbol" }}
+          }
         </ion-button>
       </ion-toolbar>
     </ion-footer>

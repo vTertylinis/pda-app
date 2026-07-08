@@ -1,0 +1,99 @@
+.grid-section {
+  margin-bottom: 16px;
+}
+
+.section-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ion-color-medium);
+  margin: 0 4px 8px;
+}
+
+.table-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+  gap: 8px;
+}
+
+.bar-grid,
+.custom-grid {
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+}
+
+.table-cell {
+  position: relative;
+  min-height: 58px;
+  border: 1px solid var(--ion-color-step-150, #d7d8da);
+  border-radius: 12px;
+  background: var(--ion-item-background, #ffffff);
+  color: var(--ion-text-color, #111);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  cursor: pointer;
+  transition: transform 0.08s ease, background 0.12s ease;
+
+  &:active {
+    transform: scale(0.94);
+  }
+
+  &.occupied {
+    background: rgba(var(--ion-color-primary-rgb), 0.12);
+    border-color: var(--ion-color-primary);
+
+    .cell-name {
+      color: var(--ion-color-primary);
+    }
+  }
+
+  &.disabled {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+}
+
+.cell-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.bar-cell .cell-name,
+.custom-cell .cell-name {
+  font-size: 0.92rem;
+}
+
+.cell-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cell-delete {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  width: 26px;
+  height: 26px;
+  padding: 5px;
+  border-radius: 50%;
+  background: var(--ion-color-danger);
+  color: var(--ion-color-danger-contrast);
+  font-size: 0.9rem;
+}

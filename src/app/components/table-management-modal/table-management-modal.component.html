@@ -50,6 +50,11 @@
             @if (item.quantity > 1) {
               <ion-badge color="primary" class="qty-badge">×{{ item.quantity }}</ion-badge>
             }
+            @if (item.unprintedCount > 0) {
+              <ion-badge color="warning" class="new-badge">
+                {{ item.quantity > 1 ? item.unprintedCount + ' ΝΕΑ' : 'ΝΕΟ' }}
+              </ion-badge>
+            }
             <span class="item-price">
               {{ item.price * item.quantity | number : "1.2-2" }} €
             </span>
@@ -97,9 +102,14 @@
     <ion-button
       expand="block"
       (click)="submit()"
+      [disabled]="unprintedCount === 0"
       >
       <ion-icon slot="start" name="print-outline"></ion-icon>
-      Εκτύπωση
+      @if (unprintedCount > 0) {
+        Εκτύπωση ({{ unprintedCount }} νέα)
+      } @else {
+        Όλα εκτυπωμένα
+      }
     </ion-button>
   </ion-toolbar>
 </ion-footer>
