@@ -94,6 +94,11 @@ export class TableService {
         this.ngZone.run(() => this.cartUpdatesSubject.next(data));
       });
 
+      // Server emits this after a new build is deployed — reload to pick it up
+      this.socket.on('app:reload', () => {
+        window.location.reload();
+      });
+
       this.socket.on('connect', () => {
         console.log('Connected to server');
         this.ngZone.run(() => this.connectedSubject.next(true));
