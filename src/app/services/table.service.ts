@@ -71,7 +71,9 @@ export class TableService {
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
-        reconnectionAttempts: 5
+        // Never give up — a dead socket would miss live orders and the
+        // tablet:reload signal after a server restart or WiFi blip.
+        reconnectionAttempts: Infinity
       });
 
       // Listen for initial sync
@@ -130,6 +132,11 @@ export class TableService {
       this.socket.on('online-order:cancelled', (status: any) => {
         console.log('Online order cancelled by customer:', status);
         this.ngZone.run(() => this.markOnlineOrderCancelled(status?.orderId));
+      });
+
+      // Server emits this after a new tablet build is deployed — reload to pick it up
+      this.socket.on('tablet:reload', () => {
+        window.location.reload();
       });
 
       this.socket.on('connect', () => {
