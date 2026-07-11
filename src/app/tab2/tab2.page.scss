@@ -85,6 +85,35 @@ ion-content.tablet {
   text-overflow: ellipsis;
 }
 
+.card-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.new-badge {
+  flex: 0 0 auto;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: var(--ion-color-warning, #f59e0b);
+  color: #000;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.card-sub {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.card-count {
+  font-size: 13px;
+  color: var(--ion-color-medium, #92949c);
+}
+
 .card-total {
   font-size: 15px;
   font-weight: 600;

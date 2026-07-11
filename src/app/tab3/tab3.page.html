@@ -1,15 +1,20 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Online Orders</ion-title>
+    <ion-title>
+      Online Παραγγελίες
+      @if (onlineOrders.length > 0) {
+        <span class="title-count">{{ onlineOrders.length }}</span>
+      }
+    </ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="refreshOrders()">
-        <ion-icon name="refresh"></ion-icon>
+        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="tablet">
   <ion-refresher slot="fixed" (ionRefresh)="refreshOrders(); $event.detail.complete()">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
@@ -23,131 +28,88 @@
   }
   -->
 
-
   @if (loading) {
-    <div class="ion-padding ion-text-center">
+    <div class="state-block">
       <ion-spinner></ion-spinner>
-      <p>Loading orders...</p>
+      <p>Φόρτωση παραγγελιών...</p>
     </div>
   }
 
   @if (error && !loading) {
-    <div class="ion-padding ion-text-center">
-      <p style="color: red;">{{ error }}</p>
-      <ion-button (click)="refreshOrders()">Retry</ion-button>
+    <div class="state-block">
+      <p class="error-text">{{ error }}</p>
+      <ion-button (click)="refreshOrders()">Δοκιμή ξανά</ion-button>
     </div>
   }
 
   @if (!loading && !error && onlineOrders.length === 0) {
-    <div class="ion-padding ion-text-center">
-      <p>No online orders found</p>
+    <div class="state-block">
+      <ion-icon name="cart-outline" class="empty-icon"></ion-icon>
+      <p>Δεν υπάρχουν online παραγγελίες</p>
     </div>
   }
 
   @if (!loading && !error && onlineOrders.length > 0) {
-    <ion-list>
-      <ion-item-divider>
-        <ion-label><strong>Last {{ onlineOrders.length }} Online Orders</strong></ion-label>
-      </ion-item-divider>
+    <div class="orders-grid">
       @for (order of onlineOrders; track trackByOrder($index, order)) {
-        <ion-card class="order-card">
-          <ion-card-header>
-            <ion-card-title>
-              <strong>{{ order.address?.name || 'N/A' }}</strong>
-            </ion-card-title>
-            <ion-card-subtitle>
-              {{ order.timestampDisplay }}
-            </ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            <div class="order-info">
-              <p><strong>Phone:</strong> {{ order.address?.phone || 'N/A' }}</p>
-              <p><strong>Address:</strong> {{ order.address?.address || 'N/A' }}</p>
-              @if (order.address?.location?.lat != null && order.address?.location?.lng != null) {
-                <ion-button
-                  fill="outline" (click)="openInGoogleMaps(order)">
-                  Open in Google Maps
-                </ion-button>
-              }
-              @if (order.address?.floor) {
-                <p><strong>Floor:</strong> {{ order.address.floor }}</p>
-              }
-              <ion-text color="dark">
-                <p><strong>Items:</strong></p>
-                <ul>
-                  @for (item of order.cart; track item) {
-                    <li>
-                      {{ item.quantity }}x {{ item.name }}
-                      @if (item.ingredientsDisplay) {
-                        <span>
-                          + {{ item.ingredientsDisplay }}
-                        </span>
-                      }
-                    </li>
-                  }
-                </ul>
-              </ion-text>
-              <ion-text color="success">
-                <p><strong style="font-size: 1.2em;">Total: €{{ order.total.toFixed(2) }}</strong></p>
-              </ion-text>
+        <article class="order-card" [class.cancelled]="order.cancelledByCustomer">
+          <header class="order-head">
+            <div class="order-name">{{ order.address?.name || 'N/A' }}</div>
+            <div class="order-time">{{ order.timestampDisplay }}</div>
+          </header>
 
-              <!-- TODO: online order time-response (respond / reject / waiting-time) is
-                   not ready yet — tab3 is view-only for now. Re-enable when the server
-                   side is finished.
-              <div class="waiting-response">
-                @if (order.cancelledByCustomer) {
-                  <ion-chip color="danger">
-                    <ion-icon name="close-circle-outline"></ion-icon>
-                    <ion-label>Ακυρώθηκε από τον πελάτη</ion-label>
-                  </ion-chip>
-                } @else if (order.rejected) {
-                  <ion-chip color="medium">
-                    <ion-icon name="ban-outline"></ion-icon>
-                    <ion-label>Απορρίφθηκε</ion-label>
-                  </ion-chip>
-                } @else if (order.orderId) {
-                  @if (order.respondedWaitingTime != null) {
-                    <ion-chip color="success" outline="true">
-                      <ion-icon name="time-outline"></ion-icon>
-                      <ion-label>Απάντηση: {{ order.respondedWaitingTime }} λεπτά</ion-label>
-                    </ion-chip>
-                    <ion-button size="small" fill="clear" [disabled]="order.responding"
-                      (click)="changeResponse(order)">
-                      Αλλαγή
-                    </ion-button>
-                  } @else {
-                    <p><strong>Χρόνος αναμονής:</strong></p>
-                    @if (order.responding) {
-                      <ion-spinner name="dots"></ion-spinner>
-                    } @else {
-                      <div class="preset-buttons">
-                        @for (m of waitingPresets; track m) {
-                          <ion-button size="small" fill="outline" (click)="respond(order, m)">
-                            {{ m }}'
-                          </ion-button>
-                        }
-                      </div>
-                    }
-                  }
-                  <div class="reject-row">
-                    <ion-button size="small" fill="outline" color="danger"
-                      [disabled]="order.responding" (click)="rejectOrder(order)">
-                      <ion-icon name="ban-outline" slot="start"></ion-icon>
-                      Απόρριψη
-                    </ion-button>
-                  </div>
-                } @else {
-                  <ion-text color="medium">
-                    <p><em>Ιστορική παραγγελία (χωρίς δυνατότητα απάντησης)</em></p>
-                  </ion-text>
-                }
-              </div>
-              -->
-
+          @if (order.cancelledByCustomer) {
+            <div class="cancel-strip">
+              <ion-icon name="close-circle-outline"></ion-icon>
+              Ακυρώθηκε από τον πελάτη
             </div>
-          </ion-card-content>
-        </ion-card>
+          }
+
+          <div class="order-contact">
+            <div class="contact-row">
+              <ion-icon name="call-outline"></ion-icon>
+              <span>{{ order.address?.phone || 'N/A' }}</span>
+            </div>
+            <div class="contact-row">
+              <ion-icon name="location-outline"></ion-icon>
+              <span>
+                {{ order.address?.address || 'N/A' }}
+                @if (order.address?.floor) {
+                  · Όροφος: {{ order.address.floor }}
+                }
+              </span>
+            </div>
+            @if (order.address?.location?.lat != null && order.address?.location?.lng != null) {
+              <ion-button size="small" fill="outline" (click)="openInGoogleMaps(order)">
+                <ion-icon slot="start" name="map-outline"></ion-icon>
+                Χάρτης
+              </ion-button>
+            }
+          </div>
+
+          <ul class="order-items">
+            @for (item of order.cart; track item) {
+              <li>
+                <span class="item-line">{{ item.quantity }}× {{ item.name }}</span>
+                @if (item.ingredientsDisplay) {
+                  <span class="item-extras">+ {{ item.ingredientsDisplay }}</span>
+                }
+                @if (item.comments) {
+                  <span class="item-extras">💬 {{ item.comments }}</span>
+                }
+              </li>
+            }
+          </ul>
+
+          <footer class="order-foot">
+            <span class="order-total">Σύνολο: €{{ order.total.toFixed(2) }}</span>
+          </footer>
+
+          <!-- TODO: online order time-response (respond / reject / waiting-time) is
+               not ready yet — tab3 is view-only for now. Re-enable when the server
+               side is finished. (Previous UI kept in git history: tab3 respond flow.) -->
+        </article>
       }
-    </ion-list>
+    </div>
   }
 </ion-content>

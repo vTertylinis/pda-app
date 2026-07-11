@@ -1,9 +1,9 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>
-      Εκτυπωμένες Παραγγελίες
-      @if (printedOrders.length > 0) {
-        <span class="title-count">{{ printedOrders.length }}</span>
+      Self-Orders
+      @if (selfOrders.length > 0) {
+        <span class="title-count">{{ selfOrders.length }}</span>
       }
     </ion-title>
     <ion-buttons slot="end">
@@ -22,7 +22,7 @@
   @if (loading) {
     <div class="state-block">
       <ion-spinner></ion-spinner>
-      <p>Φόρτωση παραγγελιών...</p>
+      <p>Φόρτωση self-orders...</p>
     </div>
   }
 
@@ -33,16 +33,16 @@
     </div>
   }
 
-  @if (!loading && !error && printedOrders.length === 0) {
+  @if (!loading && !error && selfOrders.length === 0) {
     <div class="state-block">
-      <ion-icon name="receipt-outline" class="empty-icon"></ion-icon>
-      <p>Δεν βρέθηκαν εκτυπωμένες παραγγελίες</p>
+      <ion-icon name="qr-code-outline" class="empty-icon"></ion-icon>
+      <p>Δεν βρέθηκαν self-orders</p>
     </div>
   }
 
-  @if (!loading && !error && printedOrders.length > 0) {
+  @if (!loading && !error && selfOrders.length > 0) {
     <div class="orders-grid">
-      @for (order of printedOrders; track trackByTimestamp($index, order)) {
+      @for (order of selfOrders; track trackByTimestamp($index, order)) {
         <article class="order-card">
           <header class="order-head">
             <div class="order-name">Τραπέζι {{ order.table || 'N/A' }}</div>

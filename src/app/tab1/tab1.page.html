@@ -1,36 +1,38 @@
 <ion-content color="light" class="tablet">
+
   <!-- VIEW 1: TABLES -->
-  @if (!selectedTableName) {
+  @if (!selectedTable) {
     <div class="page-header">
-      <div class="title">Tables</div>
+      <div class="title">Νέα Παραγγελία</div>
+      <div class="spacer"></div>
       <ion-button
         fill="clear"
         class="icon-btn"
         (click)="showNewTableInput = !showNewTableInput"
         aria-label="Add custom table"
-        title="Add custom table"
-        >
-        <ion-icon name="add-circle-outline"></ion-icon>
+        title="Νέο προσωρινό τραπέζι">
+        <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
       </ion-button>
     </div>
+
     <!-- New table input -->
     @if (showNewTableInput) {
       <ion-card class="new-table-card">
         <ion-card-content class="new-table-content">
           <ion-item lines="none">
-            <ion-label position="floating">New table name</ion-label>
             <ion-input
+              label="Όνομα τραπεζιού"
+              labelPlacement="floating"
               [(ngModel)]="newTableName"
-              placeholder="Enter table name"
-              (keyup.enter)="createNewTable()"
-            ></ion-input>
+              placeholder="π.χ. Παρέα Γιώργου"
+              (keyup.enter)="createNewTable()">
+            </ion-input>
             <ion-button
               slot="end"
               fill="solid"
               (click)="createNewTable()"
               aria-label="Create table"
-              title="Create table"
-              >
+              title="Δημιουργία">
               <ion-icon name="checkmark"></ion-icon>
             </ion-button>
             <ion-button
@@ -38,151 +40,104 @@
               fill="clear"
               (click)="showNewTableInput = false; newTableName = ''"
               aria-label="Cancel"
-              title="Cancel"
-              >
+              title="Άκυρο">
               <ion-icon name="close"></ion-icon>
             </ion-button>
           </ion-item>
         </ion-card-content>
       </ion-card>
     }
-    <!-- Predefined Tables -->
-    @if (predefinedTablesList.length) {
-      <div class="section">
-        <ion-grid class="grid" fixed>
-          <ion-row>
-            @for (table of predefinedTablesList; track table) {
-              <ion-col size="3">
-                <ion-card class="card tappable" (click)="onSelectTable(table.name)">
-                  <ion-card-content class="card-content">
-                    <div class="card-title">{{ table.name }}</div>
-                  </ion-card-content>
-                </ion-card>
-              </ion-col>
-            }
-          </ion-row>
-        </ion-grid>
-      </div>
-    }
-    <!-- Custom Tables -->
-    @if (customTablesList.length) {
-      <div class="section">
-        <div class="section-title">Custom Tables</div>
-        <ion-grid class="grid" fixed>
-          <ion-row>
-            @for (table of customTablesList; track table) {
-              <ion-col size="3">
-                <ion-card class="card">
-                  <ion-card-content class="card-content card-split">
-                    <div
-                      class="card-title tappable"
-                      (click)="onSelectTable(table.name)"
-                      >
-                      {{ table.displayName || table.name }}
-                    </div>
-                    <ion-button
-                      size="small"
-                      color="danger"
-                      class="trash-btn"
-                      (click)="deleteCustomTable(table.customTableId); $event.stopPropagation()"
-                      aria-label="Delete table"
-                      title="Delete table"
-                      >
-                      <ion-icon name="trash-outline"></ion-icon>
-                    </ion-button>
-                  </ion-card-content>
-                </ion-card>
-              </ion-col>
-            }
-          </ion-row>
-        </ion-grid>
-      </div>
-    }
+
+    <app-table-grid
+      [customTables]="customTables"
+      [activity]="activity"
+      [allowDelete]="true"
+      (tableSelected)="onSelectTable($event)"
+      (deleteTable)="deleteCustomTable($event)">
+    </app-table-grid>
   }
 
   <!-- VIEW 2: CATEGORIES + SEARCH -->
-  @if (selectedTableName && !selectedCategory) {
+  @if (selectedTable && !selectedCategory) {
     <div class="page-header">
       <ion-button fill="clear" class="icon-btn" (click)="onBack()" aria-label="Back">
-        <ion-icon name="arrow-back-outline"></ion-icon>
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
       </ion-button>
-      <div class="title">Menu</div>
+      <div class="title">Μενού — Τραπέζι {{ selectedTable.displayName }}</div>
       <div class="spacer"></div>
     </div>
+
     <ion-searchbar
       class="search"
       debounce="300"
       (ionInput)="onSearch($event)"
       [value]="searchQuery"
-      placeholder="Search items"
-      showCancelButton="focus"
-    ></ion-searchbar>
-    <!-- Categories grid (when no search) -->
+      placeholder="Αναζήτηση προϊόντος"
+      showCancelButton="focus">
+    </ion-searchbar>
+
     @if (!searchQuery) {
-      <ion-grid class="grid" fixed>
-        <ion-row>
-          @for (sub of categories; track sub) {
-            <ion-col size="3">
-              <ion-card class="card tappable" (click)="onSelectCategory(sub)">
-                <ion-card-content class="card-content">
-                  <div class="card-title">{{ sub.name }}</div>
-                </ion-card-content>
-              </ion-card>
-            </ion-col>
-          }
-        </ion-row>
-      </ion-grid>
+      <div class="menu-grid">
+        @for (category of categories; track trackByCategoryName($index, category)) {
+          <button type="button" class="menu-card" (click)="onSelectCategory(category)">
+            <span class="menu-card-title">{{ category.name }}</span>
+            <span class="menu-card-sub">{{ category.items.length }} είδη</span>
+          </button>
+        }
+      </div>
     } @else {
-      <ion-grid class="grid" fixed>
-        <ion-row>
-          @for (item of filteredItems; track item) {
-            <ion-col size="3">
-              <ion-card
-                class="card tappable"
-                (click)="openItemModal(item, item.categoryName)"
-                >
-                <ion-card-content class="card-content">
-                  <div class="card-title">{{ item.name }}</div>
-                  <div class="card-subtitle">{{ item.categoryName }}</div>
-                </ion-card-content>
-              </ion-card>
-            </ion-col>
-          }
-        </ion-row>
-      </ion-grid>
+      <div class="menu-grid">
+        @for (item of filteredItems; track trackByName($index, item)) {
+          <button type="button" class="menu-card" (click)="openItemModal(item, item.categoryName)">
+            <span class="menu-card-title small">{{ item.name }}</span>
+            <span class="menu-card-sub">{{ item.categoryName }} · {{ item.price | number : "1.2-2" }} €</span>
+          </button>
+        }
+        @if (filteredItems.length === 0) {
+          <div class="no-results">Δεν βρέθηκαν προϊόντα</div>
+        }
+      </div>
     }
-    <!-- Search results grid -->
   }
 
   <!-- VIEW 3: ITEMS IN SELECTED CATEGORY -->
-  @if (selectedCategory) {
+  @if (selectedTable && selectedCategory) {
     <div class="page-header">
       <ion-button
         fill="clear"
         class="icon-btn"
         (click)="onBackToCategories()"
-        aria-label="Back"
-        >
-        <ion-icon name="arrow-back-outline"></ion-icon>
+        aria-label="Back">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
       </ion-button>
-      <div class="title">{{ selectedCategory.name }}</div>
+      <div class="title">{{ selectedCategory.name }} — Τραπέζι {{ selectedTable.displayName }}</div>
       <div class="spacer"></div>
     </div>
-    <ion-grid class="grid" fixed>
-      <ion-row>
-        @for (item of selectedCategory.items; track item) {
-          <ion-col size="3">
-            <ion-card
-              class="card tappable"
-              (click)="openItemModal(item, selectedCategory.name)"
-              >
-              <ion-card-content class="card-content">
-                <div class="card-title">{{ item.name }}</div>
-              </ion-card-content>
-            </ion-card>
-          </ion-col>
-        }
-      </ion-row>
-    </ion-grid>
+
+    <div class="menu-grid">
+      @for (item of selectedCategory.items; track trackByName($index, item)) {
+        <button type="button" class="menu-card" (click)="openItemModal(item, selectedCategory.name)">
+          <span class="menu-card-title small">{{ item.name }}</span>
+          <span class="menu-card-sub">{{ item.price | number : "1.2-2" }} €</span>
+        </button>
+      }
+    </div>
   }
+
 </ion-content>
+
+<!-- Cart summary bar: visible while ordering on a table that has items -->
+@if (selectedTable && selectedActivity) {
+  <ion-footer class="cart-bar-footer">
+    <button type="button" class="cart-bar" (click)="openCurrentTableOrder()">
+      <ion-icon name="receipt-outline"></ion-icon>
+      <span class="cart-bar-text">
+        {{ selectedActivity.count }} είδη · {{ selectedActivity.total | number : "1.2-2" }} €
+      </span>
+      @if (selectedActivity.unprinted > 0) {
+        <ion-badge color="warning">{{ selectedActivity.unprinted }} νέα</ion-badge>
+      }
+      <span class="cart-bar-action">Προβολή</span>
+    </button>
+  </ion-footer>
+}

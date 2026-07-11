@@ -1,94 +1,78 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Cancelled Orders</ion-title>
+    <ion-title>
+      Ακυρωμένες Παραγγελίες
+      @if (cancelledOrders.length > 0) {
+        <span class="title-count">{{ cancelledOrders.length }}</span>
+      }
+    </ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="refreshOrders()">
-        <ion-icon name="refresh"></ion-icon>
+        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="tablet">
   <ion-refresher slot="fixed" (ionRefresh)="refreshOrders(); $event.detail.complete()">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
   @if (loading) {
-    <div class="ion-padding ion-text-center">
+    <div class="state-block">
       <ion-spinner></ion-spinner>
-      <p>Loading cancelled orders...</p>
+      <p>Φόρτωση ακυρωμένων...</p>
     </div>
   }
 
   @if (error && !loading) {
-    <div class="ion-padding ion-text-center">
-      <p style="color: red;">{{ error }}</p>
-      <ion-button (click)="refreshOrders()">Retry</ion-button>
+    <div class="state-block">
+      <p class="error-text">{{ error }}</p>
+      <ion-button (click)="refreshOrders()">Δοκιμή ξανά</ion-button>
     </div>
   }
 
   @if (!loading && !error && cancelledOrders.length === 0) {
-    <div class="ion-padding ion-text-center">
-      <p>No cancelled orders found</p>
+    <div class="state-block">
+      <ion-icon name="close-circle-outline" class="empty-icon"></ion-icon>
+      <p>Δεν βρέθηκαν ακυρωμένες παραγγελίες</p>
     </div>
   }
 
   @if (!loading && !error && cancelledOrders.length > 0) {
-    <ion-list>
-      <ion-item-divider>
-        <ion-label><strong>Last {{ cancelledOrders.length }} Cancelled Orders</strong></ion-label>
-      </ion-item-divider>
+    <div class="orders-grid">
       @for (order of cancelledOrders; track trackByCancelledAt($index, order)) {
-        <ion-card class="order-card">
-          <ion-card-header>
-            <ion-card-title>
-              <strong>Table: {{ order.tableName || 'N/A' }}</strong>
-            </ion-card-title>
-            <ion-card-subtitle>
-              Cancelled: {{ order.cancelledAtDisplay }}
-            </ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            <div class="order-info">
-              <ion-text color="dark">
-                <p><strong>Item:</strong></p>
-                <div class="item-details">
-                  <p>
-                    @if (order.item.name) {
-                      <span>{{ order.item.name }}</span>
-                    }
-                    @if (order.item.coffeePreference) {
-                      <span> - {{ order.item.coffeePreference }}</span>
-                    }
-                    @if (order.item.coffeeSize) {
-                      <span> ({{ order.item.coffeeSize }})</span>
-                    }
-                  </p>
-                  @if (order.extrasDisplay) {
-                    <p class="extras">
-                      <strong>Extras:</strong> {{ order.extrasDisplay }}
-                    </p>
-                  }
-                  @if (order.item.comments) {
-                    <p class="comments">
-                      <strong>Comments:</strong> {{ order.item.comments }}
-                    </p>
-                  }
-                  <p class="price">
-                    <strong>Price:</strong> €{{ getItemPrice(order.item).toFixed(2) }}
-                  </p>
-                  @if (order.wasPrinted) {
-                    <p class="was-printed">
-                      <ion-badge color="warning">Printed before cancellation</ion-badge>
-                    </p>
-                  }
-                </div>
-              </ion-text>
-            </div>
-          </ion-card-content>
-        </ion-card>
+        <article class="order-card">
+          <header class="order-head">
+            <div class="order-name">Τραπέζι {{ order.tableName || 'N/A' }}</div>
+            <div class="order-time">{{ order.cancelledAtDisplay }}</div>
+          </header>
+
+          <ul class="order-items">
+            <li>
+              <span class="item-line">
+                {{ order.item.name }}
+                @if (order.item.coffeePreference) {— {{ order.item.coffeePreference }}}
+                @if (order.item.coffeeSize) {({{ order.item.coffeeSize }})}
+              </span>
+              @if (order.extrasDisplay) {
+                <span class="item-extras">+ {{ order.extrasDisplay }}</span>
+              }
+              @if (order.item.comments) {
+                <span class="item-extras">💬 {{ order.item.comments }}</span>
+              }
+            </li>
+          </ul>
+
+          <footer class="order-foot">
+            @if (order.wasPrinted) {
+              <ion-badge color="warning">Είχε εκτυπωθεί</ion-badge>
+            }
+            <span class="order-total cancelled-price">€{{ getItemPrice(order.item).toFixed(2) }}</span>
+          </footer>
+        </article>
       }
-    </ion-list>
+    </div>
   }
 </ion-content>

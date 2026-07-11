@@ -5,26 +5,26 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 
 @Component({
-  selector: 'app-tab4',
-  templateUrl: './tab4.page.html',
-  styleUrls: ['./tab4.page.scss'],
+  selector: 'app-tab6',
+  templateUrl: './tab6.page.html',
+  styleUrls: ['./tab6.page.scss'],
   standalone: true,
   imports: [IonicModule],
 })
-export class Tab4Page implements ViewWillEnter, ViewWillLeave {
+export class Tab6Page implements ViewWillEnter, ViewWillLeave {
   private http = inject(HttpClient);
 
-  printedOrders: any[] = [];
+  selfOrders: any[] = [];
   loading: boolean = true;
   error: string | null = null;
   private apiUrl = environment.apiUrl;
 
   ionViewWillEnter() {
-    this.loadPrintedOrders();
+    this.loadSelfOrders();
   }
 
   ionViewWillLeave() {
-    this.printedOrders = [];
+    this.selfOrders = [];
     this.error = null;
   }
 
@@ -37,13 +37,13 @@ export class Tab4Page implements ViewWillEnter, ViewWillLeave {
     }
   }
 
-  loadPrintedOrders() {
+  loadSelfOrders() {
     this.loading = true;
     this.error = null;
 
-    this.http.get<any[]>(`${this.apiUrl}/orders/last-100`).subscribe({
+    this.http.get<any[]>(`${this.apiUrl}/self-orders/last-100`).subscribe({
       next: (data) => {
-        this.printedOrders = (data || []).map((order) => ({
+        this.selfOrders = (data || []).map((order) => ({
           ...order,
           timestampDisplay: this.formatOrderDate(order.timestamp),
           items: (order.items || []).map((item: any) => ({
@@ -56,41 +56,23 @@ export class Tab4Page implements ViewWillEnter, ViewWillLeave {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error loading printed orders:', err);
-        this.error = 'Failed to load printed orders';
+        console.error('Error loading self-orders:', err);
+        this.error = 'Αποτυχία φόρτωσης self-orders';
         this.loading = false;
       },
     });
   }
 
   refreshOrders() {
-    this.loadPrintedOrders();
+    this.loadSelfOrders();
   }
 
-  getItemsDisplay(order: any): string {
-    if (!order.items || order.items.length === 0) {
-      return 'No items';
-    }
-    return order.items.map((item: any) => `${item.name}`).join(', ');
-  }
-
-  /** Order total: PDA items carry their final price (extras included). */
+  /** Order total: items carry their final price (extras included). */
   getOrderTotal(order: any): number {
     return (order.items || []).reduce(
       (sum: number, item: any) => sum + (Number(item.price) || 0),
       0,
     );
-  }
-
-  getItemPrice(item: any): number {
-    let price = item.basePrice || 0;
-    if (item.extras && item.extras.length > 0) {
-      price += item.extras.reduce(
-        (sum: number, extra: any) => sum + (extra.price || 0),
-        0,
-      );
-    }
-    return price;
   }
 
   trackByTimestamp(index: number, order: any): string {

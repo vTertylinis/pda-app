@@ -32,15 +32,141 @@
  * https://ionicframework.com/docs/theming/dark-mode
  */
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* The tablet is a fixed cashier station with a dark-designed UI (tab2 cards,
+   white card titles) — always dark so the look doesn't depend on the device's
+   system setting. */
+@import "@ionic/angular/css/palettes/dark.always.css";
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import "@ionic/angular/css/palettes/dark.system.css";
+/* @import "@ionic/angular/css/palettes/dark.system.css"; */
 
 
 .big-modal {
-  --width: 70%;
+  --width: 80%;
   --height: 90%;
-  --max-width: 1200px;
   --max-height: 90%;
   --border-radius: 16px;
+}
+
+/* ---- Shared tablet page styles (tabs 3/4/5 history pages) ---- */
+
+ion-content.tablet {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+}
+
+.title-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 22px;
+  margin-left: 8px;
+  padding: 0 7px;
+  border-radius: 11px;
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+  font-size: 13px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.state-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 64px 24px;
+  color: var(--ion-color-medium);
+  text-align: center;
+}
+
+.state-block .empty-icon {
+  font-size: 3rem;
+  opacity: 0.5;
+}
+
+.state-block .error-text {
+  color: var(--ion-color-danger);
+  font-weight: 600;
+}
+
+.state-block p {
+  margin: 0;
+}
+
+.orders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.order-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--ion-card-background, #1b1f2a);
+  border: 1px solid var(--ion-color-step-200, #272c3a);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+.order-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.order-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.order-time {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+  white-space: nowrap;
+}
+
+.order-items {
+  margin: 0;
+  padding: 10px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--ion-color-step-150, #272c3a);
+}
+
+.order-items li {
+  margin: 6px 0;
+}
+
+.order-items .item-line {
+  font-weight: 600;
+}
+
+.order-items .item-extras {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--ion-color-medium);
+  margin-top: 2px;
+}
+
+.order-foot {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ion-color-step-150, #272c3a);
+}
+
+.order-total {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--ion-color-success);
 }

@@ -1,7 +1,8 @@
 import { Injectable, NgZone, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, of } from 'rxjs';
+import { switchMap, delay, distinctUntilChanged, shareReplay } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { io, Socket } from 'socket.io-client';
 import { AlertSoundService } from './alert-sound.service';
@@ -51,6 +52,18 @@ export class TableService {
   // emit when carts/active tables change on the server
   private cartUpdatesSubject = new Subject<any>();
   public cartUpdates$ = this.cartUpdatesSubject.asObservable();
+
+  // Socket connection state. Disconnects are debounced 5s before being shown,
+  // so short WiFi blips don't flash the offline banner.
+  private connectedSubject = new BehaviorSubject<boolean>(false);
+  public connected$ = this.connectedSubject.pipe(
+    switchMap(connected => connected
+      ? of(true)
+      : of(false).pipe(delay(5000))
+    ),
+    distinctUntilChanged(),
+    shareReplay(1)
+  );
 
   // Stateful list of online orders, kept alive for the whole app so it
   // survives tab switches. Live arrivals are merged in; responses persist.
@@ -141,10 +154,12 @@ export class TableService {
 
       this.socket.on('connect', () => {
         console.log('Connected to server');
+        this.ngZone.run(() => this.connectedSubject.next(true));
       });
 
       this.socket.on('disconnect', () => {
         console.log('Disconnected from server');
+        this.ngZone.run(() => this.connectedSubject.next(false));
       });
     });
   }

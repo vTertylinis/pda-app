@@ -106,6 +106,15 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
     return cart.reduce((sum, item) => sum + (item?.price || 0), 0);
   }
 
+  getTableItemCount(tableId: string): number {
+    return (this.tableCarts[tableId] || []).length;
+  }
+
+  /** Items added but not yet sent to the printers. */
+  getTableUnprinted(tableId: string): number {
+    return (this.tableCarts[tableId] || []).filter((item) => !item?.printed).length;
+  }
+
   async openTableModal(table: any) {
     const displayName = this.getTableDisplayName(table);
     const modal = await this.modalCtrl.create({

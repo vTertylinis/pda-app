@@ -1,45 +1,19 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title style="font-size: small;">
-      Επιλέξτε τραπέζι μεταφοράς
-    </ion-title>
+    <ion-title>Επιλέξτε τραπέζι μεταφοράς</ion-title>
     <ion-buttons slot="end">
       <ion-button size="large" (click)="close()">
-        <ion-icon name="close"></ion-icon>
+        <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
-
   </ion-toolbar>
 </ion-header>
-<ion-content color="light" class="ion-padding">
-  <!-- List 1: Tables -->
-  <ion-list  [inset]="true">
-    <!-- Predefined tables -->
-    <ion-item-group>
-      @if (customTablesList.length > 0) {
-        <ion-item-divider>
-          <ion-label>Predefined Tables</ion-label>
-        </ion-item-divider>
-      }
-      @for (table of predefinedTablesList; track table) {
-        <ion-item
-          (click)="onSelectTable(table)">
-          <ion-label>{{ table.name }}</ion-label>
-        </ion-item>
-      }
-    </ion-item-group>
 
-    <!-- Custom tables -->
-    @if (customTablesList.length > 0) {
-      <ion-item-group>
-        <ion-item-divider>
-          <ion-label>Custom Tables</ion-label>
-        </ion-item-divider>
-        @for (table of customTablesList; track table) {
-          <ion-item
-            (click)="onSelectTable(table)">
-            <ion-label>{{ table.displayName || table.name }}</ion-label>
-          </ion-item>
-        }
-      </ion-item-group>
-    }
+<ion-content color="light" class="ion-padding">
+  <app-table-grid
+    [customTables]="customTables"
+    [activity]="activity"
+    [disabledTable]="table"
+    (tableSelected)="onSelectTable($event)">
+  </app-table-grid>
+</ion-content>

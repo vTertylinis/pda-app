@@ -1,0 +1,106 @@
+/* Tablet sizing: bigger touch targets than the phone build, tuned for a
+   1280x800 landscape cashier station. Dark theme via Ionic variables. */
+
+.grid-section {
+  margin-bottom: 20px;
+}
+
+.section-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ion-color-medium);
+  margin: 0 4px 10px;
+}
+
+.table-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 10px;
+}
+
+.bar-grid,
+.custom-grid {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+.table-cell {
+  position: relative;
+  min-height: 72px;
+  border: 1px solid var(--ion-color-step-200, #33384a);
+  border-radius: 14px;
+  background: var(--ion-card-background, #1b1f2a);
+  color: var(--ion-text-color, #fff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  cursor: pointer;
+  transition: transform 0.08s ease, background 0.12s ease, border-color 0.12s ease;
+
+  &:hover {
+    border-color: var(--ion-color-step-350, #4a5065);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.occupied {
+    background: rgba(var(--ion-color-primary-rgb), 0.16);
+    border-color: var(--ion-color-primary);
+
+    .cell-name {
+      color: var(--ion-color-primary-tint);
+    }
+  }
+
+  &.disabled {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+}
+
+.cell-name {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.bar-cell .cell-name,
+.custom-cell .cell-name {
+  font-size: 1.05rem;
+}
+
+.cell-count {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 12px;
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cell-delete {
+  position: absolute;
+  bottom: -9px;
+  right: -9px;
+  width: 30px;
+  height: 30px;
+  padding: 6px;
+  border-radius: 50%;
+  background: var(--ion-color-danger);
+  color: var(--ion-color-danger-contrast);
+  font-size: 1rem;
+}

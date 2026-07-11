@@ -1,3 +1,6 @@
+/* Online orders — tab-specific styles. Shared card/grid styles live in global.scss */
+
+/* Kept for the disabled respond flow (see TODO in template) */
 .alert-banner {
   position: sticky;
   top: 0;
@@ -23,57 +26,43 @@
   50% { opacity: 0.6; }
 }
 
-.preset-buttons {
+.order-card.cancelled {
+  opacity: 0.75;
+  border-color: var(--ion-color-danger);
+}
+
+.cancel-strip {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(var(--ion-color-danger-rgb), 0.15);
+  color: var(--ion-color-danger);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.order-contact {
+  display: flex;
+  flex-direction: column;
   gap: 6px;
-}
 
-.waiting-response {
-  margin-top: 10px;
-}
+  .contact-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.92rem;
 
-.reject-row {
-  margin-top: 10px;
-}
-
-.order-card {
-  margin: 10px 0;
-  
-  ion-card-header {
-    padding-bottom: 12px;
-  }
-
-  ion-card-title {
-    margin-bottom: 8px;
-  }
-
-  ion-card-subtitle {
-    color: #666;
-    font-size: 0.9em;
-  }
-}
-
-.order-info {
-  p {
-    margin: 8px 0;
-    word-wrap: break-word;
-  }
-
-  ul {
-    margin: 8px 0;
-    padding-left: 20px;
-    
-    li {
-      margin: 6px 0;
-      font-size: 0.95em;
-      
-      span {
-        display: block;
-        font-size: 0.85em;
-        color: #888;
-        margin-top: 4px;
-      }
+    ion-icon {
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: var(--ion-color-medium);
     }
+  }
+
+  ion-button {
+    align-self: flex-start;
+    margin: 4px 0 0;
   }
 }

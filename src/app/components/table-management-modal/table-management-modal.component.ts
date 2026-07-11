@@ -90,16 +90,25 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
         grouped[key] = {
           ...item,
           quantity: 0,
+          unprintedCount: 0,
           indices: [],
           selectedQuantity: 0
         };
       }
 
       grouped[key].quantity++;
+      if (!item.printed) {
+        grouped[key].unprintedCount++;
+      }
       grouped[key].indices.push(index);
     });
 
     return Object.values(grouped);
+  }
+
+  /** Items not yet sent to the printers. */
+  get unprintedCount(): number {
+    return this.cartItems.filter((item) => !item.printed).length;
   }
 
   /**
@@ -402,6 +411,9 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
           ? `${res.status}. Items printed: ${res.printedCount ?? 0}`
           : res.error || 'Unknown response';
 
+        // Refresh so the "new" badges and print button reflect the printed flags
+        this.loadTable();
+
         await this.alertModal(message);
       },
       error: (err) => {
@@ -481,7 +493,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
 
   async alertModal(message: string) {
     const alert = await this.alertController.create({
-      header: 'Backend Response',
+      header: 'Εκτύπωση',
       message: message,
       buttons: [
         {

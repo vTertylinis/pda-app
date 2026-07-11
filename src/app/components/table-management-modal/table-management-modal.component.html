@@ -80,6 +80,11 @@
             @if (item.quantity > 1) {
               <ion-badge color="primary">×{{ item.quantity }}</ion-badge>
             }
+            @if (item.unprintedCount > 0) {
+              <ion-badge color="warning" class="new-badge">
+                {{ item.quantity > 1 ? item.unprintedCount + ' ΝΕΑ' : 'ΝΕΟ' }}
+              </ion-badge>
+            }
           </h2>
 
           <p class="item-price">
@@ -152,9 +157,13 @@
 <ion-footer>
   <ion-toolbar>
     <div style="display: flex; gap: 8px; padding: 8px;">
-      <ion-button expand="block" (click)="submit()">
+      <ion-button expand="block" (click)="submit()" [disabled]="unprintedCount === 0">
         <ion-icon slot="start" name="print-outline"></ion-icon>
-        Εκτύπωση
+        @if (unprintedCount > 0) {
+          Εκτύπωση ({{ unprintedCount }} νέα)
+        } @else {
+          Όλα εκτυπωμένα
+        }
       </ion-button>
 
       <ion-button

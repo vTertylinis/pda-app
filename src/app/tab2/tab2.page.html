@@ -22,10 +22,18 @@
                  [class.is-custom]="tableMetadata[table]?.isCustom"
                  (click)="openTableModal(table)">
           <header class="card-head">
-            <h2 class="card-name" [title]="getTableDisplayName(table)">
-              {{ getTableDisplayName(table) }}
-            </h2>
-            <div class="card-total">€{{ getTableTotal(table).toFixed(2) }}</div>
+            <div class="card-name-row">
+              <h2 class="card-name" [title]="getTableDisplayName(table)">
+                {{ getTableDisplayName(table) }}
+              </h2>
+              @if (getTableUnprinted(table) > 0) {
+                <span class="new-badge">{{ getTableUnprinted(table) }} νέα</span>
+              }
+            </div>
+            <div class="card-sub">
+              <span class="card-count">{{ getTableItemCount(table) }} είδη</span>
+              <span class="card-total">€{{ getTableTotal(table).toFixed(2) }}</span>
+            </div>
           </header>
 
           <footer class="card-actions">

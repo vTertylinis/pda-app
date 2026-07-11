@@ -1,29 +1,41 @@
+@if ((connected$ | async) === false) {
+  <div class="offline-banner">
+    <ion-icon name="cloud-offline-outline"></ion-icon>
+    Χωρίς σύνδεση με τον server — επανασύνδεση...
+  </div>
+}
+
 <ion-tabs>
 
   <ion-tab-bar slot="bottom">
     <ion-tab-button tab="tab1">
-      <ion-icon name="home-outline"></ion-icon>
-      <ion-label>Create Table</ion-label>
+      <ion-icon name="restaurant-outline"></ion-icon>
+      <ion-label>Νέο Τραπέζι</ion-label>
     </ion-tab-button>
 
     <ion-tab-button tab="tab2">
-      <ion-icon name="list-outline"></ion-icon>
-      <ion-label>Live Tables</ion-label>
+      <ion-icon name="grid-outline"></ion-icon>
+      <ion-label>Τραπέζια</ion-label>
     </ion-tab-button>
 
     <ion-tab-button tab="tab3">
       <ion-icon name="cart-outline"></ion-icon>
-      <ion-label>Online Orders</ion-label>
+      <ion-label>Online</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="tab6">
+      <ion-icon name="qr-code-outline"></ion-icon>
+      <ion-label>Self-Orders</ion-label>
     </ion-tab-button>
 
     <ion-tab-button tab="tab4">
       <ion-icon name="receipt-outline"></ion-icon>
-      <ion-label>Printed Orders</ion-label>
+      <ion-label>Εκτυπωμένες</ion-label>
     </ion-tab-button>
 
     <ion-tab-button tab="tab5">
       <ion-icon name="close-circle-outline"></ion-icon>
-      <ion-label>Cancelled Orders</ion-label>
+      <ion-label>Ακυρωμένες</ion-label>
     </ion-tab-button>
 
   </ion-tab-bar>
