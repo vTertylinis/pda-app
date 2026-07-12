@@ -457,6 +457,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
 async submit() {
   const request = {
     table: this.table,
+    tableName: this.tableName || String(this.table),
     items: this.cartItems
   };
 
