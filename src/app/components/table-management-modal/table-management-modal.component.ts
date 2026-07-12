@@ -443,7 +443,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
       return 'The phone is offline. Check Wi-Fi and try again.';
     }
     if (error?.name === 'TimeoutError') {
-      return 'The local server did not respond in time. The connection may be switching between mesh routers.';
+      return 'The local server did not respond in time! The connection may be switching between mesh routers.';
     }
     if (error?.status === 0) {
       return 'The phone is connected to Wi-Fi, but the local server cannot be reached.';
