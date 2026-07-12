@@ -34,7 +34,10 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   categories = CATEGORIES;
   selectedItems: Set<any> = new Set();
   selectionMode: boolean = false;
+  isLoading = true;
+  loadError = '';
   private destroy$ = new Subject<void>();
+  private loadSequence = 0;
 
   ngOnInit() {
     this.loadTable();
@@ -396,8 +399,16 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   }
 
   loadTable(fromDeleteMethod?: any) {
+    const sequence = ++this.loadSequence;
+    this.isLoading = true;
+    this.loadError = '';
+    this.cdr.markForCheck();
+
     this.cartService.getCart(this.table).subscribe({
       next: (res) => {
+        if (sequence !== this.loadSequence) {
+          return;
+        }
         this.cartItems = res as any[];
         this.groupedItems = this.groupCartItems();
         this.totalPrice = this.cartItems.reduce(
@@ -410,9 +421,37 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
         }
       },
       error: (err) => {
-        console.error('Failed to load active tables:', err);
+        if (sequence !== this.loadSequence) {
+          return;
+        }
+        this.isLoading = false;
+        this.loadError = this.cartLoadErrorMessage(err);
+        this.cdr.markForCheck();
+        console.error('Failed to load cart:', err);
+      },
+      complete: () => {
+        if (sequence === this.loadSequence) {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }
       },
     });
+  }
+
+  private cartLoadErrorMessage(error: any): string {
+    if (!navigator.onLine) {
+      return 'The phone is offline. Check Wi-Fi and try again.';
+    }
+    if (error?.name === 'TimeoutError') {
+      return 'The local server did not respond in time. The connection may be switching between mesh routers.';
+    }
+    if (error?.status === 0) {
+      return 'The phone is connected to Wi-Fi, but the local server cannot be reached.';
+    }
+    if (error?.status >= 500) {
+      return `The local server returned an error (${error.status}).`;
+    }
+    return 'The table could not be loaded. Please try again.';
   }
 
 async submit() {

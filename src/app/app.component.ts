@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { AndroidFullScreen } from '@awesome-cordova-plugins/android-full-screen/ngx';
 import { App } from '@capacitor/app';
 import { TableService } from './services/table.service';
+import { NetworkDiagnosticsService } from './services/network-diagnostics.service';
 
 @Component({
   selector: 'app-root',
@@ -17,8 +18,12 @@ export class AppComponent {
   private platform = inject(Platform);
   private androidFullScreen = inject(AndroidFullScreen);
   private tableService = inject(TableService);
+  // Instantiate at app startup so diagnostics left by an earlier outage are
+  // uploaded even if the user does not immediately open another table.
+  private networkDiagnostics = inject(NetworkDiagnosticsService);
 
   constructor() {
+    this.networkDiagnostics.flush();
     this.platform.ready().then(() => {
       if (this.platform.is('android')) {
         const ua = navigator.userAgent.toLowerCase();

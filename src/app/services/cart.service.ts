@@ -1,16 +1,32 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { catchError, defer, tap, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { NetworkDiagnosticsService } from './network-diagnostics.service';
 
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private http = inject(HttpClient);
+  private networkDiagnostics = inject(NetworkDiagnosticsService);
 
   private apiUrl = environment.apiUrl;
 
   getCart(tableId: any) {
-    return this.http.get(`${this.apiUrl}/cart/${tableId}`);
+    const url = `${this.apiUrl}/cart/${encodeURIComponent(String(tableId))}`;
+
+    return defer(() => {
+      const request = this.networkDiagnostics.createCartRequest(tableId, url);
+      const headers = new HttpHeaders({ 'X-Client-Request-Id': request.requestId });
+
+      return this.http.get(url, { headers }).pipe(
+        tap(() => this.networkDiagnostics.notifyRequestSucceeded()),
+        catchError((error: unknown) => {
+          this.networkDiagnostics.recordCartFailure(request, error);
+          return throwError(() => error);
+        })
+      );
+    });
   }
 
   addItemToCart(tableId: any, item: any) {
