@@ -2,7 +2,7 @@
   <ion-toolbar>
 
     <ion-buttons slot="start">
-      <ion-button size="small" (click)="addNewItem()" color="success">
+      <ion-button size="small" (click)="addNewItem()" color="success" [disabled]="removalMode || selectionMode || isLoading || !!loadError">
         <ion-icon name="add-circle-outline"></ion-icon>
         Add
       </ion-button>
@@ -18,14 +18,14 @@
     </ion-title>
 
     <ion-buttons slot="end">
-      <ion-button size="small" (click)="moveTable()">
+      <ion-button size="small" (click)="moveTable()" [disabled]="removalMode || isLoading || !!loadError">
         <ion-icon name="swap-horizontal-outline"></ion-icon>
         Move
         @if (selectedItems.size > 0) {
           <ion-badge color="danger">{{ selectedItems.size }}</ion-badge>
         }
       </ion-button>
-      <ion-button size="large" (click)="close()">
+      <ion-button size="large" (click)="close()" [disabled]="isRemoving" aria-label="Κλείσιμο">
         <ion-icon name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -34,6 +34,9 @@
 </ion-header>
 
 <ion-content>
+  @if (selectionNotice) {
+    <p class="selection-notice" role="status">{{ selectionNotice }}</p>
+  }
   @if (isLoading) {
     <div class="load-state" role="status" aria-live="polite">
       <ion-spinner name="crescent"></ion-spinner>
@@ -56,13 +59,39 @@
       <p>This table has no items.</p>
     </div>
   } @else {
+    <div class="selection-tools">
+      @if (removalMode || selectionMode) {
+        <ion-button fill="clear" (click)="endSelection()" [disabled]="isRemoving">Τέλος επιλογής</ion-button>
+        @if (removalMode) {
+          <ion-button fill="clear" (click)="toggleAllRemovalItems()" [disabled]="isRemoving">
+            {{ allSelected ? 'Καθαρισμός' : 'Επιλογή όλων' }}
+          </ion-button>
+        }
+      } @else {
+        <ion-button fill="outline" (click)="startRemovalSelection()">Επιλογή ειδών / Σύνολο</ion-button>
+      }
+    </div>
+    @if (removalMode) {
+      <p class="selection-hint">Επιλέξτε είδη για το σύνολό τους. Με − / + αλλάζετε την ποσότητα.</p>
+    }
     <ion-list class="items-list" lines="full">
       @for (item of groupedItems; track $index) {
-      <ion-item class="item-row" [class.selected]="isItemSelected(item)">
+      <ion-item class="item-row" [class.selected]="removalMode ? item.selectedQuantity > 0 : isItemSelected(item)">
+        @if (removalMode) {
+          <ion-checkbox
+            slot="start"
+            [attr.aria-label]="'Επιλογή ' + item.name"
+            [checked]="item.selectedQuantity > 0"
+            [indeterminate]="item.selectedQuantity > 0 && item.selectedQuantity < item.quantity"
+            [disabled]="isRemoving"
+            (ionChange)="toggleRemovalSelection(item)">
+          </ion-checkbox>
+        }
         @if (selectionMode) {
           <ion-checkbox
             slot="start"
             [checked]="isItemSelected(item)"
+            [attr.aria-label]="'Μετακίνηση ' + item.name"
             (ionChange)="toggleItemSelection(item)"
           ></ion-checkbox>
         }
@@ -103,8 +132,20 @@
               }
             </div>
           }
+          @if (removalMode && item.quantity > 1) {
+            <div class="quantity-selector">
+              <ion-button fill="outline" [disabled]="isRemoving || item.selectedQuantity === 0"
+                [attr.aria-label]="'Μείωση ποσότητας ' + item.name"
+                (click)="setSelectedQuantity(item, item.selectedQuantity - 1)">−</ion-button>
+              <span>{{ item.selectedQuantity }} / {{ item.quantity }}</span>
+              <ion-button fill="outline" [disabled]="isRemoving || item.selectedQuantity === item.quantity"
+                [attr.aria-label]="'Αύξηση ποσότητας ' + item.name"
+                (click)="setSelectedQuantity(item, item.selectedQuantity + 1)">+</ion-button>
+            </div>
+          }
         </ion-label>
 
+        @if (!removalMode && !selectionMode) {
         <button
           type="button"
           slot="end"
@@ -113,6 +154,7 @@
           aria-label="Actions">
           <ion-icon name="ellipsis-vertical"></ion-icon>
         </button>
+        }
       </ion-item>
       }
     </ion-list>
@@ -122,10 +164,20 @@
 
 <ion-footer>
   <ion-toolbar>
+    @if (removalMode) {
+      <div class="selection-summary" role="status" aria-live="polite">
+        <span>{{ selectedCount }} επιλεγμένα</span>
+        <strong>{{ selectedTotal | number : "1.2-2" }} €</strong>
+      </div>
+      <ion-button expand="block" color="danger" (click)="removeSelectedItems()"
+        [disabled]="!selectedCount || isRemoving || isLoading || !!loadError">
+        {{ isRemoving ? 'Αφαίρεση…' : 'Αφαίρεση επιλεγμένων' }}
+      </ion-button>
+    } @else {
     <ion-button
       expand="block"
       (click)="submit()"
-      [disabled]="isLoading || !!loadError || unprintedCount === 0"
+      [disabled]="selectionMode || isLoading || !!loadError || unprintedCount === 0"
       >
       <ion-icon slot="start" name="print-outline"></ion-icon>
       @if (unprintedCount > 0) {
@@ -134,5 +186,6 @@
         Όλα εκτυπωμένα
       }
     </ion-button>
+    }
   </ion-toolbar>
 </ion-footer>

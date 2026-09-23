@@ -34,6 +34,9 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   categories = CATEGORIES;
   selectedItems: Set<any> = new Set();
   selectionMode: boolean = false;
+  removalMode = false;
+  isRemoving = false;
+  selectionNotice = '';
   isLoading = true;
   loadError = '';
   private destroy$ = new Subject<void>();
@@ -50,6 +53,14 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (data: any) => {
         if (!this.isUpdateForThisTable(data)) {
+          return;
+        }
+        if (this.isRemoving) {
+          return;
+        }
+        if (this.removalMode) {
+          this.selectionNotice = 'Το τραπέζι ενημερώθηκε. Επιλέξτε ξανά τα είδη.';
+          this.loadTable();
           return;
         }
         // Skip while the user is selecting items to move: loadTable() rebuilds
@@ -100,7 +111,8 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
           ...item,
           quantity: 0,
           unprintedCount: 0,
-          indices: []
+          indices: [],
+          selectedQuantity: 0
         };
       }
 
@@ -134,7 +146,91 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   }
 
   close() {
+    if (this.isRemoving) return;
     this.modalCtrl.dismiss({});
+  }
+
+  get selectedCount(): number {
+    return this.groupedItems.reduce((sum, item) => sum + item.selectedQuantity, 0);
+  }
+
+  get selectedTotal(): number {
+    return this.groupedItems.reduce(
+      (sum, item) => sum + item.selectedQuantity * (Number(item.price) || 0), 0
+    );
+  }
+
+  startRemovalSelection() {
+    this.selectedItems.clear();
+    this.selectionMode = false;
+    this.removalMode = true;
+    this.selectionNotice = '';
+    this.cdr.markForCheck();
+  }
+
+  endSelection() {
+    if (this.isRemoving) return;
+    this.removalMode = false;
+    this.selectionMode = false;
+    this.selectedItems.clear();
+    this.selectionNotice = '';
+    this.loadTable();
+  }
+
+  setSelectedQuantity(item: any, quantity: number) {
+    if (this.isRemoving || this.isLoading) return;
+    item.selectedQuantity = Math.max(0, Math.min(item.quantity, Math.trunc(quantity)));
+    this.cdr.markForCheck();
+  }
+
+  toggleRemovalSelection(item: any) {
+    this.setSelectedQuantity(item, item.selectedQuantity > 0 ? 0 : item.quantity);
+  }
+
+  get allSelected(): boolean {
+    return this.groupedItems.length > 0 &&
+      this.groupedItems.every(item => item.selectedQuantity === item.quantity);
+  }
+
+  toggleAllRemovalItems() {
+    const selectAll = !this.allSelected;
+    this.groupedItems.forEach(item => this.setSelectedQuantity(item, selectAll ? item.quantity : 0));
+  }
+
+  async removeSelectedItems() {
+    if (this.isRemoving || this.isLoading || this.loadError || !this.selectedCount) return;
+    const sequence = this.loadSequence;
+    const indices = this.groupedItems.flatMap(item => item.indices.slice(0, item.selectedQuantity))
+      .sort((a: number, b: number) => b - a);
+    const alert = await this.alertController.create({
+      header: 'Αφαίρεση επιλεγμένων',
+      message: `Να αφαιρεθούν ${this.selectedCount} είδη αξίας ${this.selectedTotal.toFixed(2)} € από το τραπέζι;`,
+      buttons: [
+        { text: 'Άκυρο', role: 'cancel' },
+        {
+          text: 'Αφαίρεση',
+          role: 'destructive',
+          handler: () => {
+            // A server update may have changed indices while the alert was open.
+            if (sequence !== this.loadSequence || this.isRemoving) return;
+            this.isRemoving = true;
+            this.cdr.markForCheck();
+            // Sequential, descending deletes keep the remaining indices valid.
+            concat(...indices.map(index => this.cartService.deleteItemFromTable(this.table, index))).pipe(
+              finalize(() => {
+                this.isRemoving = false;
+                this.loadTable(true);
+              })
+            ).subscribe({
+              error: () => {
+                this.selectionNotice = 'Η αφαίρεση δεν ολοκληρώθηκε. Ελέγξτε τα είδη που απομένουν πριν δοκιμάσετε ξανά.';
+              }
+            });
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
   toggleItemSelection(item: any) {
@@ -399,6 +495,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   }
 
   loadTable(fromDeleteMethod?: any) {
+    this.selectedItems.clear();
     const sequence = ++this.loadSequence;
     this.isLoading = true;
     this.loadError = '';
