@@ -1,13 +1,13 @@
-<ion-header>
-  <ion-toolbar>
+<header class="ui-header">
+  <div class="ui-toolbar">
     @if (selectedTable) {
-      <ion-buttons slot="start">
-        <ion-button (click)="selectedCategory ? onBackToCategories() : onBack()">
-          <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
-        </ion-button>
-      </ion-buttons>
+      <div class="ui-buttons">
+        <button class="ui-button" (click)="selectedCategory ? onBackToCategories() : onBack()" type="button" aria-label="Back">
+          <span class="ui-icon" aria-hidden="true">←</span>
+        </button>
+      </div>
     }
-    <ion-title>
+    <h1 class="ui-title">
       @if (!selectedTable) {
         Νέα Παραγγελία
       } @else if (!selectedCategory) {
@@ -15,18 +15,18 @@
       } @else {
         {{ selectedCategory.name }} — Τρ. {{ selectedTable.displayName }}
       }
-    </ion-title>
+    </h1>
     @if (!selectedTable) {
-      <ion-buttons slot="end">
-        <ion-button (click)="promptNewTable()" title="Νέο προσωρινό τραπέζι">
-          <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
-        </ion-button>
-      </ion-buttons>
+      <div class="ui-buttons">
+        <button class="ui-button" (click)="promptNewTable()" title="Νέο προσωρινό τραπέζι" type="button">
+          <span class="ui-icon" aria-hidden="true">⊕</span>
+        </button>
+      </div>
     }
-  </ion-toolbar>
-</ion-header>
+  </div>
+</header>
 
-<ion-content color="light" class="ion-padding">
+<main data-color="light" class="ui-content page-padding">
 
   <!-- Step 1: Pick a table -->
   @if (!selectedTable) {
@@ -41,14 +41,12 @@
 
   <!-- Step 2: Pick a category (or search across the whole menu) -->
   @if (selectedTable && !selectedCategory) {
-    <ion-searchbar
-      class="menu-search"
-      debounce="300"
-      (ionInput)="onSearch($event)"
+    <input
+      class="ui-searchbar menu-search"
+      (input)="onSearch($event)"
       [value]="searchQuery"
-      placeholder="Αναζήτηση προϊόντος"
-      showCancelButton="focus">
-    </ion-searchbar>
+      aria-label="Αναζήτηση προϊόντος" placeholder="Αναζήτηση προϊόντος" type="search">
+
 
     @if (!searchQuery) {
       <div class="category-grid">
@@ -60,51 +58,51 @@
         }
       </div>
     } @else {
-      <ion-list [inset]="true" class="results-list">
+      <div class="ui-list results-list">
         @for (item of filteredItems; track trackByName($index, item)) {
-          <ion-item button detail="false" (click)="openItemModal(item, item.categoryName)">
-            <ion-label>
+          <div class="ui-item" (click)="openItemModal(item, item.categoryName)" role="button" tabindex="0" (keydown.enter)="$any($event.target).click()" (keydown.space)="$event.preventDefault(); $any($event.target).click()">
+            <span class="ui-label">
               <h3>{{ item.name }}</h3>
               <p>{{ item.categoryName }}</p>
-            </ion-label>
-            <ion-note slot="end" color="success">{{ item.price | number : "1.2-2" }} €</ion-note>
-          </ion-item>
+            </span>
+            <span class="ui-note" data-color="success">{{ item.price | number : "1.2-2" }} €</span>
+          </div>
         }
         @if (filteredItems.length === 0) {
-          <ion-item lines="none">
-            <ion-label color="medium">Δεν βρέθηκαν προϊόντα</ion-label>
-          </ion-item>
+          <div class="ui-item">
+            <span class="ui-label" data-color="medium">Δεν βρέθηκαν προϊόντα</span>
+          </div>
         }
-      </ion-list>
+      </div>
     }
   }
 
   <!-- Step 3: Pick an item from the selected category -->
   @if (selectedTable && selectedCategory) {
-    <ion-list [inset]="true" class="results-list">
+    <div class="ui-list results-list">
       @for (item of selectedCategory.items; track trackByName($index, item)) {
-        <ion-item button detail="false" (click)="openItemModal(item, selectedCategory.name)">
-          <ion-label>{{ item.name }}</ion-label>
-          <ion-note slot="end" color="success">{{ item.price | number : "1.2-2" }} €</ion-note>
-        </ion-item>
+        <div class="ui-item" (click)="openItemModal(item, selectedCategory.name)" role="button" tabindex="0" (keydown.enter)="$any($event.target).click()" (keydown.space)="$event.preventDefault(); $any($event.target).click()">
+          <span class="ui-label">{{ item.name }}</span>
+          <span class="ui-note" data-color="success">{{ item.price | number : "1.2-2" }} €</span>
+        </div>
       }
-    </ion-list>
+    </div>
   }
 
-</ion-content>
+</main>
 
 <!-- Cart summary bar: visible while ordering on a table that has items -->
 @if (selectedTable && selectedActivity) {
-  <ion-footer class="cart-bar-footer">
-    <button type="button" class="cart-bar" (click)="openCurrentTableOrder()">
-      <ion-icon name="receipt-outline"></ion-icon>
+  <footer class="ui-footer cart-bar-footer">
+    <button type="button" class="cart-bar" (click)="openCurrentTableOrder()" aria-label="Actions">
+      <span class="ui-icon" aria-hidden="true">☷</span>
       <span class="cart-bar-text">
         {{ selectedActivity.count }} είδη · {{ selectedActivity.total | number : "1.2-2" }} €
       </span>
       @if (selectedActivity.unprinted > 0) {
-        <ion-badge color="warning">{{ selectedActivity.unprinted }} νέα</ion-badge>
+        <span class="ui-badge" data-color="warning">{{ selectedActivity.unprinted }} νέα</span>
       }
       <span class="cart-bar-action">Προβολή</span>
     </button>
-  </ion-footer>
+  </footer>
 }

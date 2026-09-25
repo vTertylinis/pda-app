@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CartService } from '../services/cart.service';
 import { TableService } from '../services/table.service';
-import { AlertController, ModalController, IonicModule, ViewWillLeave } from '@ionic/angular';
+import { PromptService, DialogService } from '../ui/dialog.service';
 import { DecimalPipe } from '@angular/common';
 
 import { FormsModule } from '@angular/forms';
@@ -23,14 +23,14 @@ interface TableSummary {
   templateUrl: './tab2.page.html',
   styleUrls: ['./tab2.page.scss'],
   standalone: true,
-  imports: [IonicModule, FormsModule, DecimalPipe],
+  imports: [FormsModule, DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
+export class Tab2Page implements OnInit, OnDestroy {
   private cartService = inject(CartService);
   private tableService = inject(TableService);
-  private modalCtrl = inject(ModalController);
-  private alertController = inject(AlertController);
+  private modalCtrl = inject(DialogService);
+  private alertController = inject(PromptService);
   private cdr = inject(ChangeDetectorRef);
 
   tableSummaries: TableSummary[] = [];
@@ -102,13 +102,7 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
     });
   }
 
-  ionViewWillLeave() {
-    this.tableSummaries = [];
-  }
 
-  ionViewWillEnter() {
-    this.loadTrigger$.next();
-  }
 
   refresh() {
     this.loadTrigger$.next();
@@ -119,9 +113,9 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
       component: TableManagementModalComponent,
       componentProps: { table: summary.id, tableName: summary.name },
     });
-    await modal.present();
+    await modal.open();
 
-    await modal.onDidDismiss();
+    await modal.afterClosed();
     this.loadTrigger$.next();
   }
 
@@ -162,7 +156,7 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
       ],
     });
 
-    await alert.present();
+    await alert.open();
   }
 
   ngOnDestroy() {

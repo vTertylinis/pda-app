@@ -1,6 +1,6 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { ActionSheetController, AlertController, ModalController } from '@ionic/angular';
+import { ActionMenuService, PromptService, DialogRef } from '../../ui/dialog.service';
 import { defer, of, Subject, throwError } from 'rxjs';
 import { CartService } from '../../services/cart.service';
 import { TableService } from '../../services/table.service';
@@ -11,7 +11,7 @@ describe('Table item selection', () => {
   let cart: jasmine.SpyObj<CartService>;
   let updates: Subject<any>;
   let confirmation: any;
-  let modal: jasmine.SpyObj<ModalController>;
+  let modal: jasmine.SpyObj<DialogRef>;
   const items = [
     { name: 'Coffee', price: 3.5 },
     { name: 'Water', price: 1 },
@@ -24,18 +24,18 @@ describe('Table item selection', () => {
     cart = jasmine.createSpyObj('CartService', ['getCart', 'deleteItemFromTable']);
     cart.getCart.and.returnValue(of(items));
     cart.deleteItemFromTable.and.returnValue(of({}));
-    modal = jasmine.createSpyObj('ModalController', ['dismiss']);
+    modal = jasmine.createSpyObj('DialogRef', ['dismiss']);
     TestBed.configureTestingModule({
       providers: [
         { provide: CartService, useValue: cart },
         { provide: TableService, useValue: { cartUpdates$: updates } },
         { provide: ChangeDetectorRef, useValue: { markForCheck: () => {} } },
-        { provide: ModalController, useValue: modal },
-        { provide: ActionSheetController, useValue: {} },
-        { provide: AlertController, useValue: {
+        { provide: DialogRef, useValue: modal },
+        { provide: ActionMenuService, useValue: {} },
+        { provide: PromptService, useValue: {
           create: async (options: any) => {
             confirmation = options;
-            return { present: async () => {} };
+            return { open: async () => {} };
           }
         } },
       ]

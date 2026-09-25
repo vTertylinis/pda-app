@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
-import { AlertController, ModalController, ToastController, IonicModule } from '@ionic/angular';
+import { PromptService, DialogService, NotificationService } from '../ui/dialog.service';
 
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
@@ -18,15 +18,15 @@ import { CATEGORIES } from '../models/categories';
   templateUrl: './tab1.page.html',
   styleUrls: ['./tab1.page.scss'],
   standalone: true,
-  imports: [IonicModule, FormsModule, DecimalPipe, TableGridComponent],
+  imports: [FormsModule, DecimalPipe, TableGridComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Tab1Page implements OnInit, OnDestroy {
-  private modalCtrl = inject(ModalController);
+  private modalCtrl = inject(DialogService);
   private cartService = inject(CartService);
   private tableService = inject(TableService);
-  private alertController = inject(AlertController);
-  private toastController = inject(ToastController);
+  private alertController = inject(PromptService);
+  private toastController = inject(NotificationService);
   private cdr = inject(ChangeDetectorRef);
 
   categories = CATEGORIES;
@@ -85,10 +85,6 @@ export class Tab1Page implements OnInit, OnDestroy {
     this.activityTrigger$.next();
   }
 
-  ionViewWillEnter() {
-    this.resetSelection();
-    this.activityTrigger$.next();
-  }
 
   ngOnDestroy() {
     this.destroy$.next();
@@ -138,7 +134,7 @@ export class Tab1Page implements OnInit, OnDestroy {
         }
       ]
     });
-    await alert.present();
+    await alert.open();
   }
 
   private createNewTable(name: string) {
@@ -190,7 +186,7 @@ export class Tab1Page implements OnInit, OnDestroy {
       ]
     });
 
-    await alert.present();
+    await alert.open();
   }
 
   onSelectTable(table: TableOption) {
@@ -213,7 +209,7 @@ export class Tab1Page implements OnInit, OnDestroy {
   }
 
   onSearch(event: any) {
-    const query = event.detail.value.trim().toLowerCase();
+    const query = event.target.value.trim().toLowerCase();
     this.searchQuery = query;
 
     if (!query) {
@@ -246,9 +242,9 @@ export class Tab1Page implements OnInit, OnDestroy {
       component: ItemDetailModalComponent,
       componentProps: { item, categoryName },
     });
-    await modal.present();
+    await modal.open();
 
-    const { data } = await modal.onDidDismiss();
+    const { data } = await modal.afterClosed();
 
     if (data?.finalItem && this.selectedTable) {
       const quantity = data.quantity || 1;
@@ -286,8 +282,8 @@ export class Tab1Page implements OnInit, OnDestroy {
         tableName: this.selectedTable.displayName
       },
     });
-    await modal.present();
-    await modal.onDidDismiss();
+    await modal.open();
+    await modal.afterClosed();
     this.activityTrigger$.next();
   }
 
@@ -298,7 +294,7 @@ export class Tab1Page implements OnInit, OnDestroy {
       position: 'bottom',
       color,
     });
-    await toast.present();
+    await toast.open();
   }
 
   trackByName(index: number, item: any): string {

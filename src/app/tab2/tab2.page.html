@@ -1,51 +1,50 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>
+<header class="ui-header">
+  <div class="ui-toolbar">
+    <h1 class="ui-title">
       Ανοιχτά Τραπέζια
       @if (tableSummaries.length > 0) {
-        <ion-badge class="count-badge">{{ tableSummaries.length }}</ion-badge>
+        <span class="ui-badge count-badge">{{ tableSummaries.length }}</span>
       }
-    </ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="refresh()">
-        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+    </h1>
+    <div class="ui-buttons">
+      <button class="ui-button" (click)="refresh()" type="button" aria-label="Refresh">
+        <span class="ui-icon" aria-hidden="true">↻</span>
+      </button>
+    </div>
+  </div>
+</header>
 
-<ion-content color="light">
+<main class="ui-content" data-color="light">
   @if (tableSummaries.length > 0) {
-    <ion-list [inset]="true">
+    <div class="ui-list">
       @for (summary of tableSummaries; track trackByTableId($index, summary)) {
-        <ion-item button detail="false" (click)="openTableModal(summary)">
-          <div class="table-avatar" slot="start" [class.custom]="summary.isCustom">
+        <div class="ui-item" (click)="openTableModal(summary)" role="button" tabindex="0" (keydown.enter)="$any($event.target).click()" (keydown.space)="$event.preventDefault(); $any($event.target).click()">
+          <div class="table-avatar" [class.custom]="summary.isCustom">
             {{ summary.isCustom ? '★' : summary.name }}
           </div>
-          <ion-label>
+          <span class="ui-label">
             <h2 class="table-name">{{ summary.name }}</h2>
             <p class="table-sub">
               {{ summary.itemCount }} είδη · {{ summary.total | number : "1.2-2" }} €
             </p>
-          </ion-label>
+          </span>
           @if (summary.unprinted > 0) {
-            <ion-badge slot="end" color="warning">{{ summary.unprinted }} νέα</ion-badge>
+            <span class="ui-badge" data-color="warning">{{ summary.unprinted }} νέα</span>
           }
-          <ion-button
-            slot="end"
-            fill="clear"
-            color="danger"
+          <button class="ui-button"
+            data-fill="clear"
+            data-color="danger"
             (click)="deleteTable(summary, $event)"
-            title="Διαγραφή τραπεζιού">
-            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-          </ion-button>
-        </ion-item>
+            title="Διαγραφή τραπεζιού" type="button">
+            <span class="ui-icon" aria-hidden="true">⌫</span>
+          </button>
+        </div>
       }
-    </ion-list>
+    </div>
   } @else {
     <div class="empty-state">
-      <ion-icon name="cafe-outline"></ion-icon>
+      <span class="ui-icon" aria-hidden="true">☕</span>
       <p>Δεν υπάρχουν τραπέζια με παραγγελίες</p>
     </div>
   }
-</ion-content>
+</main>

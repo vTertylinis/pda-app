@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AsyncPipe } from '@angular/common';
 
 import { TableService } from '../services/table.service';
@@ -9,7 +10,8 @@ import { TableService } from '../services/table.service';
   templateUrl: './tabs.page.html',
   styleUrls: ['./tabs.page.scss'],
   standalone: true,
-  imports: [IonicModule, AsyncPipe]
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [AsyncPipe, RouterOutlet, RouterLink, RouterLinkActive]
 })
 export class TabsPage {
   private tableService = inject(TableService);

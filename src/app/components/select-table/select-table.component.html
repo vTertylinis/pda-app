@@ -1,19 +1,19 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Επιλέξτε τραπέζι μεταφοράς</ion-title>
-    <ion-buttons slot="end">
-      <ion-button size="large" (click)="close()">
-        <ion-icon slot="icon-only" name="close"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<header class="ui-header">
+  <div class="ui-toolbar">
+    <h1 class="ui-title">Επιλέξτε τραπέζι μεταφοράς</h1>
+    <div class="ui-buttons">
+      <button class="ui-button" data-size="large" (click)="close()" type="button" aria-label="Close">
+        <span class="ui-icon" aria-hidden="true">×</span>
+      </button>
+    </div>
+  </div>
+</header>
 
-<ion-content color="light" class="ion-padding">
+<main data-color="light" class="ui-content page-padding">
   <app-table-grid
     [customTables]="customTables"
     [activity]="activity"
     [disabledTable]="table"
     (tableSelected)="onSelectTable($event)">
   </app-table-grid>
-</ion-content>
+</main>

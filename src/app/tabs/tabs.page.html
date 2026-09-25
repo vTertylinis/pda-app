@@ -1,20 +1,12 @@
-<!-- @if ((connected$ | async) === false) {
+@if ((connected$ | async) === false) {
   <div class="offline-banner">
-    <ion-icon name="cloud-offline-outline"></ion-icon>
+    <span class="ui-icon" aria-hidden="true">☁</span>
     Χωρίς σύνδεση με τον server — επανασύνδεση...
   </div>
-} -->
+}
 
-<ion-tabs>
-  <ion-tab-bar slot="bottom">
-    <ion-tab-button tab="tab1">
-      <ion-icon name="restaurant-outline"></ion-icon>
-      <ion-label>Παραγγελία</ion-label>
-    </ion-tab-button>
-
-    <ion-tab-button tab="tab2">
-      <ion-icon name="grid-outline"></ion-icon>
-      <ion-label>Τραπέζια</ion-label>
-    </ion-tab-button>
-  </ion-tab-bar>
-</ion-tabs>
+<div class="tab-content"><router-outlet></router-outlet></div>
+<nav class="tab-bar" aria-label="Κύρια πλοήγηση">
+  <a routerLink="/tabs/tab1" routerLinkActive="active" ariaCurrentWhenActive="page">Παραγγελία</a>
+  <a routerLink="/tabs/tab2" routerLinkActive="active" ariaCurrentWhenActive="page">Τραπέζια</a>
+</nav>

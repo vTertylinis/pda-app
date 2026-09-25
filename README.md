@@ -4,7 +4,7 @@ A tablet-first point-of-sale app for cafés and restaurants. Waiters take orders
 table, items are tracked per table in real time across every device, and unprinted
 items are sent to the kitchen/bar printers on demand.
 
-Built with **Ionic + Angular** (standalone components) and packaged for **Android** with
+Built with **Angular** (standalone components) and packaged for **Android** with
 **Capacitor**. Live state is kept in sync between devices over **Socket.IO**, backed by a
 separate Node.js API.
 
@@ -30,8 +30,8 @@ separate Node.js API.
 
 | Layer | Technology |
 |-------|-----------|
-| UI framework | Angular 21 (standalone components, lazy-loaded routes) |
-| Mobile UI kit | Ionic 8 |
+| UI framework | Angular 22.2 (standalone components, lazy-loaded routes) |
+| UI | Native HTML controls and Angular dialogs (no UI framework dependency) |
 | Native shell | Capacitor 8 (Android), full-screen / immersive mode |
 | Real-time | Socket.IO client |
 | HTTP | Angular `HttpClient` |
@@ -104,6 +104,7 @@ The project is configured for Capacitor with cleartext HTTP enabled (for LAN bac
 and full-screen immersive mode.
 
 ```bash
+npm run apk                # build web assets, sync Capacitor, produce debug APK
 npm run build              # production web build into www/
 npx cap sync android       # copy web assets + native plugins
 npx cap open android       # open in Android Studio to build/run
@@ -133,3 +134,25 @@ among others:
 | `npm run watch` | Development build in watch mode |
 | `npm test` | Run unit tests (Karma + Jasmine) |
 | `npm run lint` | Lint the project (ESLint) |
+
+## Deploying to existing PDAs
+
+`npm run deploy` still builds into `www/` and copies the build into
+`../pda-server/pda-app/`. It does not build an APK. Commit/push that server build
+and pull it on the shop PC as before; the installed app loads that server URL.
+
+`npm run apk` produces `android/app/build/outputs/apk/debug/app-debug.apk`.
+It needs the Android SDK and JDK 21 (Android Studio's bundled JDK is detected
+on Windows). For a signed release, open `android/` in Android Studio.
+
+Capacitor and the existing Android application ID remain intact so existing
+installations can be updated. The legacy `io.ionic.starter` ID is only the
+installed application's identity; it does not load Ionic code.
+
+Routes use Angular's default router outlet and lifecycle. Tab navigation destroys
+the previous page and cleans up its subscriptions. Dialogs use native `<dialog>`
+with Angular components, native focus trapping, and explicit close/cancel buttons.
+No Ionic or PrimeNG dependencies are required.
+
+The Capacitor CLI retains its own transitive `@ionic/utils-*` build utilities.
+These are development tooling, not Ionic Framework components or runtime.

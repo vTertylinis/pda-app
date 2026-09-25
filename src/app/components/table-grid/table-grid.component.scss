@@ -7,7 +7,7 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--ion-color-medium);
+  color: var(--app-color-medium);
   margin: 0 4px 8px;
 }
 
@@ -25,10 +25,10 @@
 .table-cell {
   position: relative;
   min-height: 58px;
-  border: 1px solid var(--ion-color-step-150, #d7d8da);
+  border: 1px solid var(--app-color-step-150, #d7d8da);
   border-radius: 12px;
-  background: var(--ion-item-background, #ffffff);
-  color: var(--ion-text-color, #111);
+  background: var(--app-item-background, #ffffff);
+  color: var(--app-text-color, #111);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -41,11 +41,11 @@
   }
 
   &.occupied {
-    background: rgba(var(--ion-color-primary-rgb), 0.12);
-    border-color: var(--ion-color-primary);
+    background: rgba(var(--app-color-primary-rgb), 0.12);
+    border-color: var(--app-color-primary);
 
     .cell-name {
-      color: var(--ion-color-primary);
+      color: var(--app-color-primary);
     }
   }
 
@@ -76,8 +76,8 @@
   height: 20px;
   padding: 0 5px;
   border-radius: 10px;
-  background: var(--ion-color-primary);
-  color: var(--ion-color-primary-contrast);
+  background: var(--app-color-primary);
+  color: var(--app-color-primary-contrast);
   font-size: 0.7rem;
   font-weight: 700;
   display: flex;
@@ -93,7 +93,7 @@
   height: 26px;
   padding: 5px;
   border-radius: 50%;
-  background: var(--ion-color-danger);
-  color: var(--ion-color-danger-contrast);
+  background: var(--app-color-danger);
+  color: var(--app-color-danger-contrast);
   font-size: 0.9rem;
 }

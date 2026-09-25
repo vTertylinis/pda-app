@@ -1,21 +1,21 @@
-ion-header {
-  ion-toolbar {
+.ui-header {
+  .ui-toolbar {
     padding: 8px 16px;
   }
 }
 
-ion-list {
-  ion-search-bar {
+.ui-list {
+  .ui-searchbar {
     --padding-bottom: 0;
     --padding-top: 0;
   }
 }
 
-ion-item {
+.ui-item {
   --padding-start: 16px;
   --padding-end: 16px;
 
-  ion-label {
+  .ui-label {
     h3 {
       font-weight: 600;
       margin-bottom: 4px;
@@ -23,12 +23,12 @@ ion-item {
 
     p {
       font-size: 0.9em;
-      color: var(--ion-color-medium);
+      color: var(--app-color-medium);
       margin: 0;
     }
 
     small {
-      color: var(--ion-color-medium);
+      color: var(--app-color-medium);
       font-size: 0.85em;
     }
   }

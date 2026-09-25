@@ -1,37 +1,67 @@
-/*
- * App Global CSS
- * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
- */
 
-/* Core CSS required for Ionic components to work properly */
-@import "@ionic/angular/css/core.css";
-
-/* Basic CSS for apps built with Ionic */
-@import "@ionic/angular/css/normalize.css";
-@import "@ionic/angular/css/structure.css";
-@import "@ionic/angular/css/typography.css";
-@import "@ionic/angular/css/display.css";
-
-/* Optional CSS utils that can be commented out */
-@import "@ionic/angular/css/padding.css";
-@import "@ionic/angular/css/float-elements.css";
-@import "@ionic/angular/css/text-alignment.css";
-@import "@ionic/angular/css/text-transformation.css";
-@import "@ionic/angular/css/flex-utils.css";
-
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import "@ionic/angular/css/palettes/dark.system.css";
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; color: var(--app-text-color); background: #f1f5f9; }
+body { overflow: hidden; }
+button, input { font: inherit; }
+button, a, input { -webkit-tap-highlight-color: transparent; }
+button, a { touch-action: manipulation; }
+button { cursor: pointer; }
+button:disabled { cursor: default; opacity: .45; }
+:focus-visible { outline: 3px solid #0d9488; outline-offset: 2px; }
+app-root, app-tabs { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+router-outlet { display: none; }
+.tab-content { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.tab-content > :not(router-outlet), .app-dialog > :not(app-prompt) { display: flex; flex-direction: column; flex: 1; min-height: 0; height: 100%; }
+.tab-bar { display: flex; background: white; border-top: 1px solid #e2e8f0; padding-bottom: env(safe-area-inset-bottom); }
+.tab-bar a { flex: 1; text-align: center; padding: 16px 8px; color: #64748b; text-decoration: none; font-weight: 600; }
+.tab-bar a.active { color: var(--app-color-primary); background: #eff6ff; }
+.ui-header, .ui-footer { flex-shrink: 0; background: white; }
+.ui-header { padding-top: env(safe-area-inset-top); border-bottom: 1px solid #e2e8f0; }
+.ui-footer { border-top: 1px solid #e2e8f0; }
+.ui-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px; flex-wrap: wrap; }
+.ui-title { flex: 1; font-size: 1.1rem; line-height: 1.3; margin: 4px; min-width: 80px; }
+.ui-buttons { display: flex; gap: 4px; }
+.ui-content { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; background: #f1f5f9; }
+.page-padding { padding: 16px; }
+.margin-top { margin-top: 16px; }
+.margin-bottom { margin-bottom: 16px; }
+.ui-button, .ui-chip { border: 0; border-radius: 8px; min-height: 44px; min-width: 44px; padding: 8px 12px; background: var(--control-color, var(--app-color-primary)); color: white; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+[data-color="danger"] { --control-color: var(--app-color-danger); }
+[data-color="success"] { --control-color: var(--app-color-success); }
+[data-color="warning"] { --control-color: var(--app-color-warning); }
+[data-color="secondary"] { --control-color: var(--app-color-secondary); }
+[data-color="medium"] { --control-color: var(--app-color-medium); }
+.ui-button[data-fill="clear"] { background: transparent; color: var(--control-color, var(--app-color-primary)); }
+.ui-button[data-fill="outline"], .ui-chip.outline { background: transparent; border: 1px solid currentColor; color: var(--control-color, var(--app-color-primary)); }
+.ui-button[data-expand="block"] { display: flex; width: 100%; }
+.ui-chip { border-radius: 24px; }
+.ui-icon { display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; line-height: 1; }
+.ui-list { margin: 12px; border-radius: 10px; background: white; overflow: hidden; }
+.ui-list-header { display: flex; align-items: center; font-size: 1rem; padding: 12px; margin: 0; }
+.ui-item { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px; min-height: 56px; border-bottom: 1px solid #e2e8f0; background: var(--background, white); }
+.ui-item[role="button"] { cursor: pointer; }
+.ui-label { flex: 1; min-width: 0; }
+.ui-label h2, .ui-label h3, .ui-label p { margin: 4px 0; }
+.ui-note { color: var(--control-color, #64748b); }
+.ui-badge { display: inline-block; border-radius: 6px; padding: 4px 7px; background: var(--control-color, var(--app-color-primary)); color: white; font-size: .8rem; white-space: nowrap; }
+.ui-badge[data-color="warning"] { color: #172033; }
+.ui-searchbar, .ui-input, .prompt-input input { min-height: 44px; width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; color: #172033; }
+.ui-searchbar { margin-bottom: 12px; }
+.ui-checkbox, input[type="radio"] { width: 24px; height: 24px; accent-color: var(--app-color-primary); flex-shrink: 0; }
+.radio-group { border: 0; padding: 0; margin: 8px 0; }
+.radio-option { display: flex; align-items: center; gap: 12px; min-height: 44px; width: 100%; }
+.ui-card-header, .ui-card-content { display: block; padding: 12px; }
+.ui-card-title { font-size: 1.25rem; margin: 0 0 6px; }
+.ui-spinner { display: inline-block; border: 3px solid #cbd5e1; border-top-color: #2563eb; border-radius: 50%; width: 32px; height: 32px; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.app-dialog { border: 0; padding: 0; border-radius: 14px; width: min(720px, 100%); height: min(900px, 94dvh); max-height: 100dvh; max-width: 100vw; color: var(--app-text-color); background: white; overflow: hidden; }
+.app-dialog::backdrop { background: #0f172a88; }
+.compact-dialog { width: min(440px, 92vw); height: fit-content; max-height: 85dvh; padding: 24px; overflow: auto; }
+app-prompt { display: block; }
+.compact-dialog h2 { margin: 0 0 16px; font-size: 1.2rem; }
+.compact-dialog p { white-space: pre-line; }
+.prompt-input { display: block; margin: 16px 0; }
+.prompt-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+.app-toast { position: fixed; z-index: 10000; bottom: calc(76px + env(safe-area-inset-bottom)); left: 16px; right: 16px; padding: 14px; border-radius: 8px; background: var(--control-color, #172033); color: white; pointer-events: none; }
+@media (max-width: 600px) { .app-dialog:not(.compact-dialog) { width: 100%; height: 100dvh; margin: 0; border-radius: 0; } }
+@media (prefers-reduced-motion: reduce) { .ui-spinner { animation-duration: 2s; } }

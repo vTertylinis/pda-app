@@ -1,15 +1,15 @@
 .count-badge {
   margin-left: 8px;
   vertical-align: middle;
-  --background: var(--ion-color-primary);
+  --background: var(--app-color-primary);
 }
 
 .table-avatar {
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background: rgba(var(--ion-color-primary-rgb), 0.12);
-  color: var(--ion-color-primary);
+  background: rgba(var(--app-color-primary-rgb), 0.12);
+  color: var(--app-color-primary);
   font-weight: 700;
   font-size: 1rem;
   display: flex;
@@ -18,8 +18,8 @@
   margin-right: 4px;
 
   &.custom {
-    background: rgba(var(--ion-color-secondary-rgb), 0.14);
-    color: var(--ion-color-secondary);
+    background: rgba(var(--app-color-secondary-rgb), 0.14);
+    color: var(--app-color-secondary);
   }
 }
 
@@ -29,7 +29,7 @@
 }
 
 .table-sub {
-  color: var(--ion-color-medium);
+  color: var(--app-color-medium);
   font-size: 0.85rem;
   margin-top: 2px;
 }
@@ -41,10 +41,10 @@
   justify-content: center;
   gap: 10px;
   padding: 64px 24px;
-  color: var(--ion-color-medium);
+  color: var(--app-color-medium);
   text-align: center;
 
-  ion-icon {
+  .ui-icon {
     font-size: 3rem;
     opacity: 0.5;
   }

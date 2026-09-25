@@ -19,7 +19,7 @@
   flex-direction: column;
   gap: 2px;
 
-  ion-note {
+  .ui-note {
     font-size: 0.9rem;
     font-weight: 600;
   }
@@ -46,7 +46,7 @@
     margin: 12px 0 4px;
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--ion-color-medium-shade);
+    color: var(--app-color-medium-shade);
   }
 
   .chip-row {
@@ -54,8 +54,8 @@
     flex-wrap: wrap;
     gap: 6px;
 
-    ion-chip {
-      // Bigger tap target than the Ionic default; comfortable for thumbs.
+    .ui-chip {
+      // Bigger tap target than the standard size; comfortable for thumbs.
       min-height: 40px;
       margin: 0;
       font-size: 0.95rem;

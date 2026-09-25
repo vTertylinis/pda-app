@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
+
 import { provideRouter } from '@angular/router';
 
+import { of } from 'rxjs';
+import { TableService } from '../services/table.service';
 import { TabsPage } from './tabs.page';
 
 describe('TabsPage', () => {
@@ -10,8 +12,8 @@ describe('TabsPage', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [IonicModule.forRoot(), TabsPage],
-      providers: [provideRouter([])]
+      imports: [TabsPage],
+      providers: [provideRouter([]), { provide: TableService, useValue: { connected$: of(true) } }]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TabsPage);

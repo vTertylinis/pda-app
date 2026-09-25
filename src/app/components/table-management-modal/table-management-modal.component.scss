@@ -20,12 +20,17 @@
 
 .selection-notice {
   padding: 12px;
-  background: rgba(var(--ion-color-warning-rgb), 0.15);
+  background: rgba(var(--app-color-warning-rgb), 0.15);
   border-radius: 8px;
 }
 
 .selection-summary strong {
   font-size: 1.3rem;
+}
+
+.selection-summary {
+  width: 100%;
+  gap: 12px;
 }
 
 .quantity-selector {
@@ -34,7 +39,7 @@
   gap: 12px;
   margin-top: 8px;
 
-  ion-button {
+  .ui-button {
     min-width: 44px;
     min-height: 44px;
     margin: 0;
@@ -45,7 +50,7 @@
   }
 }
 
-.item-row ion-checkbox {
+.item-row .ui-checkbox {
   margin-inline-end: 12px;
   min-width: 44px;
   min-height: 44px;
@@ -59,21 +64,21 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: var(--ion-color-medium, #92949c);
+  color: var(--app-color-medium, #92949c);
 
-  ion-spinner {
+  .ui-spinner {
     width: 42px;
     height: 42px;
   }
 
-  > ion-icon {
+  > .ui-icon {
     width: 52px;
     height: 52px;
   }
 
   h2 {
     margin: 14px 0 0;
-    color: var(--ion-text-color, #222);
+    color: var(--app-text-color, #222);
     font-size: 1.15rem;
   }
 
@@ -87,13 +92,13 @@
     margin-top: 2px;
   }
 
-  ion-button {
+  .ui-button {
     margin-top: 16px;
   }
 }
 
-.error-state > ion-icon {
-  color: var(--ion-color-danger, #eb445a);
+.error-state > .ui-icon {
+  color: var(--app-color-danger, #eb445a);
 }
 
 .item-row {
@@ -143,7 +148,7 @@
   margin-left: auto;
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--ion-color-success, #2dd36f);
+  color: var(--app-color-success, #2dd36f);
   white-space: nowrap;
 }
 
@@ -189,64 +194,13 @@
   cursor: pointer;
   transition: background 0.15s ease, transform 0.1s ease;
 
-  ion-icon {
+  .ui-icon {
     font-size: 1.5rem;
-    color: var(--ion-color-medium, #92949c);
+    color: var(--app-color-medium, #92949c);
   }
 
   &:active {
     transform: scale(0.9);
     background: rgba(0, 0, 0, 0.12);
-  }
-}
-
-::ng-deep .move-options-alert {
-  .alert-button-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .alert-button-cancel {
-    color: #888;
-    font-weight: 500;
-    border-bottom: 1px solid #e0e0e0;
-    padding: 12px 0;
-  }
-
-  .alert-button-all {
-    color: #2dd36f;
-    font-weight: 600;
-    border-bottom: 1px solid #e0e0e0;
-    padding: 12px 0;
-  }
-
-  .alert-button-select {
-    color: #0084ff;
-    font-weight: 600;
-    padding: 12px 0;
-  }
-
-  button {
-    margin: 10px 0 !important;
-    padding: 12px 16px !important;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.05);
-    }
-  }
-
-  .alert-button-cancel:hover {
-    color: #555;
-  }
-
-  .alert-button-all:hover {
-    color: #1fa855;
-  }
-
-  .alert-button-select:hover {
-    color: #0066d9;
   }
 }

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
+
 import { CommonModule } from '@angular/common';
 import { CustomTable } from '../../services/table.service';
 
@@ -25,7 +25,7 @@ export const BAR_TABLE_NAMES: string[] = ['bar1', 'bar2', 'bar3', 'bar4'];
   templateUrl: './table-grid.component.html',
   styleUrls: ['./table-grid.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule],
+  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableGridComponent {

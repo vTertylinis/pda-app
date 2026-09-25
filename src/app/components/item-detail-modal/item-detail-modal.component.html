@@ -1,191 +1,188 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>{{ item?.name }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="close()">
-        <ion-icon name="close"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<header class="ui-header">
+  <div class="ui-toolbar">
+    <h1 class="ui-title">{{ item?.name }}</h1>
+    <div class="ui-buttons">
+      <button class="ui-button" (click)="close()" type="button" aria-label="Close">
+        <span class="ui-icon" aria-hidden="true">×</span>
+      </button>
+    </div>
+  </div>
+</header>
 
-<ion-content class="ion-padding">
-  <ion-card-header class="item-header">
+<main class="ui-content page-padding">
+  <section class="ui-card-header item-header">
     <div class="item-head-row">
       <div class="item-head-info">
-        <ion-card-title>{{ item?.name }}</ion-card-title>
-        <ion-note color="medium">{{ item?.price | currency : "EUR" : "symbol" }}</ion-note>
+        <h2 class="ui-card-title">{{ item?.name }}</h2>
+        <span class="ui-note" data-color="medium">{{ $safeNavigationMigration(item?.price) | currency : "EUR" : "symbol" }}</span>
       </div>
       @if (!editMode) {
         <div class="qty-stepper">
-          <ion-button size="small" fill="outline" (click)="decrement()" [disabled]="quantity <= 1">
-            <ion-icon slot="icon-only" name="remove"></ion-icon>
-          </ion-button>
+          <button class="ui-button" data-size="small" data-fill="outline" (click)="decrement()" [disabled]="quantity <= 1" type="button" aria-label="Decrease quantity">
+            <span class="ui-icon" aria-hidden="true">−</span>
+          </button>
           <span class="qty-value">{{ quantity }}</span>
-          <ion-button size="small" fill="outline" (click)="increment()">
-            <ion-icon slot="icon-only" name="add"></ion-icon>
-          </ion-button>
+          <button class="ui-button" data-size="small" data-fill="outline" (click)="increment()" type="button" aria-label="Increase quantity">
+            <span class="ui-icon" aria-hidden="true">＋</span>
+          </button>
         </div>
       }
     </div>
-  </ion-card-header>
+  </section>
 
-  <ion-card-content>
+  <section class="ui-card-content">
 
     <!-- Coffee Sweetness Options -->
     @if (categoryName === 'Καφέδες') {
-      <div class="ion-margin-top">
-        <ion-label class="ion-margin-bottom" position="stacked"
-          >Επιλέξτε γλυκύτητα:</ion-label
-          >
-          <ion-radio-group [(ngModel)]="coffeePreference">
+      <div class="margin-top">
+        <span class="ui-label margin-bottom"
+          >Επιλέξτε γλυκύτητα:</span>
+          <fieldset class="radio-group">
             @for (
               option of ['Σκέτο', 'Ολίγη', 'Μέτριο', 'Πρός Γλυκό', 'Γλυκό']; track trackByValue($index,
               option)) {
-              <ion-item
+              <div class="ui-item"
                 >
-                <ion-radio slot="start" [value]="option">{{ option }}</ion-radio>
-              </ion-item>
+                <label class="radio-option"><input type="radio" name="coffeePreference" [(ngModel)]="coffeePreference" [value]="option">{{ option }}</label>
+              </div>
             }
-          </ion-radio-group>
+          </fieldset>
         </div>
       }
 
       @if (categoryName === 'Ποτά - Κρασιά' && (item?.name === 'Λειβαδιώτη μπουκαλάκι' || item?.name === 'Κρασί ποτήρι')) {
-        <div class="ion-margin-top">
-          <ion-label class="ion-margin-bottom" position="stacked"
-            >Επιλέξτε:</ion-label
-            >
-            <ion-radio-group [(ngModel)]="comments">
+        <div class="margin-top">
+          <span class="ui-label margin-bottom"
+            >Επιλέξτε:</span>
+            <fieldset class="radio-group">
               @for (
                 option of ['Λευκό Ξηρό', 'Λευκό Ημίγλυκο', 'Ερυθρό Ξηρό', 'Ερυθρό Ημίγλυκο', 'Ροζέ Ημίγλυκο', 'Ροζέ Ξηρό']; track trackByValue($index,
                 option)) {
-                <ion-item
+                <div class="ui-item"
                   >
-                  <ion-radio slot="start" [value]="option">{{ option }}</ion-radio>
-                </ion-item>
+                  <label class="radio-option"><input type="radio" name="comments" [(ngModel)]="comments" [value]="option">{{ option }}</label>
+                </div>
               }
-            </ion-radio-group>
+            </fieldset>
           </div>
         }
 
         <!-- Single/Double Option -->
         @if (supportsSingleOrDouble) {
-          <div class="ion-margin-top">
-            <ion-label position="stacked">Επιλογή:</ion-label>
-            <ion-radio-group [(ngModel)]="coffeeSize">
-              <ion-item>
-                <ion-radio slot="start" value="single">Μονός</ion-radio>
-              </ion-item>
-              <ion-item>
-                <ion-radio slot="start" value="double">Διπλός (+0.50€)</ion-radio>
-              </ion-item>
-            </ion-radio-group>
+          <div class="margin-top">
+            <span class="ui-label">Επιλογή:</span>
+            <fieldset class="radio-group">
+              <div class="ui-item">
+                <label class="radio-option"><input type="radio" name="coffeeSize" [(ngModel)]="coffeeSize" value="single">Μονός</label>
+              </div>
+              <div class="ui-item">
+                <label class="radio-option"><input type="radio" name="coffeeSize" [(ngModel)]="coffeeSize" value="double">Διπλός (+0.50€)</label>
+              </div>
+            </fieldset>
           </div>
         }
 
         <!-- Extra Ingredients Section -->
         @if (item.materials || item.materialsSweet) {
-          <ion-item class="ion-margin-top">
-            <ion-label position="stacked">Extra Υλικά</ion-label>
-            <ion-searchbar
+          <div class="ui-item margin-top">
+            <span class="ui-label">Extra Υλικά</span>
+            <input class="ui-searchbar"
               [(ngModel)]="searchTerm"
-              placeholder="Αναζήτηση έξτρα"
-            ></ion-searchbar>
-          </ion-item>
+              aria-label="Αναζήτηση έξτρα" placeholder="Αναζήτηση έξτρα"
+             type="search">
+          </div>
           <div class="extras-scrollable">
             @for (extra of filteredExtraList(); track trackByExtraName($index, extra)) {
-              <ion-item style="align-items: center;">
-                <ion-checkbox
-                  slot="start"
+              <div class="ui-item" style="align-items: center;">
+                <input class="ui-checkbox"
                   [(ngModel)]="extra.selected"
-                  (ionChange)="onExtraSelectionChange(extra)"
-                ></ion-checkbox>
-                <ion-label>
+                  (change)="onExtraSelectionChange(extra)"
+                 type="checkbox">
+                <span class="ui-label">
                   {{ extra.name }} (+{{ extra.price | currency: 'EUR':'symbol':'1.2-2' }})
-                </ion-label>
+                </span>
                 @if (extra.selected) {
-                  <div slot="end" style="display: flex; align-items: center; gap: 4px;">
-                    <ion-button size="small" (click)="decrementExtra(extra)">-</ion-button>
-                    <ion-badge color="secondary">x{{ extra.quantity || 1 }}</ion-badge>
-                    <ion-button size="small" (click)="incrementExtra(extra)">+</ion-button>
+                  <div style="display: flex; align-items: center; gap: 4px;">
+                    <button class="ui-button" data-size="small" (click)="decrementExtra(extra)" type="button">-</button>
+                    <span class="ui-badge" data-color="secondary">x{{ extra.quantity || 1 }}</span>
+                    <button class="ui-button" data-size="small" (click)="incrementExtra(extra)" type="button">+</button>
                   </div>
                 }
-              </ion-item>
+              </div>
             }
           </div>
         }
 
         <!-- Ouzo drink option to be appended to comments -->
         @if (isOuzoOptionTarget) {
-          <div class="ion-margin-top">
-            <ion-label class="ion-margin-bottom" position="stacked">Επιλέξτε:</ion-label>
-            <ion-radio-group [(ngModel)]="drinkCommentOption">
-              <ion-item>
-                <ion-radio slot="start" value="Με">Με</ion-radio>
-              </ion-item>
-              <ion-item>
-                <ion-radio slot="start" value="Χωρίς">Χωρίς</ion-radio>
-              </ion-item>
-            </ion-radio-group>
+          <div class="margin-top">
+            <span class="ui-label margin-bottom">Επιλέξτε:</span>
+            <fieldset class="radio-group">
+              <div class="ui-item">
+                <label class="radio-option"><input type="radio" name="drinkCommentOption" [(ngModel)]="drinkCommentOption" value="Με">Με</label>
+              </div>
+              <div class="ui-item">
+                <label class="radio-option"><input type="radio" name="drinkCommentOption" [(ngModel)]="drinkCommentOption" value="Χωρίς">Χωρίς</label>
+              </div>
+            </fieldset>
           </div>
         }
 
         <!-- Καραφάκι Κρασί 1/2 options (Ημίγλυκο / Ξηρό) appended to comments -->
         @if (isKarafakiOptionTarget) {
-          <div class="ion-margin-top">
-            <ion-label class="ion-margin-bottom" position="stacked">Επιλέξτε:</ion-label>
-            <ion-radio-group [(ngModel)]="drinkCommentOption">
-              <ion-item>
-                <ion-radio slot="start" value="Ημίγλυκο">Ημίγλυκο</ion-radio>
-              </ion-item>
-              <ion-item>
-                <ion-radio slot="start" value="Ξηρό">Ξηρό</ion-radio>
-              </ion-item>
-            </ion-radio-group>
+          <div class="margin-top">
+            <span class="ui-label margin-bottom">Επιλέξτε:</span>
+            <fieldset class="radio-group">
+              <div class="ui-item">
+                <label class="radio-option"><input type="radio" name="drinkCommentOption" [(ngModel)]="drinkCommentOption" value="Ημίγλυκο">Ημίγλυκο</label>
+              </div>
+              <div class="ui-item">
+                <label class="radio-option"><input type="radio" name="drinkCommentOption" [(ngModel)]="drinkCommentOption" value="Ξηρό">Ξηρό</label>
+              </div>
+            </fieldset>
           </div>
         }
 
 
         <!-- Ποτό quick-pick chips: liquor + mixer + prep -->
         @if (isPotoOptionTarget) {
-          <div class="ion-margin-top poto-quickpick">
-            <ion-label class="poto-group-label">Ποτό:</ion-label>
+          <div class="margin-top poto-quickpick">
+            <span class="ui-label poto-group-label">Ποτό:</span>
             <div class="chip-row">
               @for (option of potoLiquorOptions; track trackByValue($index, option)) {
-                <ion-chip
-                  [outline]="potoLiquor !== option"
-                  [color]="potoLiquor === option ? 'primary' : 'medium'"
+                <button class="ui-chip"
+                  [class.outline]="potoLiquor !== option"
+                  [attr.data-color]="potoLiquor === option ? 'primary' : 'medium'"
                   (click)="selectPotoLiquor(option)"
-                >
-                  <ion-label>{{ option }}</ion-label>
-                </ion-chip>
+                 type="button">
+                  <span class="ui-label">{{ option }}</span>
+                </button>
               }
             </div>
 
-            <ion-label class="poto-group-label">Μίξερ:</ion-label>
+            <span class="ui-label poto-group-label">Μίξερ:</span>
             <div class="chip-row">
               @for (option of potoMixerOptions; track trackByValue($index, option)) {
-                <ion-chip
-                  [outline]="potoMixer !== option"
-                  [color]="potoMixer === option ? 'primary' : 'medium'"
+                <button class="ui-chip"
+                  [class.outline]="potoMixer !== option"
+                  [attr.data-color]="potoMixer === option ? 'primary' : 'medium'"
                   (click)="selectPotoMixer(option)"
-                >
-                  <ion-label>{{ option }}</ion-label>
-                </ion-chip>
+                 type="button">
+                  <span class="ui-label">{{ option }}</span>
+                </button>
               }
             </div>
 
-            <ion-label class="poto-group-label">Σερβίρισμα:</ion-label>
+            <span class="ui-label poto-group-label">Σερβίρισμα:</span>
             <div class="chip-row">
               @for (option of potoPrepOptions; track trackByValue($index, option)) {
-                <ion-chip
-                  [outline]="!isPotoPrepSelected(option)"
-                  [color]="isPotoPrepSelected(option) ? 'primary' : 'medium'"
+                <button class="ui-chip"
+                  [class.outline]="!isPotoPrepSelected(option)"
+                  [attr.data-color]="isPotoPrepSelected(option) ? 'primary' : 'medium'"
                   (click)="togglePotoPrep(option)"
-                >
-                  <ion-label>{{ option }}</ion-label>
-                </ion-chip>
+                 type="button">
+                  <span class="ui-label">{{ option }}</span>
+                </button>
               }
             </div>
           </div>
@@ -193,48 +190,48 @@
 
         <!-- Ποτό mixer option (+1€) -->
         @if (isPotoOptionTarget) {
-          <div class="ion-margin-top">
-            <ion-label class="ion-margin-bottom" position="stacked">Επιλέξτε αναψυκτικό (+1€):</ion-label>
-            <ion-radio-group [(ngModel)]="potoMixOption">
+          <div class="margin-top">
+            <span class="ui-label margin-bottom">Επιλέξτε αναψυκτικό (+1€):</span>
+            <fieldset class="radio-group">
               @for (option of ['Pink Soda', 'Φυσικός Πορτοκάλι', 'Red Bull']; track trackByValue($index, option)) {
-                <ion-item>
-                  <ion-radio slot="start" [value]="option">{{ option }}</ion-radio>
-                </ion-item>
+                <div class="ui-item">
+                  <label class="radio-option"><input type="radio" name="potoMixOption" [(ngModel)]="potoMixOption" [value]="option">{{ option }}</label>
+                </div>
               }
-            </ion-radio-group>
+            </fieldset>
           </div>
         }
 
         <!-- Comments Input -->
-        <ion-item class="ion-margin-top">
-          <ion-label position="stacked">Σχόλια</ion-label>
-          <ion-input
+        <div class="ui-item margin-top">
+          <span class="ui-label">Σχόλια</span>
+          <input class="ui-input"
             [(ngModel)]="comments"
-            placeholder="Προσθέστε σχόλια για την παραγγελία σας"
-          ></ion-input>
-        </ion-item>
+            aria-label="Προσθέστε σχόλια για την παραγγελία σας" placeholder="Προσθέστε σχόλια για την παραγγελία σας"
+           type="text">
+        </div>
 
         <!-- Live preview for poto chips + mixer + comments -->
         @if (isPotoOptionTarget && potoLivePreview) {
-          <ion-item lines="none">
-            <ion-note color="medium">Προεπισκόπηση: <strong>{{ potoLivePreview }}</strong></ion-note>
-          </ion-item>
+          <div class="ui-item">
+            <span class="ui-note" data-color="medium">Προεπισκόπηση: <strong>{{ potoLivePreview }}</strong></span>
+          </div>
         }
-      </ion-card-content>
-    </ion-content>
+      </section>
+    </main>
 
-    <ion-footer>
-      <ion-toolbar>
-        <ion-button
-          expand="block"
+    <footer class="ui-footer">
+      <div class="ui-toolbar">
+        <button class="ui-button"
+          data-expand="block"
           (click)="submit()"
           [disabled]="!isFormValid()"
-          >
+           type="button">
           @if (editMode) {
             Αποθήκευση · {{ liveTotal | currency : "EUR" : "symbol" }}
           } @else {
             Προσθήκη @if (quantity > 1) {×{{ quantity }}} · {{ liveTotal | currency : "EUR" : "symbol" }}
           }
-        </ion-button>
-      </ion-toolbar>
-    </ion-footer>
+        </button>
+      </div>
+    </footer>

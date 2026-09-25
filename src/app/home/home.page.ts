@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+
 
 
 @Component({
@@ -7,7 +7,8 @@ import { IonicModule } from '@ionic/angular';
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [IonicModule]
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: []
 })
 export class HomePage {
   constructor() { }

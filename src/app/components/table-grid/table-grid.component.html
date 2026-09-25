@@ -52,11 +52,9 @@
             <span class="cell-count">{{ itemCount(table) }}</span>
           }
           @if (allowDelete) {
-            <ion-icon
-              class="cell-delete"
-              name="trash-outline"
-              (click)="onDelete(table, $event)">
-            </ion-icon>
+            <span
+              class="ui-icon cell-delete"
+              (click)="onDelete(table, $event)" aria-hidden="true">⌫</span>
           }
         </button>
       }

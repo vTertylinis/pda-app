@@ -1,5 +1,5 @@
 .offline-banner {
-  position: fixed;
+  position: relative;
   top: 0;
   left: 0;
   right: 0;
@@ -8,13 +8,13 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: calc(4px + var(--ion-safe-area-top, 0px)) 8px 4px;
-  background: var(--ion-color-danger);
-  color: var(--ion-color-danger-contrast);
+  padding: calc(4px + var(--app-safe-area-top, 0px)) 8px 4px;
+  background: var(--app-color-danger);
+  color: var(--app-color-danger-contrast);
   font-size: 0.78rem;
   font-weight: 600;
 
-  ion-icon {
+  .ui-icon {
     font-size: 1rem;
   }
 }

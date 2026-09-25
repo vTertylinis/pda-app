@@ -1,70 +1,68 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Select Item</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="close()">
-        <ion-icon name="close"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<header class="ui-header">
+  <div class="ui-toolbar">
+    <h1 class="ui-title">Select Item</h1>
+    <div class="ui-buttons">
+      <button class="ui-button" (click)="close()" type="button" aria-label="Close">
+        <span class="ui-icon" aria-hidden="true">×</span>
+      </button>
+    </div>
+  </div>
+</header>
 
-<ion-content>
+<main class="ui-content">
   <!-- List 1: Categories or Search Results -->
   @if (!selectedCategory) {
-    <ion-list [inset]="true">
+    <div class="ui-list">
       <!-- Search bar -->
-      <ion-searchbar
-        debounce="300"
-        (ionInput)="onSearch($event)"
+      <input class="ui-searchbar"
+        (input)="onSearch($event)"
         [value]="searchQuery"
-        placeholder="Search items"
-        showCancelButton="focus">
-      </ion-searchbar>
+        aria-label="Search items" placeholder="Search items" type="search">
+
       <!-- Show categories if no search query -->
       @if (!searchQuery) {
-        <ion-list-header>Menu</ion-list-header>
+        <h2 class="ui-list-header">Menu</h2>
         @for (category of categories; track trackByCategoryName($index, category)) {
-          <ion-item (click)="onSelectCategory(category)">
-            <ion-label>{{ category.name }}</ion-label>
-          </ion-item>
+          <div class="ui-item" (click)="onSelectCategory(category)" role="button" tabindex="0" (keydown.enter)="$any($event.target).click()" (keydown.space)="$event.preventDefault(); $any($event.target).click()">
+            <span class="ui-label">{{ category.name }}</span>
+          </div>
         }
       } @else {
-        <ion-list-header>Search Results</ion-list-header>
+        <h2 class="ui-list-header">Search Results</h2>
         @for (item of filteredItems; track trackByName($index, item)) {
-          <ion-item (click)="selectItem(item, item.categoryName)">
-            <ion-label>
+          <div class="ui-item" (click)="selectItem(item, item.categoryName)" role="button" tabindex="0" (keydown.enter)="$any($event.target).click()" (keydown.space)="$event.preventDefault(); $any($event.target).click()">
+            <span class="ui-label">
               {{ item.name }} <small>({{ item.categoryName }})</small>
-            </ion-label>
-          </ion-item>
+            </span>
+          </div>
         }
         @if (filteredItems.length === 0) {
-          <ion-item>
-            <ion-label>No items found</ion-label>
-          </ion-item>
+          <div class="ui-item">
+            <span class="ui-label">No items found</span>
+          </div>
         }
       }
       <!-- Show search results if query exists -->
-    </ion-list>
+    </div>
   }
 
   <!-- List 2: Items in Selected Category -->
   @if (selectedCategory) {
-    <ion-list [inset]="true">
-      <ion-list-header>
-        <ion-button fill="clear" (click)="onBackToCategories()">
-          <ion-icon name="arrow-back-outline"></ion-icon>
-        </ion-button>
+    <div class="ui-list">
+      <h2 class="ui-list-header">
+        <button class="ui-button" data-fill="clear" (click)="onBackToCategories()" type="button" aria-label="Back">
+          <span class="ui-icon" aria-hidden="true">←</span>
+        </button>
         {{ selectedCategory.name }}
-      </ion-list-header>
+      </h2>
       @for (item of selectedCategory.items; track trackByName($index, item)) {
-        <ion-item (click)="selectItem(item)">
-          <ion-label>
+        <div class="ui-item" (click)="selectItem(item)" role="button" tabindex="0" (keydown.enter)="$any($event.target).click()" (keydown.space)="$event.preventDefault(); $any($event.target).click()">
+          <span class="ui-label">
             <h3>{{ item.name }}</h3>
             <p>{{ item.price | currency : "EUR" : "symbol" }}</p>
-          </ion-label>
-        </ion-item>
+          </span>
+        </div>
       }
-    </ion-list>
+    </div>
   }
-</ion-content>
+</main>

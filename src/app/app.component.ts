@@ -1,7 +1,10 @@
-import { Component, inject } from '@angular/core';
-import { Platform, IonicModule } from '@ionic/angular';
+import { Component, DestroyRef, NgZone, inject, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule } from '@angular/router';
 import { AndroidFullScreen } from '@awesome-cordova-plugins/android-full-screen/ngx';
+import { Capacitor } from '@capacitor/core';
+import { DialogService } from './ui/dialog.service';
+import { Router } from '@angular/router';
 import { App } from '@capacitor/app';
 import { TableService } from './services/table.service';
 import { NetworkDiagnosticsService } from './services/network-diagnostics.service';
@@ -11,11 +14,15 @@ import { NetworkDiagnosticsService } from './services/network-diagnostics.servic
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   standalone: true,
-  imports: [IonicModule, RouterModule],
+  imports: [RouterModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   providers: [AndroidFullScreen]
 })
 export class AppComponent {
-  private platform = inject(Platform);
+  private destroyRef = inject(DestroyRef);
+  private zone = inject(NgZone);
+  private dialogs = inject(DialogService);
+  private router = inject(Router);
   private androidFullScreen = inject(AndroidFullScreen);
   private tableService = inject(TableService);
   // Instantiate at app startup so diagnostics left by an earlier outage are
@@ -24,8 +31,7 @@ export class AppComponent {
 
   constructor() {
     this.networkDiagnostics.flush();
-    this.platform.ready().then(() => {
-      if (this.platform.is('android')) {
+    if (Capacitor.getPlatform() === 'android') {
         const ua = navigator.userAgent.toLowerCase();
         const isXiaomi = ua.includes('xiaomi') || ua.includes('miui') || ua.includes('redmi');
 
@@ -40,14 +46,18 @@ export class AppComponent {
             .catch(err => console.error('Error enabling immersive mode', err));
         }
 
-        App.addListener('pause', () => {
-          this.tableService.disconnect();
-        });
-
-        App.addListener('resume', () => {
-          this.tableService.reconnect();
+        const listeners = [
+          App.addListener('pause', () => this.zone.run(() => this.tableService.disconnect())),
+          App.addListener('resume', () => this.zone.run(() => this.tableService.reconnect())),
+          App.addListener('backButton', () => this.zone.run(() => {
+            if (!this.dialogs.hasOpenDialog && this.router.url !== '/tabs/tab1') {
+              void this.router.navigateByUrl('/tabs/tab1');
+            }
+          }))
+        ];
+        this.destroyRef.onDestroy(() => {
+          for (const listener of listeners) { void listener.then(handle => handle.remove()); }
         });
       }
-    });
   }
 }

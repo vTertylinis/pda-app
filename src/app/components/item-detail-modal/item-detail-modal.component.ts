@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
-import { ModalController, IonicModule } from '@ionic/angular';
+import { DialogRef } from '../../ui/dialog.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EXTRALIST, EXTRALISTSWEET } from '../../models/categories';
@@ -9,11 +9,11 @@ import { EXTRALIST, EXTRALISTSWEET } from '../../models/categories';
   templateUrl: './item-detail-modal.component.html',
   styleUrls: ['./item-detail-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ItemDetailModalComponent implements OnInit {
-  private modalCtrl = inject(ModalController);
+  private dialogRef = inject(DialogRef);
 
   @Input() item: any;
   @Input() editMode: any;
@@ -92,7 +92,7 @@ export class ItemDetailModalComponent implements OnInit {
       this.selectMatchingItems(
         this.extraList,
         this.extraListSweet,
-        extrasToSelect
+        extrasToSelect || []
       );
     }
     this.updateFilteredExtras();
@@ -132,7 +132,7 @@ export class ItemDetailModalComponent implements OnInit {
   }
 
   close() {
-    this.modalCtrl.dismiss({});
+    this.dialogRef.dismiss({});
   }
 
   /** Currently ticked extras (savoury list wins over sweet, as before). */
@@ -263,7 +263,7 @@ export class ItemDetailModalComponent implements OnInit {
       comments: this.composeComments(),
     };
 
-    this.modalCtrl.dismiss({ finalItem, quantity: this.quantity });
+    this.dialogRef.dismiss({ finalItem, quantity: this.quantity });
   }
 
   private composeComments(): string | undefined {

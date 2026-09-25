@@ -17,8 +17,7 @@ log.txt
 /.versions
 /coverage
 
-# Ionic
-/.ionic
+# Web build
 /www
 /platforms
 /plugins

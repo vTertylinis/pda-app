@@ -1,5 +1,5 @@
 import { Component, Input, ChangeDetectionStrategy, inject } from '@angular/core';
-import { ModalController, IonicModule } from '@ionic/angular';
+import { DialogRef } from '../../ui/dialog.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -8,11 +8,11 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './item-selection-modal.component.html',
   styleUrls: ['./item-selection-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ItemSelectionModalComponent {
-  private modalCtrl = inject(ModalController);
+  private dialogRef = inject(DialogRef);
 
   @Input() categories: any[] = [];
   selectedCategory: any = null;
@@ -30,7 +30,7 @@ export class ItemSelectionModalComponent {
   }
 
   onSearch(event: any) {
-    const query = event.detail.value.trim().toLowerCase();
+    const query = event.target.value.trim().toLowerCase();
     this.searchQuery = query;
 
     if (!query) {
@@ -63,14 +63,14 @@ export class ItemSelectionModalComponent {
   }
 
   selectItem(item: any, categoryName?: string) {
-    this.modalCtrl.dismiss({
+    this.dialogRef.dismiss({
       item,
       categoryName: categoryName || this.selectedCategory?.name,
     });
   }
 
   close() {
-    this.modalCtrl.dismiss({});
+    this.dialogRef.dismiss({});
   }
 
   trackByName(index: number, item: any): string {

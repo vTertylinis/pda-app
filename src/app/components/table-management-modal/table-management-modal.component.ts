@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
-import { ActionSheetController, AlertController, ModalController, IonicModule } from '@ionic/angular';
+import { DialogRef, ActionMenuService, PromptService, DialogService } from '../../ui/dialog.service';
 import { CommonModule } from '@angular/common';
 import { CartService } from '../../services/cart.service';
 import { TableService } from '../../services/table.service';
@@ -15,15 +15,16 @@ import { finalize, takeUntil } from 'rxjs/operators';
   templateUrl: './table-management-modal.component.html',
   styleUrls: ['./table-management-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule],
+  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableManagementModalComponent implements OnInit, OnDestroy {
-  private modalCtrl = inject(ModalController);
+  private modalCtrl = inject(DialogService);
+  private dialogRef = inject(DialogRef);
   private cartService = inject(CartService);
   private tableService = inject(TableService);
-  private alertController = inject(AlertController);
-  private actionSheetController = inject(ActionSheetController);
+  private alertController = inject(PromptService);
+  private actionSheetController = inject(ActionMenuService);
   private cdr = inject(ChangeDetectorRef);
 
   @Input() table: any;
@@ -147,7 +148,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
 
   close() {
     if (this.isRemoving) return;
-    this.modalCtrl.dismiss({});
+    this.dialogRef.dismiss({});
   }
 
   get selectedCount(): number {
@@ -230,7 +231,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
         }
       ]
     });
-    await alert.present();
+    await alert.open();
   }
 
   toggleItemSelection(item: any) {
@@ -286,7 +287,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
       ],
     });
 
-    await actionSheet.present();
+    await actionSheet.open();
   }
 
   async editItem(groupedItem: any, categoryName: any) {
@@ -298,9 +299,9 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
       component: ItemDetailModalComponent,
       componentProps: { item, categoryName, editMode: true },
     });
-    await modal.present();
+    await modal.open();
 
-    const { data } = await modal.onDidDismiss();
+    const { data } = await modal.afterClosed();
 
     if (data?.finalItem) {
       this.cartService.editItem(this.table, indexToEdit, data.finalItem).subscribe({
@@ -344,7 +345,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
       ],
     });
 
-    await alert.present();
+    await alert.open();
   }
 
   async deleteItem(groupedItem: any) {
@@ -384,7 +385,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
           },
         ],
       });
-      await quantityAlert.present();
+      await quantityAlert.open();
     } else {
       // Single item - show simple confirmation
       const alert = await this.alertController.create({
@@ -406,7 +407,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
           },
         ],
       });
-      await alert.present();
+      await alert.open();
     }
   }
 
@@ -456,7 +457,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
           }
         ],
       });
-      await quantityAlert.present();
+      await quantityAlert.open();
     } else {
       const wasPrinted = this.cartItems[groupedItem.indices[0]]?.printed;
       const alert = await this.alertController.create({
@@ -472,7 +473,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
           }
         ],
       });
-      await alert.present();
+      await alert.open();
     }
   }
 
@@ -592,7 +593,7 @@ async alertModal(message: string) {
     ],
   });
 
-  await alert.present();
+  await alert.open();
 }
 
 async moveTable() {
@@ -611,8 +612,8 @@ async moveTable() {
           cartItems: this.cartItems
         },
       });
-      await modal.present();
-      const { data } = await modal.onDidDismiss();
+      await modal.open();
+      const { data } = await modal.afterClosed();
       if(data && data.res && data.res.success){
         this.close()
       }
@@ -654,7 +655,7 @@ async moveTable() {
       ],
     });
 
-    await alert.present();
+    await alert.open();
   }
 
   private async proceedToTableSelection() {
@@ -666,8 +667,8 @@ async moveTable() {
         cartItems: this.cartItems
       },
     });
-    await modal.present();
-    const { data } = await modal.onDidDismiss();
+    await modal.open();
+    const { data } = await modal.afterClosed();
     if(data && data.res && data.res.success){
       this.close()
     }
@@ -679,9 +680,9 @@ async moveTable() {
       component: ItemSelectionModalComponent,
       componentProps: { categories: this.categories },
     });
-    await modal.present();
+    await modal.open();
 
-    const { data } = await modal.onDidDismiss();
+    const { data } = await modal.afterClosed();
 
     if (data?.item) {
       // Open the item detail modal with the selected item
@@ -694,9 +695,9 @@ async moveTable() {
       component: ItemDetailModalComponent,
       componentProps: { item, categoryName },
     });
-    await modal.present();
+    await modal.open();
 
-    const { data } = await modal.onDidDismiss();
+    const { data } = await modal.afterClosed();
 
     if (data?.finalItem) {
       const quantity = data.quantity || 1;

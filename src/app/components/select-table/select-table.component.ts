@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
-import { AlertController, ModalController, IonicModule } from '@ionic/angular';
+import { DialogRef, PromptService, DialogService } from '../../ui/dialog.service';
 
 import { CartService } from '../../services/cart.service';
 import { TableService, CustomTable } from '../../services/table.service';
@@ -12,14 +12,15 @@ import { takeUntil } from 'rxjs/operators';
   templateUrl: './select-table.component.html',
   styleUrls: ['./select-table.component.scss'],
   standalone: true,
-  imports: [IonicModule, TableGridComponent],
+  imports: [TableGridComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SelectTableComponent implements OnInit, OnDestroy {
-  private modalCtrl = inject(ModalController);
+  private modalCtrl = inject(DialogService);
+  private dialogRef = inject(DialogRef);
   private cartService = inject(CartService);
   private tableService = inject(TableService);
-  private alertController = inject(AlertController);
+  private alertController = inject(PromptService);
   private cdr = inject(ChangeDetectorRef);
 
   @Input() table: any;
@@ -63,7 +64,7 @@ export class SelectTableComponent implements OnInit, OnDestroy {
   }
 
   close() {
-    this.modalCtrl.dismiss({});
+    this.dialogRef.dismiss({});
   }
 
   async onSelectTable(table: TableOption) {
@@ -88,7 +89,7 @@ export class SelectTableComponent implements OnInit, OnDestroy {
       ],
     });
 
-    await alert.present();
+    await alert.open();
   }
 
   async movetable() {
@@ -112,7 +113,7 @@ export class SelectTableComponent implements OnInit, OnDestroy {
 
       this.cartService.moveTableItems(request).subscribe({
         next: (res) => {
-          this.modalCtrl.dismiss({ res });
+          this.dialogRef.dismiss({ res });
         },
         error: async (err) => {
           console.error(`Move Failed`, err);
@@ -123,7 +124,7 @@ export class SelectTableComponent implements OnInit, OnDestroy {
       // Move all items (backward compatibility)
       this.cartService.moveTable(request).subscribe({
         next: (res) => {
-          this.modalCtrl.dismiss({ res });
+          this.dialogRef.dismiss({ res });
         },
         error: async (err) => {
           console.error(`Move Failed`, err);
@@ -140,7 +141,7 @@ export class SelectTableComponent implements OnInit, OnDestroy {
       buttons: [{ text: 'OK', role: 'cancel' }],
     });
 
-    await alert.present();
+    await alert.open();
   }
 
   ngOnDestroy() {
