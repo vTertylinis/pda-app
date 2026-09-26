@@ -6,7 +6,7 @@ import { DecimalPipe } from '@angular/common';
 
 import { FormsModule } from '@angular/forms';
 import { TableManagementModalComponent } from '../components/table-management-modal/table-management-modal.component';
-import { Subject, EMPTY } from 'rxjs';
+import { Subject, EMPTY, merge } from 'rxjs';
 import { debounceTime, takeUntil, switchMap, catchError } from 'rxjs/operators';
 
 interface TableSummary {
@@ -90,7 +90,7 @@ export class Tab2Page implements OnInit, OnDestroy {
     });
 
     // also listen for cart/active-table updates
-    this.tableService.cartUpdates$.pipe(
+    merge(this.tableService.cartUpdates$, this.tableService.refreshRequired$).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: () => {

@@ -2,7 +2,7 @@
   <div class="ui-toolbar">
 
     <div class="ui-buttons">
-      <button class="ui-button" data-size="small" (click)="addNewItem()" data-color="success" [disabled]="removalMode || selectionMode || isLoading || !!loadError" type="button">
+      <button class="ui-button" data-size="small" (click)="addNewItem()" data-color="success" [disabled]="isPrinting || removalMode || selectionMode || isLoading || !!loadError" type="button">
         <span class="ui-icon" aria-hidden="true">⊕</span>
         Add
       </button>
@@ -18,14 +18,14 @@
     </h1>
 
     <div class="ui-buttons">
-      <button class="ui-button" data-size="small" (click)="moveTable()" [disabled]="removalMode || isLoading || !!loadError" type="button">
+      <button class="ui-button" data-size="small" (click)="moveTable()" [disabled]="isPrinting || removalMode || isLoading || !!loadError" type="button">
         <span class="ui-icon" aria-hidden="true">⇄</span>
         Move
         @if (selectedItems.size > 0) {
           <span class="ui-badge" data-color="danger">{{ selectedItems.size }}</span>
         }
       </button>
-      <button class="ui-button" data-size="large" (click)="close()" [disabled]="isRemoving" aria-label="Κλείσιμο" type="button">
+      <button class="ui-button" data-size="large" (click)="close()" [disabled]="isRemoving || isPrinting" aria-label="Κλείσιμο" type="button">
         <span class="ui-icon" aria-hidden="true">×</span>
       </button>
     </div>
@@ -68,7 +68,7 @@
           </button>
         }
       } @else {
-        <button class="ui-button" data-fill="outline" (click)="startRemovalSelection()" type="button">Επιλογή ειδών / Σύνολο</button>
+        <button class="ui-button" data-fill="outline" (click)="startRemovalSelection()" [disabled]="isPrinting" type="button">Επιλογή ειδών / Σύνολο</button>
       }
     </div>
     @if (removalMode) {
@@ -147,6 +147,7 @@
         <button
           type="button"
           class="action-trigger"
+          [disabled]="isPrinting"
           (click)="openItemActions(item, $event)"
           aria-label="Actions">
           <span class="ui-icon" aria-hidden="true">⋮</span>
@@ -174,10 +175,12 @@
     <button class="ui-button"
       data-expand="block"
       (click)="submit()"
-      [disabled]="selectionMode || isLoading || !!loadError || unprintedCount === 0"
+      [disabled]="isPrinting || selectionMode || isLoading || !!loadError || unprintedCount === 0"
        type="button">
       <span class="ui-icon" aria-hidden="true">▤</span>
-      @if (unprintedCount > 0) {
+      @if (isPrinting) {
+        Αποστολή για εκτύπωση…
+      } @else if (unprintedCount > 0) {
         Εκτύπωση ({{ unprintedCount }} νέα)
       } @else {
         Όλα εκτυπωμένα

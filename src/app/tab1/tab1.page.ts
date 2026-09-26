@@ -3,7 +3,7 @@ import { PromptService, DialogService, NotificationService } from '../ui/dialog.
 
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
-import { concat, Subject, EMPTY } from 'rxjs';
+import { concat, Subject, EMPTY, merge } from 'rxjs';
 import { debounceTime, switchMap, takeUntil, catchError } from 'rxjs/operators';
 
 import { ItemDetailModalComponent } from '../components/item-detail-modal/item-detail-modal.component';
@@ -78,7 +78,7 @@ export class Tab1Page implements OnInit, OnDestroy {
       this.cdr.markForCheck();
     });
 
-    this.tableService.cartUpdates$.pipe(
+    merge(this.tableService.cartUpdates$, this.tableService.refreshRequired$).pipe(
       takeUntil(this.destroy$)
     ).subscribe(() => this.activityTrigger$.next());
 

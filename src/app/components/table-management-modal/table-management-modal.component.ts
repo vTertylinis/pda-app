@@ -37,6 +37,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   selectionMode: boolean = false;
   removalMode = false;
   isRemoving = false;
+  isPrinting = false;
   selectionNotice = '';
   isLoading = true;
   loadError = '';
@@ -45,6 +46,16 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadTable();
+    this.tableService.refreshRequired$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      // Both pending operations refresh on completion. Don't race their writes.
+      if (this.isRemoving || this.isPrinting) return;
+      if (this.selectionMode || this.removalMode) {
+        this.selectionMode = false;
+        this.removalMode = false;
+        this.selectionNotice = 'Η σύνδεση ανανεώθηκε. Επιλέξτε ξανά τα είδη.';
+      }
+      this.loadTable();
+    });
 
     // React to cart changes pushed from the server (e.g. another device edits
     // this table). The socket lives in TableService; tab2 already listens the
@@ -147,7 +158,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   }
 
   close() {
-    if (this.isRemoving) return;
+    if (this.isRemoving || this.isPrinting) return;
     this.dialogRef.dismiss({});
   }
 
@@ -553,13 +564,23 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   }
 
 async submit() {
+  if (this.isPrinting || this.isRemoving || this.isLoading || this.loadError ||
+      this.selectionMode || this.removalMode || this.unprintedCount === 0) return;
+  this.isPrinting = true;
+  this.cdr.markForCheck();
   const request = {
     table: this.table,
     tableName: this.tableName || String(this.table),
     items: this.cartItems
   };
 
-  this.cartService.printItems(this.table, request).subscribe({
+  this.cartService.printItems(this.table, request).pipe(
+    takeUntil(this.destroy$),
+    finalize(() => {
+      this.isPrinting = false;
+      this.cdr.markForCheck();
+    })
+  ).subscribe({
     next: async (res: any) => {  // If needed, use a proper interface instead of 'any'
       console.log(res);
 
@@ -574,6 +595,13 @@ async submit() {
     },
     error: (err) => {
       console.error('Failed to send items to backend:', err);
+      // The server may have accepted the request before the response was lost.
+      // Refresh its flags, but never automatically repeat a print POST.
+      this.loadTable();
+      void this.alertModal(
+        'Δεν επιβεβαιώθηκε η αποστολή για εκτύπωση. Ελέγξτε αν βγήκε το χαρτάκι πριν δοκιμάσετε ξανά. ' +
+        'Αν υπάρχει πρόβλημα σύνδεσης, κλείστε και ξανανοίξτε το Wi-Fi και περιμένετε να συνδεθεί στο δίκτυο του καταστήματος.'
+      );
     },
   });
 }

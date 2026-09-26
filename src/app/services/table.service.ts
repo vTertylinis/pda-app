@@ -1,4 +1,4 @@
-import { Injectable, NgZone, inject } from '@angular/core';
+import { DestroyRef, Injectable, NgZone, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, shareReplay, delay, tap } from 'rxjs/operators';
@@ -19,6 +19,7 @@ export interface CustomTable {
 export class TableService {
   private http = inject(HttpClient);
   private ngZone = inject(NgZone);
+  private destroyRef = inject(DestroyRef);
 
   private apiUrl = environment.apiUrl;
   private socket: Socket | null = null;
@@ -26,6 +27,10 @@ export class TableService {
   public customTables$ = this.customTablesSubject.asObservable();
   private cartUpdatesSubject = new Subject<any>();
   public cartUpdates$ = this.cartUpdatesSubject.asObservable().pipe(debounceTime(500));
+  private refreshSubject = new Subject<void>();
+  // Kept separate from cart events so a following table-specific event cannot
+  // debounce away the refresh of every open view after a missed connection.
+  public refreshRequired$ = this.refreshSubject.pipe(debounceTime(100));
   private connectedSubject = new BehaviorSubject<boolean>(false);
   public connected$ = this.connectedSubject.pipe(
     switchMap(connected => connected
@@ -38,7 +43,21 @@ export class TableService {
 
   constructor() {
     this.initializeSocket();
-    this.loadCustomTables().subscribe();
+    this.refreshCustomTables();
+    const resume = () => {
+      if (document.visibilityState === 'visible') {
+        this.ngZone.run(() => this.reconnect());
+      }
+    };
+    document.addEventListener('visibilitychange', resume);
+    window.addEventListener('pageshow', resume);
+    window.addEventListener('online', resume);
+    this.destroyRef.onDestroy(() => {
+      document.removeEventListener('visibilitychange', resume);
+      window.removeEventListener('pageshow', resume);
+      window.removeEventListener('online', resume);
+      this.socket?.disconnect();
+    });
   }
 
   // Initialize Socket.io connection
@@ -101,7 +120,10 @@ export class TableService {
 
       this.socket.on('connect', () => {
         console.log('Connected to server');
-        this.ngZone.run(() => this.connectedSubject.next(true));
+        this.ngZone.run(() => {
+          this.connectedSubject.next(true);
+          this.refreshSubject.next();
+        });
       });
 
       this.socket.on('disconnect', () => {
@@ -166,5 +188,15 @@ export class TableService {
     if (this.socket && !this.socket.connected) {
       this.socket.connect();
     }
+    // A suspended browser may still report a connected socket. Always fetch
+    // current data on return; don't wait for heartbeat failure detection.
+    this.refreshSubject.next();
+    this.refreshCustomTables();
+  }
+
+  private refreshCustomTables() {
+    this.loadCustomTables().subscribe({ error: () => {
+      // Already logged by loadCustomTables; reconnect/foreground retries later.
+    } });
   }
 }
