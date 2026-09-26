@@ -20,6 +20,172 @@
 </head>
 
 <body>
+  <!-- Outside app-root: remains available before Angular and lazy routes load. -->
+  <section id="startup-screen" aria-label="Εκκίνηση εφαρμογής">
+    <div class="startup-card">
+      <div class="startup-symbol" aria-hidden="true">↻</div>
+      <h1 id="startup-title">Η εφαρμογή φορτώνει…</h1>
+      <p id="startup-message" role="status" aria-live="polite">Περιμένετε λίγο για να εμφανιστούν τα τραπέζια.</p>
+      <div id="startup-help" hidden>
+        <p>Κλείστε και ξανανοίξτε το Wi-Fi του κινητού. Περιμένετε να συνδεθεί ξανά στο Wi-Fi του καταστήματος και μετά πατήστε «Δοκιμή ξανά».</p>
+        <p>Αν συνεχίζεται, ενημερώστε τον υπεύθυνο για έλεγχο του υπολογιστή του καταστήματος.</p>
+        <button id="startup-retry" type="button">Δοκιμή ξανά</button>
+        <p class="startup-note">Αν ολοκληρωθεί η φόρτωση, η εφαρμογή θα ανοίξει αυτόματα.</p>
+      </div>
+      <noscript>Δεν μπορεί να ξεκινήσει η εφαρμογή. Ενημερώστε τον υπεύθυνο.</noscript>
+    </div>
+  </section>
+  <style>
+    #startup-screen { position: fixed; inset: 0; z-index: 2147483647; overflow: auto; box-sizing: border-box; display: flex; align-items: center; justify-content: center; padding: 28px 20px; background: #f4f7fb; color: #172b4d; font: 16px/1.55 system-ui, sans-serif; }
+    #startup-screen[hidden], #startup-help[hidden] { display: none; }
+    #startup-screen .startup-card { width: 100%; max-width: 420px; margin: auto; }
+    #startup-screen .startup-symbol { font-size: 42px; color: #2459a9; }
+    #startup-screen h1 { font-size: 25px; line-height: 1.3; margin: 12px 0; }
+    #startup-screen p { margin: 14px 0; }
+    #startup-screen button { width: 100%; min-height: 52px; border: 0; border-radius: 12px; background: #2459a9; color: white; font: inherit; font-weight: 600; padding: 12px; cursor: pointer; }
+    #startup-screen button:focus-visible { outline: 3px solid #172b4d; outline-offset: 3px; }
+    #startup-screen .startup-note { font-size: 14px; color: #52627a; }
+  </style>
+  <!-- Deliberately inline: diagnostics must work even when JS bundles cannot load. -->
+  <script id="startup-diagnostics">
+    (function () {
+      'use strict';
+      var queueKey = 'pda-startup-diagnostics-v1';
+      var started = Date.now();
+      var ready = false;
+      var uploading = false;
+      var errorCount = 0;
+      var attemptId = newId();
+      var queue = read(queueKey, []);
+      if (!Array.isArray(queue)) queue = [];
+      queue = queue.filter(function (entry) { return entry && entry.type === 'app-startup' && typeof entry.eventId === 'string'; }).slice(-80);
+      var deviceId;
+      try {
+        deviceId = localStorage.getItem('pda-app-instance-id') || newId();
+        localStorage.setItem('pda-app-instance-id', deviceId);
+      } catch (_) { deviceId = 'session-' + attemptId; }
+
+      function newId() { return Date.now() + '-' + Math.random().toString(16).slice(2); }
+      function read(key, fallback) {
+        try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch (_) { return fallback; }
+      }
+      function persist() {
+        try { localStorage.setItem(queueKey, JSON.stringify(queue)); } catch (_) { /* Keep the memory queue. */ }
+      }
+      function pathOnly(value) {
+        try { var url = new URL(value, location.href); return url.origin + url.pathname; } catch (_) { return ''; }
+      }
+      function record(stage, detail) {
+        try {
+          var navigation = performance.getEntriesByType('navigation')[0];
+          var connection = navigator.connection;
+          queue.push({
+            eventId: newId(), type: 'app-startup', stage: stage,
+            recordedAt: new Date().toISOString(), appInstanceId: deviceId,
+            attemptId: attemptId, durationMs: Date.now() - started,
+            detail: detail || {},
+            device: { online: navigator.onLine, userAgent: navigator.userAgent,
+              pageUrl: pathOnly(location.href), pageVisibility: document.visibilityState,
+              connection: connection ? { effectiveType: connection.effectiveType, rtt: connection.rtt, downlink: connection.downlink } : null },
+            navigation: navigation ? { type: navigation.type, responseStart: Math.round(navigation.responseStart),
+              responseEnd: Math.round(navigation.responseEnd), domInteractive: Math.round(navigation.domInteractive) } : null,
+            // Hashed bundle names identify the deployed build without recording query strings.
+            bundles: Array.from(document.scripts).filter(function (script) { return script.src; })
+              .slice(0, 6).map(function (script) { return pathOnly(script.src); })
+          });
+          queue = queue.slice(-80);
+          persist();
+        } catch (_) { /* Diagnostics must never prevent startup. */ }
+      }
+      function flush() {
+        if (uploading || !queue.length || !/^https?:$/.test(location.protocol)) return;
+        uploading = true;
+        var pending = queue.slice(0, 5);
+        var xhr = new XMLHttpRequest();
+        try {
+          // Same server that supplied the page, independent of Angular/API startup.
+          xhr.open('POST', location.origin + '/client-diagnostics');
+          xhr.setRequestHeader('Content-Type', 'application/json');
+          xhr.timeout = 8000;
+          xhr.onload = function () {
+            uploading = false;
+            if (xhr.status < 200 || xhr.status >= 300) return;
+            try {
+              var ack = JSON.parse(xhr.responseText).acceptedEventIds;
+              // An older backend may accept zero startup events: never discard them.
+              if (!Array.isArray(ack)) return;
+              var sentIds = pending.map(function (entry) { return entry.eventId; });
+              var before = queue.length;
+              queue = queue.filter(function (entry) { return sentIds.indexOf(entry.eventId) < 0 || ack.indexOf(entry.eventId) < 0; });
+              persist();
+              if (queue.length < before && queue.length) setTimeout(flush, 0);
+            } catch (_) { /* Keep until a valid acknowledgement arrives. */ }
+          };
+          xhr.onerror = xhr.ontimeout = xhr.onabort = function () { uploading = false; };
+          xhr.send(JSON.stringify({ entries: pending }));
+        } catch (_) { uploading = false; }
+      }
+      function help(message) {
+        if (ready) return;
+        document.getElementById('startup-title').textContent = 'Η εφαρμογή δεν έχει ανοίξει ακόμη';
+        document.getElementById('startup-message').textContent = message;
+        document.getElementById('startup-help').hidden = false;
+      }
+      function failure(stage, error) {
+        if (ready || errorCount >= 8) return;
+        errorCount++;
+        record(stage, { message: String(error && error.message || error || 'Unknown error').slice(0, 500),
+          stack: String(error && error.stack || '').slice(0, 1800) });
+        help('Παρουσιάστηκε πρόβλημα κατά τη φόρτωση. Μπορείτε να δοκιμάσετε ξανά.');
+        flush();
+      }
+      window.addEventListener('error', function (event) {
+        if (ready) return;
+        var target = event.target;
+        if (target && (target.tagName === 'SCRIPT' || target.tagName === 'LINK')) {
+          failure('resource-error', 'Failed to load: ' + pathOnly(target.src || target.href));
+        } else if (event.message) { failure('javascript-error', event.error || event.message); }
+      }, true);
+      window.addEventListener('unhandledrejection', function (event) { failure('unhandled-rejection', event.reason); });
+      window.addEventListener('app-startup-error', function (event) { failure('angular-error', event.detail); });
+      window.addEventListener('app-startup-ready', function () {
+        if (ready) return;
+        ready = true;
+        clearTimeout(slowTimer);
+        document.getElementById('startup-screen').hidden = true;
+        record('ready');
+        flush();
+      });
+      window.addEventListener('offline', function () {
+        if (!ready) { record('offline'); help('Το κινητό αναφέρει ότι δεν έχει σύνδεση δικτύου.'); }
+      });
+      window.addEventListener('online', function () {
+        if (!ready) record('online');
+        flush();
+      });
+      document.addEventListener('visibilitychange', function () {
+        if (!ready) record('visibility-change');
+        if (document.visibilityState === 'visible') flush();
+      });
+      document.getElementById('startup-retry').addEventListener('click', function () {
+        if (ready) return;
+        record('retry-click');
+        // Only an explicit user action reloads; never interrupt a working order.
+        location.reload();
+      });
+      var slowTimer = setTimeout(function () {
+        if (ready) return;
+        record('slow-start');
+        help('Η φόρτωση αργεί περισσότερο από το αναμενόμενο. Ακολουθήστε τα παρακάτω βήματα για να δοκιμάσετε ξανά.');
+        flush();
+      }, 12000);
+      record('started');
+      if (navigator.onLine === false) help('Το κινητό αναφέρει ότι δεν έχει σύνδεση δικτύου.');
+      // Includes earlier failed attempts even if Angular never starts this time.
+      setTimeout(flush, 0);
+      setInterval(flush, 15000);
+    }());
+  </script>
   <app-root></app-root>
 </body>
 
