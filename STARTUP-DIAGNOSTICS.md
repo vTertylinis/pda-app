@@ -17,6 +17,26 @@ animation frames dismisses it. No automatic reload interrupts an active order.
 Deploying just the frontend shows the help screen, but an older backend will not
 store startup reports. They remain queued until the backend supports them.
 
+### Different repository paths on the shop PC
+
+By default, deploy targets the sibling `pda-server/pda-app` directory. If the
+backend repo has another name or location, set `PDA_SERVER_DIR` to its absolute
+path (the folder containing `server.js`, not the nested `pda-app` folder).
+For the shop layout, run this in PowerShell after updating `scripts/deploy.js`:
+
+```powershell
+$env:PDA_SERVER_DIR = 'C:\PersonalTest\restaurant-backend'
+[Environment]::SetEnvironmentVariable('PDA_SERVER_DIR', $env:PDA_SERVER_DIR, 'User')
+Set-Location 'C:\PersonalTest\pda-app'
+npm run deploy
+```
+
+The first line applies to the current shell; the second persists it for future
+processes. An already-open IDE may need restarting to inherit the saved setting.
+Deploy prints its source, backend and destination and refuses to copy if the
+backend `server.js` is missing. Verify the output targets
+`C:\PersonalTest\restaurant-backend\pda-app`.
+
 ## Reading the logs
 
 Reports go to `pda-server/logs/network-YYYY-MM.jsonl` (UTC month of server receipt).
