@@ -109,10 +109,13 @@
             </span>
           </div>
 
-          @if (item.coffeeSize || item.coffeePreference || item.extras?.length || item.comments) {
+          @if (item.decaf || item.coffeeSize || item.coffeePreference || item.extras?.length || item.comments) {
             <div class="item-meta">
               @if (item.coffeeSize) {
                 <span class="meta-pill">{{ item.coffeeSize }}</span>
+              }
+              @if (item.decaf) {
+                <span class="meta-pill">Decaf</span>
               }
               @if (item.coffeePreference) {
                 <span class="meta-pill">{{ item.coffeePreference }}</span>

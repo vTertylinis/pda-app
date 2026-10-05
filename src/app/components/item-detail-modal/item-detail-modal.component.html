@@ -34,6 +34,12 @@
 
     <!-- Coffee Sweetness Options -->
     @if (categoryName === 'Καφέδες') {
+      <div class="ui-item margin-top">
+        <label class="radio-option">
+          <input class="ui-checkbox" type="checkbox" name="decaf" [(ngModel)]="decaf">
+          Decaf (χωρίς καφεΐνη)
+        </label>
+      </div>
       <div class="margin-top">
         <span class="ui-label margin-bottom"
           >Επιλέξτε γλυκύτητα:</span>

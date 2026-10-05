@@ -20,6 +20,7 @@ export class ItemDetailModalComponent implements OnInit {
   @Input() categoryName?: string;
   coffeeSize: 'single' | 'double' = 'single';
   coffeePreference: string = '';
+  decaf = false;
   comments: any;
   drinkCommentOption: string = '';
   potoMixOption: string = '';
@@ -47,6 +48,7 @@ export class ItemDetailModalComponent implements OnInit {
   ngOnInit() {
     if (this.editMode) {
       this.coffeePreference = this.item?.coffeePreference;
+      this.decaf = this.item?.decaf === true;
       this.comments = this.item?.comments;
       this.coffeeSize = this.item?.coffeeSize;
       // Preserve structured comment option when available
@@ -236,6 +238,7 @@ export class ItemDetailModalComponent implements OnInit {
       category: this.categoryName,
       coffeePreference:
         this.categoryName === 'Καφέδες' ? this.coffeePreference : null,
+      decaf: this.categoryName === 'Καφέδες' && this.decaf,
       coffeeSize:
         this.categoryName === 'Καφέδες' && this.supportsSingleOrDouble
           ? this.coffeeSize
