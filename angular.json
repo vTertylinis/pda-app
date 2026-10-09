@@ -137,6 +137,7 @@
   "cli": {
     "schematicCollections": [
       "@schematics/angular"
-    ]
+    ],
+    "analytics": false
   }
 }
