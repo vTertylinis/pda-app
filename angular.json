@@ -67,6 +67,10 @@
             },
             "ci": {
               "progress": false
+            },
+            "testing": {
+              "polyfills": [],
+              "tsConfig": "tsconfig.spec.json"
             }
           },
           "defaultConfiguration": "production"
@@ -93,27 +97,11 @@
           }
         },
         "test": {
-          "builder": "@angular/build:karma",
+          "builder": "@angular/build:unit-test",
           "options": {
-            "main": "src/test.ts",
-            "polyfills": [
-              "src/polyfills.ts"
-            ],
             "tsConfig": "tsconfig.spec.json",
-            "karmaConfig": "karma.conf.js",
-            "inlineStyleLanguage": "scss",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "src/assets",
-                "output": "assets"
-              }
-            ],
-            "styles": [
-              "src/global.scss",
-              "src/theme/variables.scss"
-            ],
-            "scripts": []
+            "buildTarget": "app:build:development,testing",
+            "runnerConfig": "vitest.config.mts"
           },
           "configurations": {
             "ci": {

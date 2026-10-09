@@ -132,8 +132,13 @@ among others:
 | `npm start` | Run the dev server (`ng serve`) |
 | `npm run build` | Production build into `www/` |
 | `npm run watch` | Development build in watch mode |
-| `npm test` | Run unit tests (Karma + Jasmine) |
+| `npm test` | Run unit tests (Vitest in headless Chrome) |
 | `npm run lint` | Lint the project (ESLint) |
+
+Use `npm ci` to install the versions recorded in `package-lock.json`; commit the
+lockfile together with dependency changes. Run `npm test -- --watch=false` for
+a single test run. The tests use installed Google Chrome for native dialog and
+form validation behavior, so no separate Playwright browser download is needed.
 
 ## Deploying to existing PDAs
 
