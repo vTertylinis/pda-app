@@ -1,9 +1,5 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-// TODO: NgZone, AlertController, ToastController are only needed by the disabled
-// online order time-response flow — re-import when that flow is re-enabled.
-// import { NgZone } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-// import { AlertController, ToastController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { TableService } from '../services/table.service';
 
@@ -16,23 +12,16 @@ import { TableService } from '../services/table.service';
 })
 export class Tab3Page implements OnInit, OnDestroy {
   private tableService = inject(TableService);
-  // TODO: online order time-response not ready yet — these are only used by the
-  // disabled respond/reject flow. Re-enable together with that flow.
-  // private toastCtrl = inject(ToastController);
-  // private alertCtrl = inject(AlertController);
-  // private ngZone = inject(NgZone);
-
   onlineOrders: any[] = [];
   loading: boolean = true;
   error: string | null = null;
-  // TODO: online order time-response not ready yet — re-enable when server side is done.
-  // Quick-response presets (minutes)
-  // readonly waitingPresets = [10, 15, 20, 30, 45, 60];
   private sub?: Subscription;
 
   ngOnInit() {
     // The service holds the persistent list — just subscribe to it
     this.sub = this.tableService.onlineOrders$.subscribe((orders) => {
+      this.loading = false;
+      this.error = null;
       this.onlineOrders = orders.map((o) => ({
         ...o,
         timestampDisplay: this.formatOrderDate(o.timestamp),
@@ -43,19 +32,12 @@ export class Tab3Page implements OnInit, OnDestroy {
         })),
       }));
     });
-    this.refreshOrders();
+    this.refreshOrders(false);
   }
 
   ngOnDestroy() {
     this.sub?.unsubscribe();
   }
-
-  // TODO: online order time-response not ready yet — re-enable when server side is done.
-  // get pendingResponseCount(): number {
-  //   return this.onlineOrders.filter(
-  //     (o) => o.needsResponse && o.respondedWaitingTime == null
-  //   ).length;
-  // }
 
   private formatOrderDate(timestamp: any): string {
     try {
@@ -66,90 +48,18 @@ export class Tab3Page implements OnInit, OnDestroy {
     }
   }
 
-  refreshOrders() {
+  refreshOrders(force = true) {
     this.loading = true;
     this.error = null;
-    this.tableService.loadOnlineOrders().subscribe({
+    this.sub?.add(this.tableService.loadOnlineOrders(force).subscribe({
       next: () => (this.loading = false),
       error: (err) => {
         console.error('Error loading online orders:', err);
         this.error = 'Failed to load online orders';
         this.loading = false;
       },
-    });
+    }));
   }
-
-  // TODO: online order time-response (respond / change / reject) is not ready yet —
-  // tab3 is view-only for now. Re-enable the block below when the server side is done.
-  // // Send the estimated waiting time back to the customer
-  // respond(order: any, minutes: number) {
-  //   if (!order?.orderId) {
-  //     this.showToast('Αυτή η παραγγελία δεν υποστηρίζει απάντηση', 'warning');
-  //     return;
-  //   }
-  //   const orderId = order.orderId;
-  //   this.tableService.setOnlineOrderResponding(orderId, true);
-  //   this.tableService.respondToOnlineOrder(orderId, minutes).subscribe({
-  //     next: () => {
-  //       this.ngZone.run(() => this.tableService.setOnlineOrderResponse(orderId, minutes));
-  //       this.showToast(`Στάλθηκε: ${minutes} λεπτά`, 'success');
-  //     },
-  //     error: (err) => {
-  //       console.error('Failed to respond to online order:', err);
-  //       this.ngZone.run(() => this.tableService.setOnlineOrderResponding(orderId, false));
-  //       this.showToast('Αποτυχία αποστολής', 'danger');
-  //     },
-  //   });
-  // }
-
-  // // Clear a sent response so the cashier can pick a different waiting time
-  // changeResponse(order: any) {
-  //   if (order?.orderId) {
-  //     this.tableService.setOnlineOrderResponse(order.orderId, null);
-  //   }
-  // }
-
-  // // Store rejects an order (too busy) — confirm first
-  // async rejectOrder(order: any) {
-  //   if (!order?.orderId) return;
-  //   const orderId = order.orderId;
-  //   const alert = await this.alertCtrl.create({
-  //     header: 'Απόρριψη παραγγελίας;',
-  //     message: `Σίγουρα θέλετε να απορρίψετε την παραγγελία του ${order.address?.name || ''};`,
-  //     buttons: [
-  //       { text: 'Όχι', role: 'cancel' },
-  //       {
-  //         text: 'Απόρριψη',
-  //         role: 'destructive',
-  //         handler: () => {
-  //           this.tableService.setOnlineOrderResponding(orderId, true);
-  //           this.tableService.rejectOnlineOrder(orderId).subscribe({
-  //             next: () => {
-  //               this.ngZone.run(() => this.tableService.setOnlineOrderRejected(orderId));
-  //               this.showToast('Η παραγγελία απορρίφθηκε', 'medium');
-  //             },
-  //             error: (err) => {
-  //               console.error('Failed to reject online order:', err);
-  //               this.ngZone.run(() => this.tableService.setOnlineOrderResponding(orderId, false));
-  //               this.showToast('Αποτυχία απόρριψης', 'danger');
-  //             },
-  //           });
-  //         },
-  //       },
-  //     ],
-  //   });
-  //   await alert.present();
-  // }
-
-  // private async showToast(message: string, color: string) {
-  //   const toast = await this.toastCtrl.create({
-  //     message,
-  //     duration: 2500,
-  //     color,
-  //     position: 'top',
-  //   });
-  //   await toast.present();
-  // }
 
   getItemsDisplay(order: any): string {
     if (!order.cart || order.cart.length === 0) {

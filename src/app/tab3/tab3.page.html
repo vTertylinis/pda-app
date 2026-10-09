@@ -19,15 +19,6 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-<!-- TODO: online order time-response not ready yet — re-enable when server side is done.
-  @if (pendingResponseCount > 0) {
-    <div class="alert-banner">
-      <ion-icon name="alarm-outline"></ion-icon>
-      <span>{{ pendingResponseCount }} νέα παραγγελία(ες) — επιλέξτε χρόνο αναμονής για σίγαση</span>
-    </div>
-  }
-  -->
-
   @if (loading) {
     <div class="state-block">
       <ion-spinner></ion-spinner>
@@ -52,18 +43,11 @@
   @if (!loading && !error && onlineOrders.length > 0) {
     <div class="orders-grid">
       @for (order of onlineOrders; track trackByOrder($index, order)) {
-        <article class="order-card" [class.cancelled]="order.cancelledByCustomer">
+        <article class="order-card">
           <header class="order-head">
             <div class="order-name">{{ order.address?.name || 'N/A' }}</div>
             <div class="order-time">{{ order.timestampDisplay }}</div>
           </header>
-
-          @if (order.cancelledByCustomer) {
-            <div class="cancel-strip">
-              <ion-icon name="close-circle-outline"></ion-icon>
-              Ακυρώθηκε από τον πελάτη
-            </div>
-          }
 
           <div class="order-contact">
             <div class="contact-row">
@@ -104,10 +88,6 @@
           <footer class="order-foot">
             <span class="order-total">Σύνολο: €{{ order.total.toFixed(2) }}</span>
           </footer>
-
-          <!-- TODO: online order time-response (respond / reject / waiting-time) is
-               not ready yet — tab3 is view-only for now. Re-enable when the server
-               side is finished. (Previous UI kept in git history: tab3 respond flow.) -->
         </article>
       }
     </div>

@@ -7,8 +7,8 @@ import { ItemDetailModalComponent } from '../item-detail-modal/item-detail-modal
 import { SelectTableComponent } from '../select-table/select-table.component';
 import { ItemSelectionModalComponent } from '../item-selection-modal/item-selection-modal.component';
 import { CATEGORIES } from 'src/app/models/categories';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { concat, Subject } from 'rxjs';
+import { finalize, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-table-management-modal',
@@ -31,14 +31,21 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   selectedTotal: number = 0;
   categories = CATEGORIES;
   private destroy$ = new Subject<void>();
+  private loadSequence = 0;
+  private selectionVersion = 0;
+  private isDeleting = false;
+  private destroyed = false;
 
   ngOnInit() {
     this.loadTable();
+    this.tableService.refreshRequired$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      if (!this.isDeleting) this.loadTable();
+    });
 
     // React to cart changes pushed from the server (e.g. another device edits
     // this table). The socket lives in TableService; tab2 already listens the
-    // same way. Refresh only when the event concerns THIS table, and skip while
-    // the user has a selection in progress so we don't wipe their work.
+    // same way. A changed cart invalidates selections based on item indices;
+    // our own sequential deletion refreshes once it completes.
     this.tableService.cartUpdates$.pipe(
       takeUntil(this.destroy$)
     ).subscribe({
@@ -46,9 +53,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
         if (!this.isUpdateForThisTable(data)) {
           return;
         }
-        if (this.hasSelection) {
-          return;
-        }
+        if (this.isDeleting) return;
         this.loadTable();
       },
       error: (err) => console.error('Error subscribing to cart updates:', err),
@@ -56,6 +61,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.destroyed = true;
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -340,6 +346,10 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   }
 
   private performDelete(groupedItem: any, quantity: number) {
+    if (!this.groupedItems.includes(groupedItem)) {
+      void this.alertModal('Το τραπέζι ενημερώθηκε. Επιλέξτε ξανά τα είδη.');
+      return;
+    }
     // Delete items in reverse order to avoid index shifting
     const indicesToDelete = groupedItem.indices
       .slice(0, quantity)
@@ -349,36 +359,29 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   }
 
   private deleteItemsByIndices(indicesToDelete: number[]) {
-    let deleteCount = 0;
-
-    const deleteNext = () => {
-      if (deleteCount >= indicesToDelete.length) {
-        console.log(`Deleted ${indicesToDelete.length} item(s) from cart`);
-        this.loadTable(true);
-        return;
+    if (this.isDeleting) return;
+    this.isDeleting = true;
+    const requests = indicesToDelete.map(index => this.cartService.deleteItemFromTable(this.table, index));
+    concat(...requests).pipe(
+      takeUntil(this.destroy$),
+      finalize(() => {
+        this.isDeleting = false;
+        if (!this.destroyed) this.loadTable(true);
+      })
+    ).subscribe({
+      error: err => {
+        console.error('Delete from cart failed:', err);
+        void this.alertModal('Η αφαίρεση δεν ολοκληρώθηκε. Ελέγξτε τα είδη πριν δοκιμάσετε ξανά.');
       }
-
-      const indexToDelete = indicesToDelete[deleteCount];
-      deleteCount++;
-
-      this.cartService.deleteItemFromTable(this.table, indexToDelete).subscribe({
-        next: (res) => {
-          console.log('Item deleted from cart:', res);
-          deleteNext();
-        },
-        error: (err) => {
-          console.error('Delete from cart failed:', err);
-          deleteNext();
-        },
-      });
-    };
-
-    deleteNext();
+    });
   }
 
   loadTable(fromDeleteMethod?: any) {
-    this.cartService.getCart(this.table).subscribe({
+    const sequence = ++this.loadSequence;
+    this.selectionVersion++;
+    this.cartService.getCart(this.table).pipe(takeUntil(this.destroy$)).subscribe({
       next: (res) => {
+        if (sequence !== this.loadSequence) return;
         this.cartItems = res as any[];
         this.groupedItems = this.groupCartItems();
         this.totalPrice = this.cartItems.reduce(
@@ -465,6 +468,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
 }
 
  async askToRemovePaidItems() {
+    const selectionVersion = this.selectionVersion;
     const selectedIndices = this.getSelectedIndices();
 
     if (!selectedIndices.length) {
@@ -482,6 +486,10 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
         {
           text: 'Ναι',
           handler: () => {
+            if (selectionVersion !== this.selectionVersion) {
+              void this.alertModal('Το τραπέζι ενημερώθηκε. Επιλέξτε ξανά τα είδη.');
+              return;
+            }
             this.deleteItemsByIndices(selectedIndices);
           },
         },
@@ -549,36 +557,18 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
 
     if (data?.finalItem) {
       const quantity = data.quantity || 1;
-      let successCount = 0;
-      let failureCount = 0;
-
-      for (let i = 0; i < quantity; i++) {
-        this.cartService
-          .addItemToCart(this.table, data.finalItem)
-          .subscribe({
-            next: (res) => {
-              successCount++;
-              console.log(`Item #${successCount} added to cart:`, res);
-
-              if (i === quantity - 1 || successCount + failureCount === quantity) {
-                this.loadTable();
-              }
-            },
-            error: (err) => {
-              failureCount++;
-              console.error(`Add to cart failed on item #${i + 1}:`, err);
-
-              if (i === quantity - 1 || successCount + failureCount === quantity) {
-                this.loadTable();
-                if (failureCount > 0) {
-                  this.alertModal(
-                    `${failureCount} item(s) failed to add to cart. ${successCount} item(s) added successfully.`
-                  );
-                }
-              }
-            },
-          });
-      }
+      const requests = Array.from({ length: quantity }, () =>
+        this.cartService.addItemToCart(this.table, data.finalItem)
+      );
+      concat(...requests).pipe(
+        takeUntil(this.destroy$),
+        finalize(() => { if (!this.destroyed) this.loadTable(); })
+      ).subscribe({
+        error: err => {
+          console.error('Add to cart failed:', err);
+          void this.alertModal('Δεν προστέθηκαν όλα τα είδη. Ελέγξτε την παραγγελία πριν δοκιμάσετε ξανά.');
+        }
+      });
     }
   }
 }

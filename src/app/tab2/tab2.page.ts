@@ -1,12 +1,12 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CartService } from '../services/cart.service';
 import { TableService } from '../services/table.service';
-import { AlertController, ModalController, IonicModule, ViewWillLeave } from '@ionic/angular';
+import { AlertController, ModalController, IonicModule } from '@ionic/angular';
 
 import { FormsModule } from '@angular/forms';
 import { TableManagementModalComponent } from '../components/table-management-modal/table-management-modal.component';
-import { Subject, EMPTY } from 'rxjs';
-import { debounceTime, takeUntil, switchMap, catchError } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-tab2',
@@ -15,7 +15,7 @@ import { debounceTime, takeUntil, switchMap, catchError } from 'rxjs/operators';
   standalone: true,
   imports: [IonicModule, FormsModule]
 })
-export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
+export class Tab2Page implements OnInit, OnDestroy {
   private cartService = inject(CartService);
   private tableService = inject(TableService);
   private modalCtrl = inject(ModalController);
@@ -25,20 +25,9 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
   tableMetadata: { [tableId: string]: { name: string; isCustom: boolean } } = {};
   tableCarts: { [tableId: string]: any[] } = {};
   private destroy$ = new Subject<void>();
-  private loadTrigger$ = new Subject<void>();
 
   ngOnInit() {
-    // Debounce all load triggers, use switchMap to cancel in-flight requests
-    this.loadTrigger$.pipe(
-      debounceTime(300),
-      switchMap(() =>
-        this.cartService.getActiveTables().pipe(
-          catchError((err) => {
-            console.error('Failed to load active tables:', err);
-            return EMPTY;
-          })
-        )
-      ),
+    this.cartService.watchActiveTables().pipe(
       takeUntil(this.destroy$)
     ).subscribe((res) => {
       this.tableMetadata = res.tableMetadata;
@@ -55,46 +44,10 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
         return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
       });
     });
-
-    this.loadTrigger$.next();
-
-    // react to custom table changes from other clients
-    this.tableService.getCustomTables().pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
-      next: () => {
-        this.loadTrigger$.next();
-      },
-      error: (err) => {
-        console.error('Error subscribing to custom tables updates:', err);
-      }
-    });
-
-    // also listen for cart/active-table updates
-    this.tableService.cartUpdates$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
-      next: () => {
-        this.loadTrigger$.next();
-      },
-      error: (err) => {
-        console.error('Error subscribing to cart updates:', err);
-      }
-    });
-  }
-
-  ionViewWillLeave() {
-    this.activeTables = [];
-    this.tableMetadata = {};
-    this.tableCarts = {};
-  }
-
-  ionViewWillEnter() {
-    this.loadTrigger$.next();
   }
 
   refresh() {
-    this.loadTrigger$.next();
+    this.cartService.refresh();
   }
 
   getTableDisplayName(tableId: string): string {
@@ -125,7 +78,6 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
     await modal.present();
 
     const { data } = await modal.onDidDismiss();
-    this.loadTrigger$.next();
 
     if (data?.finalItem) {
       console.log('Received from modal:', data.finalItem);
@@ -163,20 +115,17 @@ export class Tab2Page implements OnInit, OnDestroy, ViewWillLeave {
                   this.tableService.deleteCustomTable(table).subscribe({
                     next: () => {
                       console.log('Custom table deleted successfully');
-                      this.loadTrigger$.next();
                     },
                     error: (err) => {
                       console.error('Failed to delete custom table:', err);
-                      this.loadTrigger$.next();
+                      this.cartService.refresh();
                     }
                   });
-                } else {
-                  this.loadTrigger$.next();
                 }
               },
               error: (err) => {
                 console.error('Delete cart failed:', err);
-                this.loadTrigger$.next();
+                this.cartService.refresh();
               },
             });
           },

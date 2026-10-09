@@ -37,7 +37,7 @@ export class SelectTableComponent implements OnInit, OnDestroy {
     });
 
     // Show which target tables already have orders (helps when merging tables)
-    this.cartService.getActiveTables().pipe(
+    this.cartService.watchActiveTables().pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (res) => {

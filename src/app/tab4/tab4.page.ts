@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 
 import { IonicModule, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
+import { Subscription } from 'rxjs';
+import { OrderHistoryService } from '../services/order-history.service';
 
 @Component({
   selector: 'app-tab4',
@@ -11,21 +11,29 @@ import { environment } from '../../environments/environment';
   standalone: true,
   imports: [IonicModule],
 })
-export class Tab4Page implements ViewWillEnter, ViewWillLeave {
-  private http = inject(HttpClient);
+export class Tab4Page implements ViewWillEnter, ViewWillLeave, OnDestroy {
+  private history = inject(OrderHistoryService);
+  private viewSubscription?: Subscription;
 
   printedOrders: any[] = [];
   loading: boolean = true;
   error: string | null = null;
-  private apiUrl = environment.apiUrl;
 
   ionViewWillEnter() {
-    this.loadPrintedOrders();
+    this.viewSubscription?.unsubscribe();
+    this.viewSubscription = this.history.watch('orders').subscribe(state => {
+      this.loading = state.loading;
+      this.error = state.error ? 'Failed to load printed orders' : null;
+      if (state.data) this.applyOrders(state.data);
+    });
   }
 
   ionViewWillLeave() {
-    this.printedOrders = [];
-    this.error = null;
+    this.viewSubscription?.unsubscribe();
+  }
+
+  ngOnDestroy() {
+    this.viewSubscription?.unsubscribe();
   }
 
   private formatOrderDate(timestamp: any): string {
@@ -37,30 +45,20 @@ export class Tab4Page implements ViewWillEnter, ViewWillLeave {
     }
   }
 
+  private applyOrders(data: any[]) {
+    this.printedOrders = (data || []).map((order) => ({
+      ...order,
+      timestampDisplay: this.formatOrderDate(order.timestamp),
+      items: (order.items || []).map((item: any) => ({
+        ...item,
+        extrasDisplay:
+          item.extras?.map((e: any) => e.name).join(', ') || '',
+      })),
+    }));
+  }
+
   loadPrintedOrders() {
-    this.loading = true;
-    this.error = null;
-
-    this.http.get<any[]>(`${this.apiUrl}/orders/last-100`).subscribe({
-      next: (data) => {
-        this.printedOrders = (data || []).map((order) => ({
-          ...order,
-          timestampDisplay: this.formatOrderDate(order.timestamp),
-          items: (order.items || []).map((item: any) => ({
-            ...item,
-            extrasDisplay:
-              item.extras?.map((e: any) => e.name).join(', ') || '',
-          })),
-        }));
-
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading printed orders:', err);
-        this.error = 'Failed to load printed orders';
-        this.loading = false;
-      },
-    });
+    this.history.refresh('orders');
   }
 
   refreshOrders() {

@@ -1,48 +1,5 @@
 /* Online orders — tab-specific styles. Shared card/grid styles live in global.scss */
 
-/* Kept for the disabled respond flow (see TODO in template) */
-.alert-banner {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
-  background: var(--ion-color-danger, #eb445a);
-  color: #fff;
-  font-weight: 700;
-  font-size: 1.05em;
-  animation: alert-pulse 1s ease-in-out infinite;
-
-  ion-icon {
-    font-size: 1.6em;
-    flex-shrink: 0;
-  }
-}
-
-@keyframes alert-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-.order-card.cancelled {
-  opacity: 0.75;
-  border-color: var(--ion-color-danger);
-}
-
-.cancel-strip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: rgba(var(--ion-color-danger-rgb), 0.15);
-  color: var(--ion-color-danger);
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-
 .order-contact {
   display: flex;
   flex-direction: column;

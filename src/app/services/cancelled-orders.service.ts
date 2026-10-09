@@ -1,15 +1,12 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { environment } from '../../environments/environment';
+import { OrderHistoryService } from './order-history.service';
 
 
 @Injectable({ providedIn: 'root' })
 export class CancelledOrdersService {
-  private http = inject(HttpClient);
-
-  private apiUrl = environment.apiUrl;
+  private history = inject(OrderHistoryService);
 
   getLastCancelledOrders() {
-    return this.http.get<any[]>(`${this.apiUrl}/cancelled-orders/last-100`);
+    return this.history.get('cancelled-orders');
   }
 }

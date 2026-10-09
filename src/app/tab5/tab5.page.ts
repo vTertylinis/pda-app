@@ -1,7 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 
 import { IonicModule, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
-import { CancelledOrdersService } from '../services/cancelled-orders.service';
+import { Subscription } from 'rxjs';
+import { OrderHistoryService } from '../services/order-history.service';
 
 @Component({
   selector: 'app-tab5',
@@ -10,20 +11,29 @@ import { CancelledOrdersService } from '../services/cancelled-orders.service';
   standalone: true,
   imports: [IonicModule],
 })
-export class Tab5Page implements ViewWillEnter, ViewWillLeave {
-  private cancelledOrdersService = inject(CancelledOrdersService);
+export class Tab5Page implements ViewWillEnter, ViewWillLeave, OnDestroy {
+  private history = inject(OrderHistoryService);
+  private viewSubscription?: Subscription;
 
   cancelledOrders: any[] = [];
   loading: boolean = true;
   error: string | null = null;
 
   ionViewWillEnter() {
-    this.loadCancelledOrders();
+    this.viewSubscription?.unsubscribe();
+    this.viewSubscription = this.history.watch('cancelled-orders').subscribe(state => {
+      this.loading = state.loading;
+      this.error = state.error ? 'Failed to load cancelled orders' : null;
+      if (state.data) this.applyOrders(state.data);
+    });
   }
 
   ionViewWillLeave() {
-    this.cancelledOrders = [];
-    this.error = null;
+    this.viewSubscription?.unsubscribe();
+  }
+
+  ngOnDestroy() {
+    this.viewSubscription?.unsubscribe();
   }
 
   private formatOrderDate(timestamp: any): string {
@@ -35,28 +45,18 @@ export class Tab5Page implements ViewWillEnter, ViewWillLeave {
     }
   }
 
+  private applyOrders(data: any[]) {
+    this.cancelledOrders = (data || []).map((order) => ({
+      ...order,
+      cancelledAtDisplay: this.formatOrderDate(order.cancelledAt),
+      item: (order.item || {}),
+      extrasDisplay:
+        order.item?.extras?.map((e: any) => `${e.name}${e.quantity > 1 ? ' x' + e.quantity : ''}`).join(', ') || '',
+    }));
+  }
+
   loadCancelledOrders() {
-    this.loading = true;
-    this.error = null;
-
-    this.cancelledOrdersService.getLastCancelledOrders().subscribe({
-      next: (data) => {
-        this.cancelledOrders = (data || []).map((order) => ({
-          ...order,
-          cancelledAtDisplay: this.formatOrderDate(order.cancelledAt),
-          item: (order.item || {}),
-          extrasDisplay:
-            order.item?.extras?.map((e: any) => `${e.name}${e.quantity > 1 ? ' x' + e.quantity : ''}`).join(', ') || '',
-        }));
-
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading cancelled orders:', err);
-        this.error = 'Failed to load cancelled orders';
-        this.loading = false;
-      },
-    });
+    this.history.refresh('cancelled-orders');
   }
 
   refreshOrders() {

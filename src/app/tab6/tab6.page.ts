@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 
 import { IonicModule, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
+import { Subscription } from 'rxjs';
+import { OrderHistoryService } from '../services/order-history.service';
 
 @Component({
   selector: 'app-tab6',
@@ -11,21 +11,29 @@ import { environment } from '../../environments/environment';
   standalone: true,
   imports: [IonicModule],
 })
-export class Tab6Page implements ViewWillEnter, ViewWillLeave {
-  private http = inject(HttpClient);
+export class Tab6Page implements ViewWillEnter, ViewWillLeave, OnDestroy {
+  private history = inject(OrderHistoryService);
+  private viewSubscription?: Subscription;
 
   selfOrders: any[] = [];
   loading: boolean = true;
   error: string | null = null;
-  private apiUrl = environment.apiUrl;
 
   ionViewWillEnter() {
-    this.loadSelfOrders();
+    this.viewSubscription?.unsubscribe();
+    this.viewSubscription = this.history.watch('self-orders').subscribe(state => {
+      this.loading = state.loading;
+      this.error = state.error ? 'Failed to load self-orders' : null;
+      if (state.data) this.applyOrders(state.data);
+    });
   }
 
   ionViewWillLeave() {
-    this.selfOrders = [];
-    this.error = null;
+    this.viewSubscription?.unsubscribe();
+  }
+
+  ngOnDestroy() {
+    this.viewSubscription?.unsubscribe();
   }
 
   private formatOrderDate(timestamp: any): string {
@@ -37,30 +45,20 @@ export class Tab6Page implements ViewWillEnter, ViewWillLeave {
     }
   }
 
+  private applyOrders(data: any[]) {
+    this.selfOrders = (data || []).map((order) => ({
+      ...order,
+      timestampDisplay: this.formatOrderDate(order.timestamp),
+      items: (order.items || []).map((item: any) => ({
+        ...item,
+        extrasDisplay:
+          item.extras?.map((e: any) => e.name).join(', ') || '',
+      })),
+    }));
+  }
+
   loadSelfOrders() {
-    this.loading = true;
-    this.error = null;
-
-    this.http.get<any[]>(`${this.apiUrl}/self-orders/last-100`).subscribe({
-      next: (data) => {
-        this.selfOrders = (data || []).map((order) => ({
-          ...order,
-          timestampDisplay: this.formatOrderDate(order.timestamp),
-          items: (order.items || []).map((item: any) => ({
-            ...item,
-            extrasDisplay:
-              item.extras?.map((e: any) => e.name).join(', ') || '',
-          })),
-        }));
-
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading self-orders:', err);
-        this.error = 'Αποτυχία φόρτωσης self-orders';
-        this.loading = false;
-      },
-    });
+    this.history.refresh('self-orders');
   }
 
   refreshOrders() {

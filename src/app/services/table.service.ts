@@ -1,11 +1,15 @@
-import { Injectable, NgZone, inject } from '@angular/core';
+import { DestroyRef, Injectable, InjectionToken, NgZone, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, Subject, of } from 'rxjs';
-import { switchMap, delay, distinctUntilChanged, shareReplay } from 'rxjs/operators';
+import { BehaviorSubject, Observable, Subject, defer, of } from 'rxjs';
+import { switchMap, delay, distinctUntilChanged, shareReplay, debounceTime, finalize, map, takeUntil, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { io, Socket } from 'socket.io-client';
-import { AlertSoundService } from './alert-sound.service';
+
+export const TABLET_SOCKET_FACTORY = new InjectionToken<typeof io>('Tablet socket factory', {
+  providedIn: 'root', factory: () => io
+});
 
 export interface CustomTable {
   id: string;
@@ -21,28 +25,18 @@ export interface OnlineOrder {
   cart?: any[];
   total?: number;
   timestamp?: string;
-  // Cashier's reply, persisted so it survives tab switches / reloads
-  respondedWaitingTime?: number | null;
-  responding?: boolean;
-  // True only for orders that arrived live this session and still require a
-  // response. Drives the mandatory looping alarm; historical orders are false.
-  needsResponse?: boolean;
-  // Set when the store rejected the order, or the customer cancelled it.
-  rejected?: boolean;
-  cancelledByCustomer?: boolean;
   [key: string]: any;
 }
-
-const RESPONSES_KEY = 'online-order-responses-v1';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TableService {
   private http = inject(HttpClient);
+  private destroyRef = inject(DestroyRef);
   private ngZone = inject(NgZone);
   private router = inject(Router);
-  private alertSound = inject(AlertSoundService);
+  private createSocket = inject(TABLET_SOCKET_FACTORY);
 
   private apiUrl = environment.apiUrl;
   private socket: Socket | null = null;
@@ -52,10 +46,15 @@ export class TableService {
   // emit when carts/active tables change on the server
   private cartUpdatesSubject = new Subject<any>();
   public cartUpdates$ = this.cartUpdatesSubject.asObservable();
+  private refreshSubject = new Subject<void>();
+  public refreshRequired$ = this.refreshSubject.pipe(debounceTime(100));
+  private historyUpdatesSubject = new Subject<string>();
+  public historyUpdates$ = this.historyUpdatesSubject.asObservable();
 
   // Socket connection state. Disconnects are debounced 5s before being shown,
   // so short WiFi blips don't flash the offline banner.
   private connectedSubject = new BehaviorSubject<boolean>(false);
+  public connectionChanges$ = this.connectedSubject.asObservable();
   public connected$ = this.connectedSubject.pipe(
     switchMap(connected => connected
       ? of(true)
@@ -69,18 +68,47 @@ export class TableService {
   // survives tab switches. Live arrivals are merged in; responses persist.
   private onlineOrdersSubject = new BehaviorSubject<OnlineOrder[]>([]);
   public onlineOrders$ = this.onlineOrdersSubject.asObservable();
-  // Saved waiting-time responses keyed by orderId, so a selection isn't lost
-  private responses: { [orderId: string]: number } = this.loadResponses();
+  private onlineOrdersLoaded = false;
+  private onlineOrdersRequest?: Observable<OnlineOrder[]>;
+  private cancelOnlineSync = new Subject<void>();
+  private onlineChanges = new Map<string, Partial<OnlineOrder>>();
 
   constructor() {
     this.initializeSocket();
-    this.loadCustomTables();
+    const resume = () => {
+      if (document.visibilityState === 'visible') this.ngZone.run(() => this.reconnect());
+    };
+    document.addEventListener('visibilitychange', resume);
+    window.addEventListener('pageshow', resume);
+    window.addEventListener('online', resume);
+    this.refreshRequired$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.onlineOrdersLoaded = false;
+      this.cancelOnlineSync.next();
+      this.loadOnlineOrders().subscribe({ error: err => console.error('Failed to sync online orders:', err) });
+    });
+    this.destroyRef.onDestroy(() => {
+      document.removeEventListener('visibilitychange', resume);
+      window.removeEventListener('pageshow', resume);
+      window.removeEventListener('online', resume);
+      this.socket?.disconnect();
+    });
+  }
+
+  isConnected(): boolean { return !!this.socket?.connected; }
+
+  reconnect() {
+    if (this.socket?.connected) this.socket.emit('tables:request-sync');
+    else {
+      this.socket?.connect();
+      this.loadCustomTables().subscribe({ error: () => {} });
+    }
+    this.refreshSubject.next();
   }
 
   // Initialize Socket.io connection
   private initializeSocket() {
     this.ngZone.runOutsideAngular(() => {
-      this.socket = io(this.apiUrl, {
+      this.socket = this.createSocket(this.apiUrl, {
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
@@ -141,12 +169,6 @@ export class TableService {
         });
       });
 
-      // Listen for orders the customer cancelled (so the cashier stops preparing)
-      this.socket.on('online-order:cancelled', (status: any) => {
-        console.log('Online order cancelled by customer:', status);
-        this.ngZone.run(() => this.markOnlineOrderCancelled(status?.orderId));
-      });
-
       // Server emits this after a new tablet build is deployed — reload to pick it up
       this.socket.on('tablet:reload', () => {
         window.location.reload();
@@ -154,32 +176,35 @@ export class TableService {
 
       this.socket.on('connect', () => {
         console.log('Connected to server');
-        this.ngZone.run(() => this.connectedSubject.next(true));
+        this.ngZone.run(() => {
+          this.connectedSubject.next(true);
+          this.refreshSubject.next();
+        });
+      });
+
+      this.socket.on('history:updated', (data: { kind: string }) => {
+        this.ngZone.run(() => this.historyUpdatesSubject.next(data.kind));
+      });
+      this.socket.once('connect_error', () => {
+        this.ngZone.run(() => this.loadCustomTables().subscribe({ error: () => {} }));
       });
 
       this.socket.on('disconnect', () => {
         console.log('Disconnected from server');
-        this.ngZone.run(() => this.connectedSubject.next(false));
+        this.ngZone.run(() => {
+          this.connectedSubject.next(false);
+          this.onlineOrdersLoaded = false;
+          this.cancelOnlineSync.next();
+        });
       });
     });
   }
 
   // Load custom tables from API
   loadCustomTables(): Observable<{ [key: string]: CustomTable }> {
-    return new Observable(observer => {
-      this.http.get<{ [key: string]: CustomTable }>(`${this.apiUrl}/custom-tables`)
-        .subscribe({
-          next: (tables) => {
-            this.customTablesSubject.next(tables);
-            observer.next(tables);
-            observer.complete();
-          },
-          error: (err) => {
-            console.error('Failed to load custom tables:', err);
-            observer.error(err);
-          }
-        });
-    });
+    return this.http.get<{ [key: string]: CustomTable }>(`${this.apiUrl}/custom-tables`).pipe(
+      tap(tables => this.customTablesSubject.next(tables))
+    );
   }
 
   // Create a new custom table
@@ -187,14 +212,20 @@ export class TableService {
     return this.http.post<{ success: boolean; table: CustomTable }>(
       `${this.apiUrl}/custom-tables`,
       { name }
-    );
+    ).pipe(tap(response => this.customTablesSubject.next({
+      ...this.customTablesSubject.value, [response.table.id]: response.table
+    })));
   }
 
   // Delete a custom table
   deleteCustomTable(tableId: string): Observable<{ success: boolean; message: string }> {
     return this.http.delete<{ success: boolean; message: string }>(
       `${this.apiUrl}/custom-tables/${tableId}`
-    );
+    ).pipe(tap(() => {
+      const tables = { ...this.customTablesSubject.value };
+      delete tables[tableId];
+      this.customTablesSubject.next(tables);
+    }));
   }
 
   // Update a custom table
@@ -202,7 +233,9 @@ export class TableService {
     return this.http.put<{ success: boolean; table: CustomTable }>(
       `${this.apiUrl}/custom-tables/${tableId}`,
       updates
-    );
+    ).pipe(tap(response => this.customTablesSubject.next({
+      ...this.customTablesSubject.value, [response.table.id]: response.table
+    })));
   }
 
   // Get custom tables as Observable
@@ -217,147 +250,48 @@ export class TableService {
 
   // === Online orders state ===
 
-  // Push a new list to subscribers and (re)evaluate the looping alert.
-  // The alarm plays while ANY live order still requires a response.
   private emitOnlineOrders(orders: OnlineOrder[]) {
     this.onlineOrdersSubject.next(orders);
-    // TODO: online order time-response not ready yet — tab3 is view-only, so the
-    // forced "respond to silence" alarm is disabled. Re-enable the block below
-    // (and the needsResponse flag in prependOnlineOrder) when the flow is ready.
-    this.alertSound.stop();
-    // const hasUnanswered = orders.some(
-    //   (o) => o.needsResponse && o.respondedWaitingTime == null
-    // );
-    // if (hasUnanswered) {
-    //   this.alertSound.start();
-    // } else {
-    //   this.alertSound.stop();
-    // }
   }
 
-  // Decorate a raw order with display + response fields
-  private decorateOnlineOrder(order: OnlineOrder): OnlineOrder {
-    const saved = order.orderId ? this.responses[order.orderId] : undefined;
-    return {
-      ...order,
-      respondedWaitingTime: order.respondedWaitingTime ?? saved ?? null,
-      responding: false,
-    };
-  }
-
-  // Load the recent online orders from the server (history), merged with saved responses
-  loadOnlineOrders(): Observable<OnlineOrder[]> {
-    return new Observable((observer) => {
-      this.http.get<OnlineOrder[]>(`${this.apiUrl}/online-orders/last-20`).subscribe({
-        next: (data) => {
-          const decorated = (data || []).map((o) => this.decorateOnlineOrder(o));
-          // Keep any live orders already in memory that aren't in the history yet
-          const existing = this.onlineOrdersSubject.value;
-          const historyIds = new Set(decorated.map((o) => o.orderId));
-          const liveOnly = existing.filter(
-            (o) => o.orderId && !historyIds.has(o.orderId)
+  // Initial/recovery history is shared with the live socket list.
+  loadOnlineOrders(force = false): Observable<OnlineOrder[]> {
+    return defer(() => {
+      if (this.onlineOrdersRequest) return this.onlineOrdersRequest;
+      if (!force && this.onlineOrdersLoaded) return of(this.onlineOrdersSubject.value);
+      this.onlineChanges.clear();
+      this.onlineOrdersRequest = this.http.get<OnlineOrder[]>(`${this.apiUrl}/online-orders/last-20`).pipe(
+        tap(data => {
+          const orders = (data || []).map(order => ({
+            ...order, ...this.onlineChanges.get(order.orderId || '')
+          }));
+          const ids = new Set(orders.map(order => order.orderId));
+          // Preserve live arrivals received during the HTTP request, even when
+          // the history snapshot was taken before they were saved.
+          const liveOnly = this.onlineOrdersSubject.value.filter(order =>
+            order.orderId && this.onlineChanges.has(order.orderId) && !ids.has(order.orderId)
           );
-          this.emitOnlineOrders([...liveOnly, ...decorated]);
-          observer.next(this.onlineOrdersSubject.value);
-          observer.complete();
-        },
-        error: (err) => observer.error(err),
-      });
+          this.emitOnlineOrders([...liveOnly, ...orders].slice(0, 20));
+          this.onlineOrdersLoaded = true;
+        }),
+        map(() => this.onlineOrdersSubject.value),
+        takeUntil(this.cancelOnlineSync),
+        finalize(() => { this.onlineOrdersRequest = undefined; this.onlineChanges.clear(); }),
+        shareReplay({ bufferSize: 1, refCount: false })
+      );
+      return this.onlineOrdersRequest;
     });
   }
 
   // Add a freshly arrived order to the top of the list (dedupe by orderId).
-  // Live arrivals require a response (mandatory alarm) unless already answered.
   private prependOnlineOrder(order: OnlineOrder) {
-    const decorated = this.decorateOnlineOrder(order);
-    // TODO: online order time-response not ready yet — don't flag live orders as
-    // needing a response (which would trigger the forced alarm). Re-enable when ready.
-    // decorated.needsResponse = decorated.respondedWaitingTime == null;
-    const current = this.onlineOrdersSubject.value.filter(
-      (o) => !o.orderId || o.orderId !== decorated.orderId
-    );
-    this.emitOnlineOrders([decorated, ...current]);
-  }
-
-  // TODO: online order time-response (PDA → server) not ready yet — these methods
-  // send the waiting-time / reject reply back to the customer and are disabled
-  // until the server side is finished. Re-enable together with the tab3 UI.
-  // // Respond to an online order with an estimated waiting time (minutes)
-  // respondToOnlineOrder(orderId: string, waitingTime: number): Observable<{ success: boolean; status: any }> {
-  //   return this.http.post<{ success: boolean; status: any }>(
-  //     `${this.apiUrl}/online-order/${orderId}/respond`,
-  //     { waitingTime }
-  //   );
-  // }
-
-  // // Store rejects an online order (too busy to accept it)
-  // rejectOnlineOrder(orderId: string, reason?: string): Observable<{ success: boolean; status: any }> {
-  //   return this.http.post<{ success: boolean; status: any }>(
-  //     `${this.apiUrl}/online-order/${orderId}/reject`,
-  //     { reason: reason || null }
-  //   );
-  // }
-
-  // // Mark an order as rejected by the store and silence its alarm contribution
-  // setOnlineOrderRejected(orderId: string) {
-  //   const updated = this.onlineOrdersSubject.value.map((o) =>
-  //     o.orderId === orderId
-  //       ? { ...o, rejected: true, needsResponse: false, responding: false }
-  //       : o
-  //   );
-  //   this.emitOnlineOrders(updated);
-  // }
-
-  // Mark an order the customer cancelled (pushed from the server)
-  private markOnlineOrderCancelled(orderId?: string) {
-    if (!orderId) return;
-    const updated = this.onlineOrdersSubject.value.map((o) =>
-      o.orderId === orderId
-        ? { ...o, cancelledByCustomer: true, needsResponse: false, responding: false }
-        : o
-    );
-    this.emitOnlineOrders(updated);
-  }
-
-  // TODO: online order time-response not ready yet — these in-memory helpers back
-  // the disabled respond flow (waiting-time persistence + spinner). Re-enable with it.
-  // // Persist the selected waiting time and update the in-memory list
-  // setOnlineOrderResponse(orderId: string, waitingTime: number | null) {
-  //   if (waitingTime == null) {
-  //     delete this.responses[orderId];
-  //   } else {
-  //     this.responses[orderId] = waitingTime;
-  //   }
-  //   this.saveResponses();
-  //   const updated = this.onlineOrdersSubject.value.map((o) =>
-  //     o.orderId === orderId
-  //       ? { ...o, respondedWaitingTime: waitingTime, responding: false, needsResponse: waitingTime == null ? o.needsResponse : false }
-  //       : o
-  //   );
-  //   this.emitOnlineOrders(updated);
-  // }
-
-  // // Mark an order as in-flight (spinner) without changing its saved response
-  // setOnlineOrderResponding(orderId: string, responding: boolean) {
-  //   const updated = this.onlineOrdersSubject.value.map((o) =>
-  //     o.orderId === orderId ? { ...o, responding } : o
-  //   );
-  //   this.onlineOrdersSubject.next(updated);
-  // }
-
-  private loadResponses(): { [orderId: string]: number } {
-    try {
-      const raw = localStorage.getItem(RESPONSES_KEY);
-      return raw ? JSON.parse(raw) || {} : {};
-    } catch {
-      return {};
+    if (order.orderId && this.onlineOrdersRequest) {
+      this.onlineChanges.set(order.orderId, { ...this.onlineChanges.get(order.orderId), ...order });
     }
-  }
-
-  private saveResponses() {
-    try {
-      localStorage.setItem(RESPONSES_KEY, JSON.stringify(this.responses));
-    } catch {}
+    const current = this.onlineOrdersSubject.value.filter(
+      (o) => !o.orderId || o.orderId !== order.orderId
+    );
+    this.emitOnlineOrders([order, ...current].slice(0, 20));
   }
 
   // Disconnect socket
