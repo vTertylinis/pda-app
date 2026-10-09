@@ -28,7 +28,7 @@ describe('Table item selection', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: CartService, useValue: cart },
-        { provide: TableService, useValue: { cartUpdates$: updates } },
+        { provide: TableService, useValue: { cartUpdates$: updates, refreshRequired$: new Subject<void>() } },
         { provide: ChangeDetectorRef, useValue: { markForCheck: () => {} } },
         { provide: DialogRef, useValue: modal },
         { provide: ActionMenuService, useValue: {} },

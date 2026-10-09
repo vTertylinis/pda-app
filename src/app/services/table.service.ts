@@ -26,12 +26,13 @@ export class TableService {
   private customTablesSubject = new BehaviorSubject<{ [key: string]: CustomTable }>({});
   public customTables$ = this.customTablesSubject.asObservable();
   private cartUpdatesSubject = new Subject<any>();
-  public cartUpdates$ = this.cartUpdatesSubject.asObservable().pipe(debounceTime(500));
+  public cartUpdates$ = this.cartUpdatesSubject.asObservable();
   private refreshSubject = new Subject<void>();
   // Kept separate from cart events so a following table-specific event cannot
   // debounce away the refresh of every open view after a missed connection.
   public refreshRequired$ = this.refreshSubject.pipe(debounceTime(100));
   private connectedSubject = new BehaviorSubject<boolean>(false);
+  public connectionChanges$ = this.connectedSubject.asObservable();
   public connected$ = this.connectedSubject.pipe(
     switchMap(connected => connected
       ? of(true)
@@ -43,7 +44,6 @@ export class TableService {
 
   constructor() {
     this.initializeSocket();
-    this.refreshCustomTables();
     const resume = () => {
       if (document.visibilityState === 'visible') {
         this.ngZone.run(() => this.reconnect());
@@ -130,6 +130,11 @@ export class TableService {
         console.log('Disconnected from server');
         this.ngZone.run(() => this.connectedSubject.next(false));
       });
+
+      // HTTP fallback for custom tables when sockets cannot connect at startup.
+      this.socket.once('connect_error', () => {
+        this.ngZone.run(() => this.refreshCustomTables());
+      });
     });
   }
 
@@ -148,14 +153,20 @@ export class TableService {
     return this.http.post<{ success: boolean; table: CustomTable }>(
       `${this.apiUrl}/custom-tables`,
       { name }
-    );
+    ).pipe(tap(response => {
+      this.customTablesSubject.next({ ...this.customTablesSubject.value, [response.table.id]: response.table });
+    }));
   }
 
   // Delete a custom table
   deleteCustomTable(tableId: string): Observable<{ success: boolean; message: string }> {
     return this.http.delete<{ success: boolean; message: string }>(
       `${this.apiUrl}/custom-tables/${tableId}`
-    );
+    ).pipe(tap(() => {
+      const tables = { ...this.customTablesSubject.value };
+      delete tables[tableId];
+      this.customTablesSubject.next(tables);
+    }));
   }
 
   // Update a custom table
@@ -163,7 +174,9 @@ export class TableService {
     return this.http.put<{ success: boolean; table: CustomTable }>(
       `${this.apiUrl}/custom-tables/${tableId}`,
       updates
-    );
+    ).pipe(tap(response => {
+      this.customTablesSubject.next({ ...this.customTablesSubject.value, [response.table.id]: response.table });
+    }));
   }
 
   // Get custom tables as Observable
@@ -174,6 +187,10 @@ export class TableService {
   // Get custom tables synchronously (current value)
   getCustomTablesSync(): { [key: string]: CustomTable } {
     return this.customTablesSubject.value;
+  }
+
+  isConnected(): boolean {
+    return !!this.socket?.connected;
   }
 
   // Disconnect socket
@@ -191,7 +208,11 @@ export class TableService {
     // A suspended browser may still report a connected socket. Always fetch
     // current data on return; don't wait for heartbeat failure detection.
     this.refreshSubject.next();
-    this.refreshCustomTables();
+    if (this.socket?.connected) {
+      this.socket.emit('tables:request-sync');
+    } else {
+      this.refreshCustomTables();
+    }
   }
 
   private refreshCustomTables() {

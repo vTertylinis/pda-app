@@ -6,8 +6,8 @@ import { DecimalPipe } from '@angular/common';
 
 import { FormsModule } from '@angular/forms';
 import { TableManagementModalComponent } from '../components/table-management-modal/table-management-modal.component';
-import { Subject, EMPTY, merge } from 'rxjs';
-import { debounceTime, takeUntil, switchMap, catchError } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 interface TableSummary {
   id: string;
@@ -35,20 +35,9 @@ export class Tab2Page implements OnInit, OnDestroy {
 
   tableSummaries: TableSummary[] = [];
   private destroy$ = new Subject<void>();
-  private loadTrigger$ = new Subject<void>();
 
   ngOnInit() {
-    // Debounce all load triggers, use switchMap to cancel in-flight requests
-    this.loadTrigger$.pipe(
-      debounceTime(300),
-      switchMap(() =>
-        this.cartService.getActiveTables().pipe(
-          catchError((err) => {
-            console.error('Failed to load active tables:', err);
-            return EMPTY;
-          })
-        )
-      ),
+    this.cartService.watchActiveTables().pipe(
       takeUntil(this.destroy$)
     ).subscribe((res) => {
       const metadata = res.tableMetadata || {};
@@ -74,38 +63,11 @@ export class Tab2Page implements OnInit, OnDestroy {
 
       this.cdr.markForCheck();
     });
-
-    this.loadTrigger$.next();
-
-    // react to custom table changes from other clients
-    this.tableService.getCustomTables().pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
-      next: () => {
-        this.loadTrigger$.next();
-      },
-      error: (err) => {
-        console.error('Error subscribing to custom tables updates:', err);
-      }
-    });
-
-    // also listen for cart/active-table updates
-    merge(this.tableService.cartUpdates$, this.tableService.refreshRequired$).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
-      next: () => {
-        this.loadTrigger$.next();
-      },
-      error: (err) => {
-        console.error('Error subscribing to cart updates:', err);
-      }
-    });
   }
 
 
-
   refresh() {
-    this.loadTrigger$.next();
+    this.cartService.refresh();
   }
 
   async openTableModal(summary: TableSummary) {
@@ -116,7 +78,6 @@ export class Tab2Page implements OnInit, OnDestroy {
     await modal.open();
 
     await modal.afterClosed();
-    this.loadTrigger$.next();
   }
 
   async deleteTable(summary: TableSummary, event: Event) {
@@ -136,19 +97,16 @@ export class Tab2Page implements OnInit, OnDestroy {
                 // If it's a custom table, also delete it from the service
                 if (summary.isCustom) {
                   this.tableService.deleteCustomTable(summary.id).subscribe({
-                    next: () => this.loadTrigger$.next(),
                     error: (err) => {
                       console.error('Failed to delete custom table:', err);
-                      this.loadTrigger$.next();
+                      this.cartService.refresh();
                     }
                   });
-                } else {
-                  this.loadTrigger$.next();
                 }
               },
               error: (err) => {
                 console.error('Delete cart failed:', err);
-                this.loadTrigger$.next();
+                this.cartService.refresh();
               },
             });
           },

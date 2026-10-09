@@ -14,9 +14,9 @@ describe('Angular tab routing', () => {
     await TestBed.configureTestingModule({
       providers: [provideRouter(routes),
         { provide: TableService, useValue: {
-          getCustomTables: () => of({}), cartUpdates$: updates, connected$: of(true)
+          getCustomTables: () => of({}), cartUpdates$: updates, refreshRequired$: updates, connected$: of(true)
         } },
-        { provide: CartService, useValue: { getActiveTables: () => of({ carts: {} }) } }
+        { provide: CartService, useValue: { watchActiveTables: () => of({ carts: {} }) } }
       ]
     }).compileComponents();
     const destroy = spyOn(Tab1Page.prototype, 'ngOnDestroy').and.callThrough();

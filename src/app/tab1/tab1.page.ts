@@ -3,8 +3,8 @@ import { PromptService, DialogService, NotificationService } from '../ui/dialog.
 
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
-import { concat, Subject, EMPTY, merge } from 'rxjs';
-import { debounceTime, switchMap, takeUntil, catchError } from 'rxjs/operators';
+import { concat, Subject } from 'rxjs';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 
 import { ItemDetailModalComponent } from '../components/item-detail-modal/item-detail-modal.component';
 import { TableManagementModalComponent } from '../components/table-management-modal/table-management-modal.component';
@@ -39,7 +39,6 @@ export class Tab1Page implements OnInit, OnDestroy {
   filteredItems: any[] = [];
 
   private destroy$ = new Subject<void>();
-  private activityTrigger$ = new Subject<void>();
 
   ngOnInit() {
     this.tableService.getCustomTables().pipe(
@@ -50,19 +49,7 @@ export class Tab1Page implements OnInit, OnDestroy {
       this.cdr.markForCheck();
     });
 
-    // Refresh table activity (occupied highlighting + cart bar) whenever any
-    // device changes a cart. Debounced + switchMap so bursts collapse into one
-    // request and stale responses are dropped.
-    this.activityTrigger$.pipe(
-      debounceTime(300),
-      switchMap(() =>
-        this.cartService.getActiveTables().pipe(
-          catchError((err) => {
-            console.error('Failed to load table activity:', err);
-            return EMPTY;
-          })
-        )
-      ),
+    this.cartService.watchActiveTables().pipe(
       takeUntil(this.destroy$)
     ).subscribe((res) => {
       const activity: { [tableId: string]: TableActivity } = {};
@@ -77,12 +64,6 @@ export class Tab1Page implements OnInit, OnDestroy {
       this.activity = activity;
       this.cdr.markForCheck();
     });
-
-    merge(this.tableService.cartUpdates$, this.tableService.refreshRequired$).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(() => this.activityTrigger$.next());
-
-    this.activityTrigger$.next();
   }
 
 
@@ -179,7 +160,7 @@ export class Tab1Page implements OnInit, OnDestroy {
               error: (err) => {
                 console.error('Failed to delete table:', err);
                 this.showToast(`Αποτυχία διαγραφής. ${err.error?.message || err.message}`, 'danger');
-              }
+        }
             });
           }
         }
@@ -191,7 +172,6 @@ export class Tab1Page implements OnInit, OnDestroy {
 
   onSelectTable(table: TableOption) {
     this.selectedTable = table;
-    this.activityTrigger$.next();
   }
 
   onBack() {
@@ -264,8 +244,7 @@ export class Tab1Page implements OnInit, OnDestroy {
               : `Προστέθηκε: ${data.finalItem.name}`,
             'success'
           );
-          this.activityTrigger$.next();
-        }
+              }
       });
     }
   }
@@ -284,7 +263,6 @@ export class Tab1Page implements OnInit, OnDestroy {
     });
     await modal.open();
     await modal.afterClosed();
-    this.activityTrigger$.next();
   }
 
   private async showToast(message: string, color: 'success' | 'warning' | 'danger') {

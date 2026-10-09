@@ -514,7 +514,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
     this.loadError = '';
     this.cdr.markForCheck();
 
-    this.cartService.getCart(this.table).subscribe({
+    this.cartService.getCart(this.table).pipe(takeUntil(this.destroy$)).subscribe({
       next: (res) => {
         if (sequence !== this.loadSequence) {
           return;
