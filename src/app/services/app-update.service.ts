@@ -2,14 +2,25 @@ import { DestroyRef, Injectable, InjectionToken, inject } from '@angular/core';
 import { Observable, defer, finalize } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+// Browser extensions inject their own scripts/styles into the live DOM.
+// Those assets are not part of the deployed build and must not trigger upgrades.
+export function captureAppBuildVersion(doc: Document): string | null {
+  const appAssets = (selector: string, attribute: string, kind: string) =>
+    Array.from(doc.querySelectorAll(selector), node => node.getAttribute(attribute))
+      .filter((value): value is string => !!value &&
+        !/^(?:chrome|moz|safari|safari-web|ms-browser)-extension:/i.test(value))
+      .map(value => `${kind}:${value}`);
+  const assets = [
+    ...appAssets('script[src]', 'src', 'script'),
+    ...appAssets('link[rel="stylesheet"][href]', 'href', 'style')
+  ].sort();
+  return assets.length ? JSON.stringify(assets) : null;
+}
+
 export const APP_UPDATE_RUNTIME = new InjectionToken('App update runtime', {
   providedIn: 'root', factory: () => {
-    const assets = [
-      ...Array.from(document.querySelectorAll('script[src]'), node => `script:${node.getAttribute('src')}`),
-      ...Array.from(document.querySelectorAll('link[rel="stylesheet"][href]'), node => `style:${node.getAttribute('href')}`)
-    ].sort();
     return {
-      version: environment.production && assets.length ? JSON.stringify(assets) : null,
+      version: environment.production ? captureAppBuildVersion(document) : null,
       busy: () => !!document.querySelector('dialog[open], ion-modal, ion-alert, ion-action-sheet, ion-popover'),
       reload: () => window.location.reload()
     };
