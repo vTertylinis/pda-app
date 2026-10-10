@@ -1,3 +1,4 @@
+import { AppUpdateService } from './app-update.service';
 import { HttpClient } from '@angular/common/http';
 import { DestroyRef, Injectable, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -16,6 +17,7 @@ export interface CartSnapshot {
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private http = inject(HttpClient);
+  private updates = inject(AppUpdateService);
   private tables = inject(TableService);
   private destroyRef = inject(DestroyRef);
   private state = new BehaviorSubject<CartSnapshot | null>(null);
@@ -118,7 +120,7 @@ export class CartService {
   }
 
   private mutation<T>(request: Observable<T>): Observable<T> {
-    return request.pipe(
+    return this.updates.trackWrite(request).pipe(
       tap((response: any) => {
         if (response.cartUpdate) {
           if (this.state.value?.epoch !== response.cartUpdate.epoch) this.valid = false;
