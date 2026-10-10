@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Subject, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { APP_UPDATE_RUNTIME, AppUpdateService } from './app-update.service';
+import { APP_UPDATE_RUNTIME, AppUpdateService, captureAppBuildVersion } from './app-update.service';
 
 describe('Safe application upgrades', () => {
   let service: AppUpdateService;
@@ -63,5 +63,27 @@ describe('Safe application upgrades', () => {
     vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
     vi.advanceTimersByTime(500);
     expect(runtime.reload).toHaveBeenCalledTimes(1);
+  });
+});
+
+
+describe('Build version capture with browser extensions', () => {
+  it('ignores injected extension scripts and styles without ignoring actual build changes', () => {
+    const doc = document.implementation.createHTMLDocument('Version test');
+    doc.body.innerHTML = '<script src="main-a.js"></script><link rel="stylesheet" href="styles-a.css">';
+    const original = captureAppBuildVersion(doc);
+    expect(original).toBe(JSON.stringify(['script:main-a.js', 'style:styles-a.css']));
+    for (const protocol of ['chrome-extension', 'moz-extension', 'safari-web-extension']) {
+      const script = doc.createElement('script');
+      script.src = protocol + '://extension/injected.js';
+      doc.head.prepend(script);
+      const style = doc.createElement('link');
+      style.rel = 'stylesheet';
+      style.href = protocol + '://extension/injected.css';
+      doc.head.prepend(style);
+    }
+    expect(captureAppBuildVersion(doc)).toBe(original);
+    doc.querySelector('script[src="main-a.js"]')!.setAttribute('src', 'main-b.js');
+    expect(captureAppBuildVersion(doc)).not.toBe(original);
   });
 });
