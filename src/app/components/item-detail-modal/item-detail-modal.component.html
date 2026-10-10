@@ -29,6 +29,9 @@
 
     <!-- Coffee Sweetness Options -->
     @if (categoryName === 'Καφέδες') {
+      <ion-item class="ion-margin-top">
+        <ion-checkbox [(ngModel)]="decaf">Decaf (χωρίς καφεΐνη)</ion-checkbox>
+      </ion-item>
       <div class="ion-margin-top">
         <ion-label class="ion-margin-bottom" position="stacked"
           >Επιλέξτε γλυκύτητα:</ion-label

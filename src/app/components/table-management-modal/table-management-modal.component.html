@@ -96,13 +96,16 @@
             }
           </p>
 
-          @if (item.coffeeSize || item.coffeePreference || item.extras?.length || item.comments) {
+          @if (item.coffeeSize || item.coffeePreference || item.decaf === true || item.extras?.length || item.comments) {
             <p class="item-meta">
               @if (item.coffeeSize) {
                 <span>{{ item.coffeeSize }}</span>
               }
               @if (item.coffeePreference) {
                 <span>{{ item.coffeePreference }}</span>
+              }
+              @if (item.decaf === true) {
+                <span>Decaf</span>
               }
               @if (item.extras?.length) {
                 <span>

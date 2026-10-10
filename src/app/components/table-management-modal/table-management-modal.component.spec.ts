@@ -42,6 +42,18 @@ describe('Tablet cart modal synchronization', () => {
     });
     afterEach(() => component.ngOnDestroy());
 
+    it('keeps decaf copies separate from regular coffee when selecting items', () => {
+        const regular = { id: 'regular', name: 'Espresso', price: 2.5, coffeePreference: 'Σκέτο' };
+        const decaf = { ...regular, id: 'decaf', decaf: true };
+        component.cartItems = [regular, decaf, { ...decaf, id: 'decaf-2' }];
+        component.groupedItems = component.groupCartItems();
+        expect(component.groupedItems).toHaveLength(2);
+        expect(component.groupedItems[0].quantity).toBe(1);
+        expect(component.groupedItems[1].quantity).toBe(2);
+        component.groupedItems[1].selectedQuantity = 2;
+        expect(component.getSelectedItems().map(item => item.id)).toEqual(['decaf', 'decaf-2']);
+    });
+
     it('invalidates a pending removal confirmation after a remote change', async () => {
         component.toggleSelectAll();
         await component.askToRemovePaidItems();
