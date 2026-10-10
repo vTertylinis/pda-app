@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button size="small" (click)="addNewItem()" color="success">
+      <ion-button size="small" (click)="addNewItem()" [disabled]="isDeleting" color="success">
         <ion-icon name="add-circle-outline"></ion-icon>
         Add
       </ion-button>
@@ -30,11 +30,11 @@
     </ion-title>
 
     <ion-buttons slot="end">
-      <ion-button size="small" (click)="moveTable()">
+      <ion-button size="small" (click)="moveTable()" [disabled]="isDeleting">
         <ion-icon name="swap-horizontal-outline"></ion-icon>
-        Move
+        {{ hasSelection ? 'Μεταφορά επιλεγμένων' : 'Μεταφορά όλων' }}
       </ion-button>
-      <ion-button size="large" (click)="close()">
+      <ion-button size="large" (click)="close()" [disabled]="isDeleting">
         <ion-icon name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -55,12 +55,12 @@
         <!-- Selection control -->
         <div slot="start" class="select-control" (click)="$event.stopPropagation()">
           @if (item.quantity === 1) {
-            <ion-checkbox
+            <ion-checkbox [disabled]="isDeleting"
               [checked]="item.selectedQuantity === 1"
               (ionChange)="item.selectedQuantity = $event.detail.checked ? 1 : 0; updateSelectedTotal()"
             ></ion-checkbox>
           } @else {
-            <ion-select
+            <ion-select [disabled]="isDeleting"
               class="qty-select"
               interface="popover"
               [value]="item.selectedQuantity || 0"
@@ -126,6 +126,7 @@
         <div slot="end" class="item-actions" (click)="$event.stopPropagation()">
           <ion-button
             class="action-btn"
+            [disabled]="isDeleting"
             fill="clear"
             color="secondary"
             (click)="duplicateItem(item)"
@@ -135,6 +136,7 @@
           </ion-button>
           <ion-button
             class="action-btn"
+            [disabled]="isDeleting"
             fill="clear"
             color="primary"
             (click)="editItem(item, item.category)"
@@ -144,6 +146,7 @@
           </ion-button>
           <ion-button
             class="action-btn"
+            [disabled]="isDeleting"
             fill="clear"
             color="danger"
             (click)="deleteItem(item)"
@@ -159,8 +162,8 @@
 
 <ion-footer>
   <ion-toolbar>
-    <div style="display: flex; gap: 8px; padding: 8px;">
-      <ion-button expand="block" (click)="submit()" [disabled]="unprintedCount === 0">
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; padding: 8px;">
+      <ion-button expand="block" (click)="submit()" [disabled]="unprintedCount === 0 || isDeleting">
         <ion-icon slot="start" name="print-outline"></ion-icon>
         @if (unprintedCount > 0) {
           Εκτύπωση ({{ unprintedCount }} νέα)
@@ -169,10 +172,11 @@
         }
       </ion-button>
 
+      <ion-button expand="block" (click)="repeatSelectedItems()" [disabled]="!hasSelection || isDeleting">{{ isRepeating ? 'Προσθήκη…' : 'Επανάληψη επιλεγμένων' }}</ion-button>
       <ion-button
         expand="block"
         color="success"
-        [disabled]="!hasSelection"
+        [disabled]="!hasSelection || isDeleting"
         (click)="handleSelectedItems()"
         >
         <ion-icon slot="start" name="checkmark-done-outline"></ion-icon>

@@ -8,7 +8,7 @@ import { TableManagementModalComponent } from './table-management-modal.componen
 
 describe('Tablet cart modal synchronization', () => {
     let component: TableManagementModalComponent;
-    let cart: MockedObject<Pick<CartService, 'getCart' | 'deleteItemFromTable' | 'addItemToCart'>>;
+    let cart: MockedObject<Pick<CartService, 'getCart' | 'repeatItems' | 'deleteItemFromTable' | 'addItemToCart'>>;
     let updates: Subject<any>;
     let refresh: Subject<void>;
     let confirmations: any[];
@@ -21,6 +21,7 @@ describe('Tablet cart modal synchronization', () => {
         refresh = new Subject();
         cart = {
             getCart: vi.fn().mockName("CartService.getCart"),
+            repeatItems: vi.fn().mockReturnValue(of({})),
             deleteItemFromTable: vi.fn().mockName("CartService.deleteItemFromTable"),
             addItemToCart: vi.fn().mockName("CartService.addItemToCart")
         };
@@ -41,6 +42,41 @@ describe('Tablet cart modal synchronization', () => {
         component.ngOnInit();
     });
     afterEach(() => component.ngOnDestroy());
+
+    it('repeats selected units once after confirmation and waits for the pending write', async () => {
+        const pending = new Subject<object>();
+        cart.repeatItems.mockReturnValue(pending);
+        component.groupedItems[0].selectedQuantity = 1; component.updateSelectedTotal();
+        await component.repeatSelectedItems();
+        expect(cart.repeatItems).not.toHaveBeenCalled();
+        confirmations[0].buttons[1].handler();
+        confirmations[0].buttons[1].handler();
+        expect(cart.repeatItems).toHaveBeenCalledTimes(1);
+        expect(cart.repeatItems).toHaveBeenCalledWith('1', [items[0]]);
+        expect(component.isRepeating).toBe(true);
+        pending.complete();
+        expect(component.isRepeating).toBe(false);
+    });
+    it('does not repeat a selection changed remotely while confirmation is open', async () => {
+        component.groupedItems[0].selectedQuantity = 1; component.updateSelectedTotal();
+        await component.repeatSelectedItems();
+        updates.next({ tableId: '1' });
+        confirmations[0].buttons[1].handler();
+        expect(cart.repeatItems).not.toHaveBeenCalled();
+    });
+    it('passes only selected copies to the move modal as a partial source snapshot', async () => {
+
+        component.groupedItems[0].selectedQuantity = 1; component.updateSelectedTotal();
+        const controller = (component as any).modalCtrl;
+        const create = vi.spyOn(controller, 'create').mockResolvedValue({
+            open: async () => {}, present: async () => {},
+            afterClosed: async () => ({ data: null }), onDidDismiss: async () => ({ data: null })
+        } as any);
+        await component.moveTable();
+        const props = (create.mock.calls[0][0] as any).componentProps;
+        expect(props.cartItems).toEqual([items[0]]);
+        expect(props.wholeTable).toBe(false);
+    });
 
     it('keeps decaf copies separate from regular coffee when selecting items', () => {
         const regular = { id: 'regular', name: 'Espresso', price: 2.5, coffeePreference: 'Σκέτο' };

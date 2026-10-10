@@ -57,6 +57,7 @@ ion-content.tablet {
 }
 
 .menu-card {
+  position: relative;
   min-height: 88px;
   border: 1px solid var(--ion-color-step-200, #33384a);
   border-radius: 14px;
@@ -80,6 +81,9 @@ ion-content.tablet {
     transform: scale(0.96);
   }
 }
+
+.menu-card:has(app-favorite-toggle) { padding-right: 52px; }
+.menu-card app-favorite-toggle { position: absolute; right: 4px; top: 4px; }
 
 .menu-card-title {
   font-size: 1.25rem;

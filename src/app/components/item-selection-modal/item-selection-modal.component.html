@@ -23,6 +23,7 @@
       </ion-searchbar>
       <!-- Show categories if no search query -->
       @if (!searchQuery) {
+      <app-menu-favorites [categories]="categories" (itemSelected)="selectItem($event, $event.categoryName)" />
         <ion-list-header>Κατηγορίες</ion-list-header>
         @for (category of categories; track category) {
           <ion-item (click)="onSelectCategory(category)">
@@ -36,6 +37,7 @@
             <ion-label>
               {{ item.name }} <small>({{ item.categoryName }})</small>
             </ion-label>
+          <app-favorite-toggle [item]="item" [category]="item.categoryName" />
           </ion-item>
         }
         @if (filteredItems.length === 0) {
@@ -63,6 +65,7 @@
             <h3>{{ item.name }}</h3>
             <p>{{ item.price | currency : "EUR" : "symbol" }}</p>
           </ion-label>
+          <app-favorite-toggle [item]="item" [category]="selectedCategory.name" />
         </ion-item>
       }
     </ion-list>

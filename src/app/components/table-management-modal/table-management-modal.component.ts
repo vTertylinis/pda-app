@@ -33,7 +33,8 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private loadSequence = 0;
   private selectionVersion = 0;
-  private isDeleting = false;
+  isDeleting = false;
+  isRepeating = false;
   private destroyed = false;
 
   ngOnInit() {
@@ -135,6 +136,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   }
 
   close() {
+    if (this.isDeleting) return;
     this.modalCtrl.dismiss({});
   }
 
@@ -144,6 +146,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
    * between none selected and all selected.
    */
   onRowToggle(groupedItem: any) {
+    if (this.isDeleting) return;
     if (groupedItem.quantity === 1) {
       groupedItem.selectedQuantity = groupedItem.selectedQuantity === 1 ? 0 : 1;
     } else {
@@ -155,6 +158,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   }
 
   onSelectedQuantityChange(groupedItem: any, event: any) {
+    if (this.isDeleting) return;
     const value = Number(event?.detail?.value ?? 0);
 
     if (isNaN(value) || value < 0) {
@@ -403,6 +407,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   }
 
   async submit() {
+    if (this.isDeleting) return;
     const request = {
       table: this.table,
       items: this.cartItems
@@ -465,6 +470,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   }
 
   async handleSelectedItems() {
+  if (this.isDeleting) return;
   if (!this.hasSelection) {
     await this.alertModal('Επιλέξτε τουλάχιστον ένα είδος.');
     return;
@@ -525,9 +531,11 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   }
 
   async moveTable() {
+    if (this.isDeleting || !this.cartItems.length) return;
+    const items = this.hasSelection ? this.getSelectedItems() : this.cartItems;
     const modal = await this.modalCtrl.create({
       component: SelectTableComponent,
-      componentProps: { table: this.table, cartItems: structuredClone(this.cartItems) },
+      componentProps: { table: this.table, cartItems: structuredClone(items), wholeTable: items.length === this.cartItems.length },
     });
     await modal.present();
 
@@ -535,6 +543,25 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
     if (data && data.res && data.res.success) {
       this.close();
     }
+  }
+
+  async repeatSelectedItems() {
+    if (this.isDeleting || !this.hasSelection) return;
+    const expectedItems = structuredClone(this.getSelectedItems());
+    if (expectedItems.length > 100) { await this.alertModal('Επιλέξτε έως 100 είδη ανά επανάληψη.'); return; }
+    const version = this.selectionVersion;
+    const description = this.groupedItems.filter(item => item.selectedQuantity).map(item => item.selectedQuantity + ' × ' + item.name).join(', ');
+    const alert = await this.alertController.create({ header: 'Επανάληψη επιλεγμένων',
+      message: description + ' — ' + this.selectedTotal.toFixed(2) + ' €. Να προστεθούν ως νέα, μη εκτυπωμένα είδη;',
+      buttons: [{ text: 'Ακύρωση', role: 'cancel' }, { text: 'Προσθήκη στο τραπέζι', handler: () => {
+        if (version !== this.selectionVersion || this.isDeleting) return;
+        this.isDeleting = true; this.isRepeating = true;
+        this.cartService.repeatItems(this.table, expectedItems).pipe(takeUntil(this.destroy$), finalize(() => {
+          this.isDeleting = false; this.isRepeating = false; if (!this.destroyed) this.loadTable();
+        })).subscribe({ error: () => { void this.alertModal('Δεν επιβεβαιώθηκε η επανάληψη. Ελέγξτε τα νέα είδη πριν δοκιμάσετε ξανά.'); } });
+      } }]
+    });
+    await alert.present();
   }
 
   async addNewItem() {

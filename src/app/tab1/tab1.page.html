@@ -77,6 +77,7 @@
     </ion-searchbar>
 
     @if (!searchQuery) {
+      <app-menu-favorites [categories]="categories" (itemSelected)="openItemModal($event, $event.categoryName)" />
       <div class="menu-grid">
         @for (category of categories; track trackByCategoryName($index, category)) {
           <button type="button" class="menu-card" (click)="onSelectCategory(category)">
@@ -88,10 +89,11 @@
     } @else {
       <div class="menu-grid">
         @for (item of filteredItems; track trackByName($index, item)) {
-          <button type="button" class="menu-card" (click)="openItemModal(item, item.categoryName)">
+          <div role="button" tabindex="0" (keydown.enter)="$event.target === $event.currentTarget && $any($event.currentTarget).click()" (keydown.space)="$event.preventDefault(); $event.target === $event.currentTarget && $any($event.currentTarget).click()" class="menu-card" (click)="openItemModal(item, item.categoryName)">
             <span class="menu-card-title small">{{ item.name }}</span>
             <span class="menu-card-sub">{{ item.categoryName }} · {{ item.price | number : "1.2-2" }} €</span>
-          </button>
+          <app-favorite-toggle [item]="item" [category]="item.categoryName" />
+          </div>
         }
         @if (filteredItems.length === 0) {
           <div class="no-results">Δεν βρέθηκαν προϊόντα</div>
@@ -116,10 +118,11 @@
 
     <div class="menu-grid">
       @for (item of selectedCategory.items; track trackByName($index, item)) {
-        <button type="button" class="menu-card" (click)="openItemModal(item, selectedCategory.name)">
+        <div role="button" tabindex="0" (keydown.enter)="$event.target === $event.currentTarget && $any($event.currentTarget).click()" (keydown.space)="$event.preventDefault(); $event.target === $event.currentTarget && $any($event.currentTarget).click()" class="menu-card" (click)="openItemModal(item, selectedCategory.name)">
           <span class="menu-card-title small">{{ item.name }}</span>
           <span class="menu-card-sub">{{ item.price | number : "1.2-2" }} €</span>
-        </button>
+          <app-favorite-toggle [item]="item" [category]="selectedCategory.name" />
+        </div>
       }
     </div>
   }

@@ -22,6 +22,7 @@ export class SelectTableComponent implements OnInit, OnDestroy {
 
   @Input() table: any;
   @Input() cartItems: any[] = [];
+  @Input() wholeTable = true;
 
   customTables: { [key: string]: CustomTable } = {};
   activity: { [tableId: string]: TableActivity } = {};
@@ -95,11 +96,11 @@ export class SelectTableComponent implements OnInit, OnDestroy {
   }
 
   async movetable() {
-    if (this.isMoving || !this.toTable) return;
+    if (this.isMoving || !this.toTable || !this.cartItems.length) return;
     const expectedItems = structuredClone(this.cartItems);
     const request = {
       fromTable: String(this.table), toTable: this.toTable,
-      expectedItems, wholeTable: expectedItems.length === this.cartItems.length,
+      expectedItems, wholeTable: this.wholeTable,
     };
     this.isMoving = true;
     this.cartService.moveTable(request).pipe(

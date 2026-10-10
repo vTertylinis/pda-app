@@ -1,3 +1,4 @@
+import { MenuFavoritesComponent, FavoriteToggleComponent } from '../menu-favorites.component';
 import { Component, Input, inject } from '@angular/core';
 import { ModalController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
@@ -8,7 +9,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './item-selection-modal.component.html',
   styleUrls: ['./item-selection-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [MenuFavoritesComponent, FavoriteToggleComponent, IonicModule, CommonModule, FormsModule]
 })
 export class ItemSelectionModalComponent {
   private modalCtrl = inject(ModalController);

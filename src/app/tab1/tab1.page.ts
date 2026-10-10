@@ -1,3 +1,4 @@
+import { MenuFavoritesComponent, FavoriteToggleComponent } from '../components/menu-favorites.component';
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { AlertController, ModalController, ToastController, IonicModule } from '@ionic/angular';
 import { DecimalPipe } from '@angular/common';
@@ -18,7 +19,7 @@ import { CATEGORIES } from '../models/categories';
   templateUrl: './tab1.page.html',
   styleUrls: ['./tab1.page.scss'],
   standalone: true,
-  imports: [IonicModule, FormsModule, DecimalPipe, TableGridComponent]
+  imports: [MenuFavoritesComponent, FavoriteToggleComponent, IonicModule, FormsModule, DecimalPipe, TableGridComponent]
 })
 export class Tab1Page implements OnInit, OnDestroy {
   private modalCtrl = inject(ModalController);
