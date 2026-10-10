@@ -1,3 +1,4 @@
+import { AppUpdateService } from './app-update.service';
 import { DestroyRef, Injectable, NgZone, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject, of } from 'rxjs';
@@ -18,6 +19,7 @@ export interface CustomTable {
 })
 export class TableService {
   private http = inject(HttpClient);
+  private updates = inject(AppUpdateService);
   private ngZone = inject(NgZone);
   private destroyRef = inject(DestroyRef);
 
@@ -114,14 +116,19 @@ export class TableService {
       });
 
       // Server emits this after a new build is deployed — reload to pick it up
-      this.socket.on('app:reload', () => {
-        window.location.reload();
+      this.socket.on('app:reload', (data?: { version?: string }) => {
+        if (data?.version) this.updates.checkVersion(data.version);
+        else this.updates.requestReload();
+      });
+      this.socket.on('app:versions', (versions: { phone?: string; tablet?: string }) => {
+        this.updates.checkVersion(versions.phone);
       });
 
       this.socket.on('connect', () => {
         console.log('Connected to server');
         this.ngZone.run(() => {
           this.connectedSubject.next(true);
+          this.socket?.emit('app:request-version');
           this.refreshSubject.next();
         });
       });
@@ -150,19 +157,19 @@ export class TableService {
 
   // Create a new custom table
   createCustomTable(name: string): Observable<{ success: boolean; table: CustomTable }> {
-    return this.http.post<{ success: boolean; table: CustomTable }>(
+    return this.updates.trackWrite(this.http.post<{ success: boolean; table: CustomTable }>(
       `${this.apiUrl}/custom-tables`,
       { name }
-    ).pipe(tap(response => {
+    )).pipe(tap(response => {
       this.customTablesSubject.next({ ...this.customTablesSubject.value, [response.table.id]: response.table });
     }));
   }
 
   // Delete a custom table
   deleteCustomTable(tableId: string, requireEmpty = false): Observable<{ success: boolean; message: string }> {
-    return this.http.delete<{ success: boolean; message: string }>(
+    return this.updates.trackWrite(this.http.delete<{ success: boolean; message: string }>(
       `${this.apiUrl}/custom-tables/${tableId}`
-    ).pipe(tap(() => {
+    )).pipe(tap(() => {
       const tables = { ...this.customTablesSubject.value };
       delete tables[tableId];
       this.customTablesSubject.next(tables);
@@ -171,10 +178,10 @@ export class TableService {
 
   // Update a custom table
   updateCustomTable(tableId: string, updates: Partial<CustomTable>): Observable<{ success: boolean; table: CustomTable }> {
-    return this.http.put<{ success: boolean; table: CustomTable }>(
+    return this.updates.trackWrite(this.http.put<{ success: boolean; table: CustomTable }>(
       `${this.apiUrl}/custom-tables/${tableId}`,
       updates
-    ).pipe(tap(response => {
+    )).pipe(tap(response => {
       this.customTablesSubject.next({ ...this.customTablesSubject.value, [response.table.id]: response.table });
     }));
   }
@@ -202,6 +209,7 @@ export class TableService {
 
   // Reconnect socket (e.g. after app resume)
   reconnect() {
+    if (this.socket?.connected) this.socket.emit('app:request-version');
     if (this.socket && !this.socket.connected) {
       this.socket.connect();
     }
