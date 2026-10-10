@@ -161,3 +161,14 @@ No Ionic or PrimeNG dependencies are required.
 
 The Capacitor CLI retains its own transitive `@ionic/utils-*` build utilities.
 These are development tooling, not Ionic Framework components or runtime.
+## Coordinated cart updates
+
+Deploy and restart the updated backend before deploying this frontend. The new
+cart write endpoints use stable item IDs and check the captured item contents.
+A conflicting edit, removal or move returns HTTP 409 and refreshes the cart.
+Legacy endpoints remain available for devices still running an older build;
+those older builds retain their previous index-based behavior.
+
+Quantities from 1 to 100 are added in one request, with one save and socket
+update. Do not automatically retry an unconfirmed write; check the refreshed
+cart first. Existing printer and persistence error handling is unchanged.

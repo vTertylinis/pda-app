@@ -3,7 +3,7 @@ import { PromptService, DialogService, NotificationService } from '../ui/dialog.
 
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
-import { concat, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 
 import { ItemDetailModalComponent } from '../components/item-detail-modal/item-detail-modal.component';
@@ -228,11 +228,7 @@ export class Tab1Page implements OnInit, OnDestroy {
 
     if (data?.finalItem && this.selectedTable) {
       const quantity = data.quantity || 1;
-      const requests = Array.from({ length: quantity }, () =>
-        this.cartService.addItemToCart(this.selectedTable!.name, data.finalItem)
-      );
-
-      concat(...requests).subscribe({
+      this.cartService.addItemToCart(this.selectedTable!.name, data.finalItem, quantity).subscribe({
         error: async (err) => {
           console.error('Add to cart failed:', err);
           this.showToast(`Αποτυχία προσθήκης. ${err.message || err}`, 'danger');

@@ -64,13 +64,25 @@ export class ItemDetailModalComponent implements OnInit {
       }
       if (this.isPotoOptionTarget && typeof this.comments === 'string') {
         const parts = this.comments.split(' - ');
-        const candidate = parts[0];
         const validPotoOptions = ['Pink Soda', 'Φυσικός Πορτοκάλι', 'Red Bull'];
-        if (validPotoOptions.includes(candidate)) {
-          this.potoMixOption = candidate;
-          this._editPotoMixOption = candidate;
-          parts.shift();
-          this.comments = parts.join(' - ');
+        const premium = parts.find(part => validPotoOptions.includes(part));
+        this.potoMixOption = this.item.potoMixOption || premium || '';
+        this._editPotoMixOption = this.potoMixOption;
+        this.comments = parts.filter(part => part !== premium).join(' - ');
+        // Restore generated chips while preserving unrecognized free text.
+        let rest = String(this.comments || '');
+        const consume = (options: string[]) => {
+          const match = [...options].sort((a, b) => b.length - a.length)
+            .find(option => rest === option || rest.startsWith(option + ' '));
+          if (match) rest = rest.slice(match.length).trim();
+          return match || '';
+        };
+        this.potoLiquor = consume(this.potoLiquorOptions);
+        if (this.potoLiquor) {
+          this.potoMixer = consume(this.potoMixerOptions);
+          let prep: string;
+          while ((prep = consume(ItemDetailModalComponent.POTO_PREP))) this.potoPrep.push(prep);
+          this.comments = rest.replace(/^-\s*/, '');
         }
       }
       // Parse formatted extra names (e.g., "cheese ×2" → "cheese", quantity: 2).
@@ -264,6 +276,7 @@ export class ItemDetailModalComponent implements OnInit {
         ? 'crepe'
         : 'kitchen',
       comments: this.composeComments(),
+      ...(this.isPotoOptionTarget ? { potoMixOption: this.potoMixOption } : {}),
     };
 
     this.dialogRef.dismiss({ finalItem, quantity: this.quantity });
@@ -358,7 +371,7 @@ export class ItemDetailModalComponent implements OnInit {
   }
 
   increment() {
-    this.quantity++;
+    this.quantity = Math.min(this.quantity + 1, 100);
   }
 
   decrement() {

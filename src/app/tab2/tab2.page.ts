@@ -16,6 +16,7 @@ interface TableSummary {
   itemCount: number;
   total: number;
   unprinted: number;
+  items: any[];
 }
 
 @Component({
@@ -47,6 +48,7 @@ export class Tab2Page implements OnInit, OnDestroy {
           const items = res.carts[tableId] || [];
           return {
             id: tableId,
+            items: structuredClone(items),
             name: metadata[tableId]?.name || tableId,
             isCustom: metadata[tableId]?.isCustom || false,
             itemCount: items.length,
@@ -92,21 +94,23 @@ export class Tab2Page implements OnInit, OnDestroy {
           text: 'Ναι',
           role: 'destructive',
           handler: () => {
-            this.cartService.clearCart(summary.id).subscribe({
+            this.cartService.clearCart(summary.id, summary.items).subscribe({
               next: () => {
                 // If it's a custom table, also delete it from the service
                 if (summary.isCustom) {
-                  this.tableService.deleteCustomTable(summary.id).subscribe({
+                  this.tableService.deleteCustomTable(summary.id, true).subscribe({
                     error: (err) => {
                       console.error('Failed to delete custom table:', err);
-                      this.cartService.refresh();
+                      if (err.status !== 409) this.cartService.refresh();
+                      void this.reportDeleteError(err);
                     }
                   });
                 }
               },
               error: (err) => {
                 console.error('Delete cart failed:', err);
-                this.cartService.refresh();
+                if (err.status !== 409) this.cartService.refresh();
+                void this.reportDeleteError(err);
               },
             });
           },
@@ -114,6 +118,17 @@ export class Tab2Page implements OnInit, OnDestroy {
       ],
     });
 
+    await alert.open();
+  }
+
+  private async reportDeleteError(error: { status?: number }) {
+    const alert = await this.alertController.create({
+      header: 'Διαγραφή τραπεζιού',
+      message: error.status === 409
+        ? 'Το τραπέζι άλλαξε σε άλλη συσκευή. Ελέγξτε τα είδη και δοκιμάστε ξανά.'
+        : 'Δεν επιβεβαιώθηκε η διαγραφή. Ελέγξτε το τραπέζι πριν δοκιμάσετε ξανά.',
+      buttons: [{ text: 'OK', role: 'cancel' }],
+    });
     await alert.open();
   }
 

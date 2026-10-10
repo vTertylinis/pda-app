@@ -70,10 +70,10 @@ describe('Table item selection', () => {
         expect(component.selectedCount).toBe(0);
     });
 
-    it('waits for confirmation and removes only selected copies in descending order', async () => {
-        const deleted: number[] = [];
-        cart.deleteItemFromTable.mockImplementation((_table, index) => defer(() => {
-            deleted.push(index);
+    it('waits for confirmation and removes only selected copies in one request', async () => {
+        const deleted: any[][] = [];
+        cart.deleteItemFromTable.mockImplementation((_table, selected) => defer(() => {
+            deleted.push(selected);
             return of({});
         }));
         component.setSelectedQuantity(component.groupedItems[0], 2);
@@ -81,7 +81,7 @@ describe('Table item selection', () => {
         expect(deleted).toEqual([]);
         expect(confirmation.message).toContain('7.00');
         confirmation.buttons[1].handler();
-        expect(deleted).toEqual([2, 0]);
+        expect(deleted).toEqual([[items[2], items[0]]]);
         expect(component.isRemoving).toBe(false);
         expect(component.selectedCount).toBe(0);
     });
@@ -115,15 +115,15 @@ describe('Table item selection', () => {
     });
 
     it('stops on a failed delete, reloads remaining items and reports the failure', async () => {
-        const deleted: number[] = [];
+        const deleted: any[][] = [];
         cart.deleteItemFromTable.mockImplementation((_table, index) => defer(() => {
             deleted.push(index);
-            return index === 2 ? throwError(() => new Error('offline')) : of({});
+            return throwError(() => new Error('offline'));
         }));
         component.toggleAllRemovalItems();
         await component.removeSelectedItems();
         confirmation.buttons[1].handler();
-        expect(deleted).toEqual([3, 2]);
+        expect(deleted).toEqual([[items[3], items[2], items[1], items[0]]]);
         expect(component.selectionNotice).toContain('δεν ολοκληρώθηκε');
         expect(cart.getCart).toHaveBeenCalledTimes(2);
         expect(component.selectedCount).toBe(0);

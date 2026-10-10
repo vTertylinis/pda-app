@@ -5,7 +5,7 @@ import { CartService } from '../../services/cart.service';
 import { TableService, CustomTable } from '../../services/table.service';
 import { TableGridComponent, TableOption, TableActivity } from '../table-grid/table-grid.component';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { finalize, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-select-table',
@@ -29,6 +29,7 @@ export class SelectTableComponent implements OnInit, OnDestroy {
 
   customTables: { [key: string]: CustomTable } = {};
   activity: { [tableId: string]: TableActivity } = {};
+  isMoving = false;
   toTable: string | null = null;
   toTableDisplayName: string | null = null;
 
@@ -64,10 +65,12 @@ export class SelectTableComponent implements OnInit, OnDestroy {
   }
 
   close() {
+    if (this.isMoving) return;
     this.dialogRef.dismiss({});
   }
 
   async onSelectTable(table: TableOption) {
+    if (this.isMoving) return;
     this.toTable = table.name;
     this.toTableDisplayName = table.displayName;
 
@@ -93,45 +96,25 @@ export class SelectTableComponent implements OnInit, OnDestroy {
   }
 
   async movetable() {
-    let request: any = {
-      fromTable: this.table,
-      toTable: this.toTable,
+    if (this.isMoving || !this.toTable) return;
+    const ids = new Set(this.selectedItems.flatMap(group => group.members.map((item: any) => item.id)));
+    const expectedItems = structuredClone(this.cartItems.filter(item => !ids.size || ids.has(item.id)));
+    const request = {
+      fromTable: String(this.table), toTable: this.toTable,
+      expectedItems, wholeTable: expectedItems.length === this.cartItems.length,
     };
-
-    // If specific items were selected, calculate their indices and move only those
-    if (this.selectedItems.length > 0 && this.cartItems.length > 0) {
-      const indicesToMove: number[] = [];
-
-      // For each selected item, find its indices in cartItems
-      for (const selectedItem of this.selectedItems) {
-        // Get all indices that match this grouped item
-        const matchingIndices = selectedItem.indices || [];
-        indicesToMove.push(...matchingIndices);
-      }
-
-      request.indicesToMove = indicesToMove.sort((a, b) => b - a); // Sort descending to avoid index shifting
-
-      this.cartService.moveTableItems(request).subscribe({
-        next: (res) => {
-          this.dialogRef.dismiss({ res });
-        },
-        error: async (err) => {
-          console.error(`Move Failed`, err);
-          await this.alertModal(`Αποτυχία μεταφοράς προϊόντων`);
-        },
-      });
-    } else {
-      // Move all items (backward compatibility)
-      this.cartService.moveTable(request).subscribe({
-        next: (res) => {
-          this.dialogRef.dismiss({ res });
-        },
-        error: async (err) => {
-          console.error(`Move Failed`, err);
-          await this.alertModal(`Αποτυχία μεταφοράς τραπεζιού`);
-        },
-      });
-    }
+    this.isMoving = true;
+    this.cartService.moveTable(request).pipe(
+      finalize(() => { this.isMoving = false; }),
+    ).subscribe({
+      next: res => { this.dialogRef.dismiss({ res }); },
+      error: err => {
+        if (err.status !== 409) this.cartService.refresh();
+        void this.alertModal(err.status === 409
+          ? 'Το τραπέζι άλλαξε. Κλείστε αυτό το παράθυρο και επιλέξτε ξανά τα είδη.'
+          : 'Δεν επιβεβαιώθηκε η μεταφορά. Ελέγξτε και τα δύο τραπέζια πριν δοκιμάσετε ξανά.');
+      },
+    });
   }
 
   async alertModal(message: string) {

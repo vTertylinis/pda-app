@@ -132,6 +132,7 @@ export class CartService {
         // A write may have reached the server even when its response was lost.
         // The caller's next read must verify it; never automatically retry writes.
         this.valid = false;
+        if (error.status === 409) this.refresh();
         return throwError(() => error);
       })
     );
@@ -152,28 +153,28 @@ export class CartService {
     });
   }
 
-  addItemToCart(tableId: any, item: any) {
-    return this.mutation(this.http.post(`${this.apiUrl}/cart/${tableId}`, item));
+  addItemToCart(tableId: any, item: any, quantity = 1) {
+    return this.mutation(this.http.post(`${this.apiUrl}/cart/${tableId}/items`, { item, quantity }));
   }
 
-  clearCart(tableId: any) {
-    return this.mutation(this.http.delete(`${this.apiUrl}/cart/${tableId}`));
+  clearCart(tableId: any, items: any[]) {
+    return this.mutation(this.http.post(`${this.apiUrl}/cart/${tableId}/items/remove`, { expectedItems: items, wholeTable: true }));
   }
 
-  deleteItemFromTable(tableId: any, index: any) {
-    return this.mutation(this.http.delete(`${this.apiUrl}/cart/${tableId}/item/${index}`));
+  deleteItemFromTable(tableId: any, items: any[]) {
+    return this.mutation(this.http.post(`${this.apiUrl}/cart/${tableId}/items/remove`, { expectedItems: items }));
   }
 
-  cancelItem(tableId: any, index: any) {
-    return this.mutation(this.http.delete(`${this.apiUrl}/cancel-item/${tableId}/item/${index}`));
+  cancelItem(tableId: any, items: any[]) {
+    return this.mutation(this.http.post(`${this.apiUrl}/cart/${tableId}/items/cancel`, { expectedItems: items }));
   }
 
   getActiveTables() {
     return defer(() => this.ensureSnapshot(!this.tables.isConnected())).pipe(take(1));
   }
 
-  editItem(tableId: any, index: any, item: any) {
-    return this.mutation(this.http.put(`${this.apiUrl}/cart/${tableId}/item/${index}`, item));
+  editItem(tableId: any, expectedItem: any, item: any) {
+    return this.mutation(this.http.post(`${this.apiUrl}/cart/${tableId}/items/edit`, { expectedItems: [expectedItem], item }));
   }
 
   printItems(tableId: any, request: any) {
@@ -181,11 +182,11 @@ export class CartService {
   }
 
   moveTable(request: any) {
-    return this.mutation(this.http.post(`${this.apiUrl}/move-table-items`, request));
+    return this.mutation(this.http.post(`${this.apiUrl}/cart/items/move`, request));
   }
 
   moveTableItems(request: any) {
-    return this.mutation(this.http.post(`${this.apiUrl}/move-table-items-selected`, request));
+    return this.mutation(this.http.post(`${this.apiUrl}/cart/items/move`, request));
   }
 
 }
