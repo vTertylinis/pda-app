@@ -45,7 +45,7 @@
       @for (order of selfOrders; track trackByTimestamp($index, order)) {
         <article class="order-card">
           <header class="order-head">
-            <div class="order-name">Τραπέζι {{ order.table || 'N/A' }}</div>
+            <div class="order-name">Τραπέζι {{ order.table || 'Δεν δηλώθηκε' }}</div>
             <div class="order-time">{{ order.timestampDisplay }}</div>
           </header>
 
@@ -58,7 +58,7 @@
                 @if (item.coffeePreference || item.coffeeSize || item.extrasDisplay || item.comments) {
                   <span class="item-extras">
                     @if (item.coffeePreference) {{{ item.coffeePreference }} }
-                    @if (item.coffeeSize) {({{ item.coffeeSize }}) }
+                    @if (item.coffeeSize) {({{ item.coffeeSize === 'double' ? 'Διπλός' : 'Μονός' }}) }
                     @if (item.extrasDisplay) {+ {{ item.extrasDisplay }} }
                     @if (item.comments) {💬 {{ item.comments }}}
                   </span>

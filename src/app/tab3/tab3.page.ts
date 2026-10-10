@@ -55,7 +55,7 @@ export class Tab3Page implements OnInit, OnDestroy {
       next: () => (this.loading = false),
       error: (err) => {
         console.error('Error loading online orders:', err);
-        this.error = 'Failed to load online orders';
+        this.error = 'Δεν ήταν δυνατή η φόρτωση των online παραγγελιών.';
         this.loading = false;
       },
     }));
@@ -63,7 +63,7 @@ export class Tab3Page implements OnInit, OnDestroy {
 
   getItemsDisplay(order: any): string {
     if (!order.cart || order.cart.length === 0) {
-      return 'No items';
+      return 'Χωρίς είδη';
     }
     return order.cart
       .map((item: any) => `${item.quantity}x ${item.name}`)

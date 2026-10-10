@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Select Item</ion-title>
+    <ion-title>Επιλογή προϊόντος</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="close()">
         <ion-icon name="close"></ion-icon>
@@ -18,19 +18,19 @@
         debounce="300"
         (ionInput)="onSearch($event)"
         [value]="searchQuery"
-        placeholder="Search items"
+        placeholder="Αναζήτηση προϊόντος"
         showCancelButton="focus">
       </ion-searchbar>
       <!-- Show categories if no search query -->
       @if (!searchQuery) {
-        <ion-list-header>Menu</ion-list-header>
+        <ion-list-header>Κατηγορίες</ion-list-header>
         @for (category of categories; track category) {
           <ion-item (click)="onSelectCategory(category)">
             <ion-label>{{ category.name }}</ion-label>
           </ion-item>
         }
       } @else {
-        <ion-list-header>Search Results</ion-list-header>
+        <ion-list-header>Αποτελέσματα αναζήτησης</ion-list-header>
         @for (item of filteredItems; track item) {
           <ion-item (click)="selectItem(item, item.categoryName)">
             <ion-label>
@@ -40,7 +40,7 @@
         }
         @if (filteredItems.length === 0) {
           <ion-item>
-            <ion-label>No items found</ion-label>
+            <ion-label>Δεν βρέθηκαν προϊόντα</ion-label>
           </ion-item>
         }
       }

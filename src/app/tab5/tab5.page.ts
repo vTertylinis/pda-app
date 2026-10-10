@@ -23,7 +23,7 @@ export class Tab5Page implements ViewWillEnter, ViewWillLeave, OnDestroy {
     this.viewSubscription?.unsubscribe();
     this.viewSubscription = this.history.watch('cancelled-orders').subscribe(state => {
       this.loading = state.loading;
-      this.error = state.error ? 'Failed to load cancelled orders' : null;
+      this.error = state.error ? 'Δεν ήταν δυνατή η φόρτωση των ακυρωμένων παραγγελιών.' : null;
       if (state.data) this.applyOrders(state.data);
     });
   }
@@ -51,7 +51,12 @@ export class Tab5Page implements ViewWillEnter, ViewWillLeave, OnDestroy {
       cancelledAtDisplay: this.formatOrderDate(order.cancelledAt),
       item: (order.item || {}),
       extrasDisplay:
-        order.item?.extras?.map((e: any) => `${e.name}${e.quantity > 1 ? ' x' + e.quantity : ''}`).join(', ') || '',
+        order.item?.extras?.map((e: any) => {
+          const name = String(e.name || '');
+          const baseName = name.replace(/\s[×x]\d+$/, '');
+          const quantity = e.quantity || Number(name.match(/\s[×x](\d+)$/)?.[1]) || 1;
+          return quantity > 1 ? `${baseName} x${quantity}` : baseName;
+        }).join(', ') || '',
     }));
   }
 
@@ -64,14 +69,8 @@ export class Tab5Page implements ViewWillEnter, ViewWillLeave, OnDestroy {
   }
 
   getItemPrice(item: any): number {
-    let price = item.price || 0;
-    if (item.extras && item.extras.length > 0) {
-      price += item.extras.reduce(
-        (sum: number, extra: any) => sum + (extra.price || 0),
-        0,
-      );
-    }
-    return price;
+    // PDA prices already include extras and other customization charges.
+    return Number(item?.price) || 0;
   }
 
   trackByCancelledAt(index: number, order: any): string {

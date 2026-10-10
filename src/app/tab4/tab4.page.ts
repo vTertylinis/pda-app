@@ -23,7 +23,7 @@ export class Tab4Page implements ViewWillEnter, ViewWillLeave, OnDestroy {
     this.viewSubscription?.unsubscribe();
     this.viewSubscription = this.history.watch('orders').subscribe(state => {
       this.loading = state.loading;
-      this.error = state.error ? 'Failed to load printed orders' : null;
+      this.error = state.error ? 'Δεν ήταν δυνατή η φόρτωση των εκτυπωμένων παραγγελιών.' : null;
       if (state.data) this.applyOrders(state.data);
     });
   }
@@ -67,7 +67,7 @@ export class Tab4Page implements ViewWillEnter, ViewWillLeave, OnDestroy {
 
   getItemsDisplay(order: any): string {
     if (!order.items || order.items.length === 0) {
-      return 'No items';
+      return 'Χωρίς είδη';
     }
     return order.items.map((item: any) => `${item.name}`).join(', ');
   }

@@ -29,7 +29,7 @@ export class ItemSelectionModalComponent {
   }
 
   onSearch(event: any) {
-    const query = event.detail.value.trim().toLowerCase();
+    const query = (event.detail.value || '').trim().toLowerCase();
     this.searchQuery = query;
 
     if (!query) {
@@ -58,7 +58,7 @@ export class ItemSelectionModalComponent {
 
   // Helper function to remove diacritics
   removeDiacritics(text: string): string {
-    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u03c2/g, '\u03c3');
   }
 
   selectItem(item: any, categoryName?: string) {

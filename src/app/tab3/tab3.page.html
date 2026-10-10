@@ -45,19 +45,19 @@
       @for (order of onlineOrders; track trackByOrder($index, order)) {
         <article class="order-card">
           <header class="order-head">
-            <div class="order-name">{{ order.address?.name || 'N/A' }}</div>
+            <div class="order-name">{{ order.address?.name || 'Δεν δηλώθηκε' }}</div>
             <div class="order-time">{{ order.timestampDisplay }}</div>
           </header>
 
           <div class="order-contact">
             <div class="contact-row">
               <ion-icon name="call-outline"></ion-icon>
-              <span>{{ order.address?.phone || 'N/A' }}</span>
+              <span>{{ order.address?.phone || 'Δεν δηλώθηκε' }}</span>
             </div>
             <div class="contact-row">
               <ion-icon name="location-outline"></ion-icon>
               <span>
-                {{ order.address?.address || 'N/A' }}
+                {{ order.address?.address || 'Δεν δηλώθηκε' }}
                 @if (order.address?.floor) {
                   · Όροφος: {{ order.address.floor }}
                 }

@@ -412,9 +412,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
       next: async (res: any) => {
         console.log(res);
 
-        const message = res.status
-          ? `${res.status}. Items printed: ${res.printedCount ?? 0}`
-          : res.error || 'Unknown response';
+        const message = this.printResponseMessage(res);
 
         // Refresh so the "new" badges and print button reflect the printed flags
         this.loadTable();
@@ -427,11 +425,19 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
     });
   }
 
+  private printResponseMessage(response: any): string {
+    if (response.status === 'No new items to print') return 'Δεν υπάρχουν νέα είδη για εκτύπωση.';
+    if (response.status === 'Printed new items') {
+      return `Στάλθηκαν για εκτύπωση ${response.printedCount ?? 0} είδη.`;
+    }
+    return 'Δεν επιβεβαιώθηκε η αποστολή για εκτύπωση. Ελέγξτε την παραγγελία.';
+  }
+
   async paySelectedItems() {
     const selectedItems = this.getSelectedItems();
 
     if (!selectedItems.length) {
-      await this.alertModal('Please select at least one item.');
+      await this.alertModal('Επιλέξτε τουλάχιστον ένα είδος.');
       return;
     }
 
@@ -444,9 +450,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
       next: async (res: any) => {
         console.log(res);
 
-        const message = res.status
-          ? `${res.status}. Items printed: ${res.printedCount ?? 0}`
-          : res.error || 'Unknown response';
+        const message = this.printResponseMessage(res);
 
         await this.alertModal(message);
 
@@ -462,7 +466,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
 
   async handleSelectedItems() {
   if (!this.hasSelection) {
-    await this.alertModal('Please select at least one item.');
+    await this.alertModal('Επιλέξτε τουλάχιστον ένα είδος.');
     return;
   }
 

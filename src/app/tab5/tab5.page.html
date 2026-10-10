@@ -45,7 +45,7 @@
       @for (order of cancelledOrders; track trackByCancelledAt($index, order)) {
         <article class="order-card">
           <header class="order-head">
-            <div class="order-name">Τραπέζι {{ order.tableName || 'N/A' }}</div>
+            <div class="order-name">Τραπέζι {{ order.tableName || 'Δεν δηλώθηκε' }}</div>
             <div class="order-time">{{ order.cancelledAtDisplay }}</div>
           </header>
 
@@ -54,7 +54,7 @@
               <span class="item-line">
                 {{ order.item.name }}
                 @if (order.item.coffeePreference) {— {{ order.item.coffeePreference }}}
-                @if (order.item.coffeeSize) {({{ order.item.coffeeSize }})}
+                @if (order.item.coffeeSize) {({{ order.item.coffeeSize === 'double' ? 'Διπλός' : 'Μονός' }})}
               </span>
               @if (order.extrasDisplay) {
                 <span class="item-extras">+ {{ order.extrasDisplay }}</span>

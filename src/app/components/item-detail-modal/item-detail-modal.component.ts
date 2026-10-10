@@ -94,7 +94,7 @@ export class ItemDetailModalComponent implements OnInit {
     this.modalCtrl.dismiss({});
   }
 
-  submit() {
+  computeFinalPrice(): number {
     let finalPrice = this.item.price;
     // In edit mode, revert previously added values to get base price
     if (this.editMode) {
@@ -114,16 +114,24 @@ export class ItemDetailModalComponent implements OnInit {
     if (this.supportsSingleOrDouble && this.coffeeSize === 'double') {
       finalPrice += 0.5;
     }
-    const hasSelectedExtras = this.extraList?.some((extra) => extra.selected);
-    const extrasSource = hasSelectedExtras
-      ? this.extraList
-      : this.extraListSweet;
-    const selectedExtras =
-      extrasSource?.filter((extra) => extra.selected) || [];
-
-    selectedExtras.forEach((extra) => {
+    this.getSelectedExtras().forEach((extra) => {
       finalPrice += extra.price * extra.quantity;
     });
+    return finalPrice;
+  }
+
+  get liveTotal(): number {
+    return this.computeFinalPrice() * (this.editMode ? 1 : this.quantity);
+  }
+
+  private getSelectedExtras() {
+    const extras = this.extraList.some(extra => extra.selected) ? this.extraList : this.extraListSweet;
+    return extras.filter(extra => extra.selected);
+  }
+
+  submit() {
+    const finalPrice = this.computeFinalPrice();
+    const selectedExtras = this.getSelectedExtras();
 
     const barCategories = [
       'Καφέδες',
@@ -194,7 +202,7 @@ export class ItemDetailModalComponent implements OnInit {
       comments: this.composeComments(),
     };
 
-    this.modalCtrl.dismiss({ finalItem, quantity: this.quantity });
+    this.modalCtrl.dismiss({ finalItem, quantity: this.editMode ? 1 : this.quantity });
   }
 
   private composeComments(): string | undefined {
@@ -249,14 +257,16 @@ export class ItemDetailModalComponent implements OnInit {
 
   // Reuse this helper function
   removeDiacritics(text: string): string {
-    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u03c2/g, '\u03c3');
   }
 
   increment() {
+    if (this.editMode) return;
     this.quantity = Math.min(this.quantity + 1, 100);
   }
 
   decrement() {
+    if (this.editMode) return;
     if (this.quantity > 1) {
       this.quantity--;
     }

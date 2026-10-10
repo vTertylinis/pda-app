@@ -23,7 +23,7 @@ export class Tab6Page implements ViewWillEnter, ViewWillLeave, OnDestroy {
     this.viewSubscription?.unsubscribe();
     this.viewSubscription = this.history.watch('self-orders').subscribe(state => {
       this.loading = state.loading;
-      this.error = state.error ? 'Failed to load self-orders' : null;
+      this.error = state.error ? 'Δεν ήταν δυνατή η φόρτωση των παραγγελιών αυτοεξυπηρέτησης.' : null;
       if (state.data) this.applyOrders(state.data);
     });
   }

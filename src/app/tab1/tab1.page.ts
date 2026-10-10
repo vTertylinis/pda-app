@@ -167,7 +167,7 @@ export class Tab1Page implements OnInit, OnDestroy {
   }
 
   onSearch(event: any) {
-    const query = event.detail.value.trim().toLowerCase();
+    const query = (event.detail.value || '').trim().toLowerCase();
     this.searchQuery = query;
 
     if (!query) {
@@ -192,7 +192,7 @@ export class Tab1Page implements OnInit, OnDestroy {
   }
 
   removeDiacritics(text: string): string {
-    return text.normalize('NFD').replace(/[̀-ͯ]/g, '');
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u03c2/g, '\u03c3');
   }
 
   async openItemModal(item: any, categoryName?: string) {
