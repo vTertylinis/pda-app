@@ -676,7 +676,13 @@ async alertModal(message: string) {
         this.isRemoving = true; this.isRepeating = true; this.cdr.markForCheck();
         this.cartService.repeatItems(this.table, expectedItems).pipe(finalize(() => {
           this.isRemoving = false; this.isRepeating = false; this.loadTable();
-        })).subscribe({ error: () => {
+        })).subscribe({ next: () => {
+          this.removalMode = false;
+          this.selectionMode = false;
+          this.selectedItems.clear();
+          this.selectionNotice = '';
+          this.cdr.markForCheck();
+        }, error: () => {
           this.selectionNotice = 'Δεν επιβεβαιώθηκε η επανάληψη. Ελέγξτε τα νέα είδη πριν δοκιμάσετε ξανά.';
         } });
       } }]

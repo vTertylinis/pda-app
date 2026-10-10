@@ -66,8 +66,23 @@ describe('Table item selection', () => {
         expect(cart.repeatItems).toHaveBeenCalledTimes(1);
         expect(cart.repeatItems).toHaveBeenCalledWith('1', [items[0]]);
         expect(component.isRepeating).toBe(true);
+        expect(component.removalMode).toBe(true);
+        pending.next({});
         pending.complete();
         expect(component.isRepeating).toBe(false);
+        expect(component.removalMode).toBe(false);
+        expect(component.selectionMode).toBe(false);
+        expect(component.selectedItems.size).toBe(0);
+        expect(component.unprintedCount).toBeGreaterThan(0);
+    });
+    it('keeps selection mode and shows a notice when repetition fails', async () => {
+        cart.repeatItems.mockReturnValue(throwError(() => new Error('offline')));
+        component.setSelectedQuantity(component.groupedItems[0], 1);
+        await component.repeatSelectedItems();
+        confirmation.buttons[1].handler();
+        expect(component.removalMode).toBe(true);
+        expect(component.isRepeating).toBe(false);
+        expect(component.selectionNotice).not.toBe('');
     });
     it('does not repeat a selection changed remotely while confirmation is open', async () => {
         component.setSelectedQuantity(component.groupedItems[0], 1);
