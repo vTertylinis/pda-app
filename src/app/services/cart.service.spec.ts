@@ -77,9 +77,9 @@ describe('Shared cart synchronization', () => {
     it('deduplicates HTTP and socket updates per table, including reversed arrival', () => {
         watch();
         http.expectOne(url).flush(snapshot());
-        service.editItem('1', 0, {}).subscribe();
+        service.editItem('1', { id: 'a' }, {}).subscribe();
         updates.next(snapshot(2, { 1: [{ price: 7 }] }));
-        http.expectOne(`${url}/1/item/0`).flush({ cartUpdate: snapshot(1, { 1: [{ price: 3 }] }) });
+        http.expectOne(`${url}/1/items/edit`).flush({ cartUpdate: snapshot(1, { 1: [{ price: 3 }] }) });
         updates.next(snapshot(1, { 2: [{ price: 5 }] }));
         expect(latest.carts['1'][0].price).toBe(7);
         expect(latest.carts['2'][0].price).toBe(5);
@@ -89,8 +89,8 @@ describe('Shared cart synchronization', () => {
     it('updates the initiating device from the write response before its callback', () => {
         watch();
         http.expectOne(url).flush(snapshot(0, { 1: [{ price: 3 }] }));
-        service.clearCart('1').subscribe(() => expect(latest.carts['1']).toBeUndefined());
-        http.expectOne(`${url}/1`).flush({ cartUpdate: snapshot(1, { 1: [] }) });
+        service.clearCart('1', [{ id: 'a' }]).subscribe(() => expect(latest.carts['1']).toBeUndefined());
+        http.expectOne(`${url}/1/items/remove`).flush({ cartUpdate: snapshot(1, { 1: [] }) });
         http.expectNone(url);
     });
 
@@ -162,5 +162,28 @@ describe('Shared cart synchronization', () => {
         service.getCart('custom').subscribe(items => items[0].price = 99);
         expect(latest.carts['custom'][0].price).toBe(3);
         http.expectNone(url);
+    });
+
+    it('refreshes after a conflicting edit without retrying the write', () => {
+        watch();
+        http.expectOne(url).flush(snapshot(0, { 1: [{ id: 'a', price: 3 }] }));
+        service.editItem('1', { id: 'a', price: 3 }, { name: 'Coffee', price: 4 })
+            .subscribe({ error: error => expect(error.status).toBe(409) });
+        http.expectOne(url + '/1/items/edit').flush('changed', { status: 409, statusText: 'Conflict' });
+        http.expectOne(url).flush(snapshot(1, { 1: [{ id: 'a', price: 5 }] }));
+        expect(latest.carts['1'][0].price).toBe(5);
+        http.expectNone(url + '/1/items/edit');
+    });
+
+    it('posts quantity once and includes expected IDs for bulk removal', () => {
+        service.addItemToCart('1', { name: 'Coffee', price: 3 }, 5).subscribe();
+        const add = http.expectOne(url + '/1/items');
+        expect(add.request.method).toBe('POST');
+        expect(add.request.body.quantity).toBe(5);
+        add.flush({ cartUpdate: snapshot(1, {}) });
+        service.deleteItemFromTable('1', [{ id: 'a', price: 3 }]).subscribe();
+        const removal = http.expectOne(url + '/1/items/remove');
+        expect(removal.request.body.expectedItems).toEqual([{ id: 'a', price: 3 }]);
+        removal.flush({ cartUpdate: snapshot(2, {}) });
     });
 });

@@ -25,3 +25,14 @@ a single Vitest test run using jsdom. Ionic's loader is handled by
 `vitest.config.mts`. The production build uses Angular's application builder and
 still writes directly into `www/`; `npm run deploy` retains the `/tablet/` base
 path and copies the build to the backend's `pda-app-tablet/` folder.
+## Coordinated cart updates
+
+Deploy and restart the updated backend before deploying this frontend. The new
+cart write endpoints use stable item IDs and check the captured item contents.
+A conflicting edit, removal or move returns HTTP 409 and refreshes the cart.
+Legacy endpoints remain available for devices still running an older build;
+those older builds retain their previous index-based behavior.
+
+Quantities from 1 to 100 are added in one request, with one save and socket
+update. Do not automatically retry an unconfirmed write; check the refreshed
+cart first. Existing printer and persistence error handling is unchanged.

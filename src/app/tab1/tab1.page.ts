@@ -3,7 +3,7 @@ import { AlertController, ModalController, ToastController, IonicModule } from '
 import { DecimalPipe } from '@angular/common';
 
 import { FormsModule } from '@angular/forms';
-import { concat, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { ItemDetailModalComponent } from '../components/item-detail-modal/item-detail-modal.component';
@@ -206,13 +206,7 @@ export class Tab1Page implements OnInit, OnDestroy {
 
     if (data?.finalItem && this.selectedTable) {
       const quantity = data.quantity || 1;
-      // Sequential requests (concat) keep cart order stable and avoid
-      // hammering the server with parallel writes.
-      const requests = Array.from({ length: quantity }, () =>
-        this.cartService.addItemToCart(this.selectedTable!.name, data.finalItem)
-      );
-
-      concat(...requests).subscribe({
+      this.cartService.addItemToCart(this.selectedTable!.name, data.finalItem, quantity).subscribe({
         error: (err) => {
           console.error('Add to cart failed:', err);
           this.showToast(`Αποτυχία προσθήκης. ${err.message || err}`, 'danger');

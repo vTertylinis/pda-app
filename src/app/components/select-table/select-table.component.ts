@@ -5,7 +5,7 @@ import { CartService } from 'src/app/services/cart.service';
 import { TableService, CustomTable } from 'src/app/services/table.service';
 import { TableGridComponent, TableOption, TableActivity } from '../table-grid/table-grid.component';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { finalize, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-select-table',
@@ -21,9 +21,11 @@ export class SelectTableComponent implements OnInit, OnDestroy {
   private alertController = inject(AlertController);
 
   @Input() table: any;
+  @Input() cartItems: any[] = [];
 
   customTables: { [key: string]: CustomTable } = {};
   activity: { [tableId: string]: TableActivity } = {};
+  isMoving = false;
   toTable: string | null = null;
   toTableDisplayName: string | null = null;
 
@@ -62,10 +64,12 @@ export class SelectTableComponent implements OnInit, OnDestroy {
   }
 
   close() {
+    if (this.isMoving) return;
     this.modalCtrl.dismiss({});
   }
 
   async onSelectTable(table: TableOption) {
+    if (this.isMoving) return;
     this.toTable = table.name;
     this.toTableDisplayName = table.displayName;
 
@@ -91,17 +95,22 @@ export class SelectTableComponent implements OnInit, OnDestroy {
   }
 
   async movetable() {
+    if (this.isMoving || !this.toTable) return;
+    const expectedItems = structuredClone(this.cartItems);
     const request = {
-      fromTable: this.table,
-      toTable: this.toTable,
+      fromTable: String(this.table), toTable: this.toTable,
+      expectedItems, wholeTable: expectedItems.length === this.cartItems.length,
     };
-    this.cartService.moveTable(request).subscribe({
-      next: (res) => {
-        this.modalCtrl.dismiss({ res });
-      },
-      error: async (err) => {
-        console.error(`Move Failed`, err);
-        await this.alertModal(`Αποτυχία μεταφοράς τραπεζιού`);
+    this.isMoving = true;
+    this.cartService.moveTable(request).pipe(
+      finalize(() => { this.isMoving = false; }),
+    ).subscribe({
+      next: res => { this.modalCtrl.dismiss({ res }); },
+      error: err => {
+        if (err.status !== 409) this.cartService.refresh();
+        void this.alertModal(err.status === 409
+          ? 'Το τραπέζι άλλαξε. Κλείστε αυτό το παράθυρο και επιλέξτε ξανά τα είδη.'
+          : 'Δεν επιβεβαιώθηκε η μεταφορά. Ελέγξτε και τα δύο τραπέζια πριν δοκιμάσετε ξανά.');
       },
     });
   }

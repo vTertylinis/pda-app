@@ -89,6 +89,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   }
 
   async deleteItem(table: any) {
+    const expectedItems = structuredClone(this.tableCarts[table] || []);
     const isCustom = this.tableMetadata[table]?.isCustom || false;
     const tableName = this.getTableDisplayName(table);
 
@@ -106,26 +107,28 @@ export class Tab2Page implements OnInit, OnDestroy {
         {
           text: 'Ναι',
           handler: () => {
-            this.cartService.clearCart(table).subscribe({
+            this.cartService.clearCart(table, expectedItems).subscribe({
               next: (res) => {
                 console.log('deleted cart:', res);
 
                 // If it's a custom table, also delete it from the service
                 if (isCustom) {
-                  this.tableService.deleteCustomTable(table).subscribe({
+                  this.tableService.deleteCustomTable(table, true).subscribe({
                     next: () => {
                       console.log('Custom table deleted successfully');
                     },
                     error: (err) => {
                       console.error('Failed to delete custom table:', err);
-                      this.cartService.refresh();
+                      if (err.status !== 409) this.cartService.refresh();
+                      void this.reportDeleteError(err);
                     }
                   });
                 }
               },
               error: (err) => {
                 console.error('Delete cart failed:', err);
-                this.cartService.refresh();
+                if (err.status !== 409) this.cartService.refresh();
+                void this.reportDeleteError(err);
               },
             });
           },
@@ -133,6 +136,17 @@ export class Tab2Page implements OnInit, OnDestroy {
       ],
     });
 
+    await alert.present();
+  }
+
+  private async reportDeleteError(error: { status?: number }) {
+    const alert = await this.alertController.create({
+      header: 'Διαγραφή τραπεζιού',
+      message: error.status === 409
+        ? 'Το τραπέζι άλλαξε σε άλλη συσκευή. Ελέγξτε τα είδη και δοκιμάστε ξανά.'
+        : 'Δεν επιβεβαιώθηκε η διαγραφή. Ελέγξτε το τραπέζι πριν δοκιμάσετε ξανά.',
+      buttons: [{ text: 'OK', role: 'cancel' }],
+    });
     await alert.present();
   }
 

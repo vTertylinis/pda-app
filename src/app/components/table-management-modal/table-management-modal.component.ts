@@ -7,7 +7,7 @@ import { ItemDetailModalComponent } from '../item-detail-modal/item-detail-modal
 import { SelectTableComponent } from '../select-table/select-table.component';
 import { ItemSelectionModalComponent } from '../item-selection-modal/item-selection-modal.component';
 import { CATEGORIES } from 'src/app/models/categories';
-import { concat, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 
 @Component({
@@ -45,7 +45,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
     // React to cart changes pushed from the server (e.g. another device edits
     // this table). The socket lives in TableService; tab2 already listens the
     // same way. A changed cart invalidates selections based on item indices;
-    // our own sequential deletion refreshes once it completes.
+    // our own batch deletion refreshes once it completes.
     this.tableService.cartUpdates$.pipe(
       takeUntil(this.destroy$)
     ).subscribe({
@@ -98,6 +98,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
           quantity: 0,
           unprintedCount: 0,
           indices: [],
+          members: [],
           selectedQuantity: 0
         };
       }
@@ -107,6 +108,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
         grouped[key].unprintedCount++;
       }
       grouped[key].indices.push(index);
+      grouped[key].members.push(structuredClone(item));
     });
 
     return Object.values(grouped);
@@ -232,8 +234,8 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
 
   async editItem(groupedItem: any, categoryName: any) {
     // Edit the first item in the group
-    const indexToEdit = groupedItem.indices[0];
-    const item = this.cartItems[indexToEdit];
+    const item = groupedItem.members[0];
+    const expectedItem = structuredClone(item);
 
     const modal = await this.modalCtrl.create({
       component: ItemDetailModalComponent,
@@ -244,12 +246,17 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
     const { data } = await modal.onDidDismiss();
 
     if (data?.finalItem) {
-      this.cartService.editItem(this.table, indexToEdit, data.finalItem).subscribe({
+      this.cartService.editItem(this.table, expectedItem, data.finalItem).subscribe({
         next: (res) => {
           console.log('Item edit to cart:', res);
           this.loadTable();
         },
-        error: (err) => console.error('Edit to cart failed:', err),
+        error: (err) => {
+          this.loadTable();
+          void this.alertModal(err.status === 409
+            ? 'Το είδος άλλαξε σε άλλη συσκευή. Επιλέξτε το ξανά.'
+            : 'Δεν επιβεβαιώθηκε η αλλαγή. Ελέγξτε την παραγγελία πριν δοκιμάσετε ξανά.');
+        },
       });
     }
   }
@@ -270,7 +277,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
           text: 'Ναι',
           handler: () => {
             // Use the first item in the group as the template to duplicate
-            const itemToDuplicate = this.cartItems[groupedItem.indices[0]];
+            const itemToDuplicate = groupedItem.members[0];
             const duplicatedItem = { ...itemToDuplicate };
 
             this.cartService.addItemToCart(this.table, duplicatedItem).subscribe({
@@ -350,19 +357,13 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
       void this.alertModal('Το τραπέζι ενημερώθηκε. Επιλέξτε ξανά τα είδη.');
       return;
     }
-    // Delete items in reverse order to avoid index shifting
-    const indicesToDelete = groupedItem.indices
-      .slice(0, quantity)
-      .sort((a: number, b: number) => b - a);
-
-    this.deleteItemsByIndices(indicesToDelete);
+    this.deleteItems(groupedItem.members.slice(0, quantity));
   }
 
-  private deleteItemsByIndices(indicesToDelete: number[]) {
+  private deleteItems(expectedItems: any[]) {
     if (this.isDeleting) return;
     this.isDeleting = true;
-    const requests = indicesToDelete.map(index => this.cartService.deleteItemFromTable(this.table, index));
-    concat(...requests).pipe(
+    this.cartService.deleteItemFromTable(this.table, expectedItems).pipe(
       takeUntil(this.destroy$),
       finalize(() => {
         this.isDeleting = false;
@@ -470,6 +471,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
  async askToRemovePaidItems() {
     const selectionVersion = this.selectionVersion;
     const selectedIndices = this.getSelectedIndices();
+    const expectedItems = selectedIndices.map(index => structuredClone(this.cartItems[index]));
 
     if (!selectedIndices.length) {
       return;
@@ -490,7 +492,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
               void this.alertModal('Το τραπέζι ενημερώθηκε. Επιλέξτε ξανά τα είδη.');
               return;
             }
-            this.deleteItemsByIndices(selectedIndices);
+            this.deleteItems(expectedItems);
           },
         },
       ],
@@ -520,7 +522,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   async moveTable() {
     const modal = await this.modalCtrl.create({
       component: SelectTableComponent,
-      componentProps: { table: this.table },
+      componentProps: { table: this.table, cartItems: structuredClone(this.cartItems) },
     });
     await modal.present();
 
@@ -557,16 +559,13 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
 
     if (data?.finalItem) {
       const quantity = data.quantity || 1;
-      const requests = Array.from({ length: quantity }, () =>
-        this.cartService.addItemToCart(this.table, data.finalItem)
-      );
-      concat(...requests).pipe(
+      this.cartService.addItemToCart(this.table, data.finalItem, quantity).pipe(
         takeUntil(this.destroy$),
         finalize(() => { if (!this.destroyed) this.loadTable(); })
       ).subscribe({
         error: err => {
           console.error('Add to cart failed:', err);
-          void this.alertModal('Δεν προστέθηκαν όλα τα είδη. Ελέγξτε την παραγγελία πριν δοκιμάσετε ξανά.');
+          void this.alertModal('Δεν επιβεβαιώθηκε η προσθήκη. Ελέγξτε την παραγγελία πριν δοκιμάσετε ξανά.');
         }
       });
     }

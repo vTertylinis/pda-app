@@ -218,7 +218,7 @@ export class TableService {
   }
 
   // Delete a custom table
-  deleteCustomTable(tableId: string): Observable<{ success: boolean; message: string }> {
+  deleteCustomTable(tableId: string, requireEmpty = false): Observable<{ success: boolean; message: string }> {
     return this.http.delete<{ success: boolean; message: string }>(
       `${this.apiUrl}/custom-tables/${tableId}`
     ).pipe(tap(() => {

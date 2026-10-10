@@ -22,8 +22,8 @@ export class ItemDetailModalComponent implements OnInit {
   comments: any;
   drinkCommentOption: string = '';
   searchTerm: string = '';
-  extraList = EXTRALIST.map((extra) => ({ ...extra }));
-  extraListSweet = EXTRALISTSWEET.map((extra) => ({ ...extra }));
+  extraList = EXTRALIST.map((extra) => ({ ...extra, quantity: 1 }));
+  extraListSweet = EXTRALISTSWEET.map((extra) => ({ ...extra, quantity: 1 }));
   quantity = 1;
 
   ngOnInit() {
@@ -45,7 +45,11 @@ export class ItemDetailModalComponent implements OnInit {
       this.selectMatchingItems(
         this.extraList,
         this.extraListSweet,
-        this.item.extras
+        (this.item.extras || []).map((extra: any) => {
+          const match = extra.name.match(/^(.*?)\s[×x](\d+)$/);
+          return { ...extra, name: match ? match[1] : extra.name,
+            quantity: extra.quantity || (match ? Number(match[2]) : 1) };
+        })
       );
     }
   }
@@ -79,6 +83,7 @@ export class ItemDetailModalComponent implements OnInit {
         )
       ) {
         obj.selected = true;
+        obj.quantity = itemsToSelect.find(sel => sel.name === obj.name)?.quantity || 1;
       }
     });
   }
@@ -94,7 +99,7 @@ export class ItemDetailModalComponent implements OnInit {
       // Remove previous extras
       if (Array.isArray(this.item.extras)) {
         this.item.extras.forEach((extra: { price: number }) => {
-          finalPrice -= extra.price;
+          finalPrice -= extra.price * ((extra as any).quantity || Number((extra as any).name?.match(/\s[×x](\d+)$/)?.[1]) || 1);
         });
       }
 
@@ -115,7 +120,7 @@ export class ItemDetailModalComponent implements OnInit {
       extrasSource?.filter((extra) => extra.selected) || [];
 
     selectedExtras.forEach((extra) => {
-      finalPrice += extra.price;
+      finalPrice += extra.price * extra.quantity;
     });
 
     const barCategories = [
@@ -168,8 +173,9 @@ export class ItemDetailModalComponent implements OnInit {
       extras:
         selectedExtras.length > 0
           ? selectedExtras.map((extra) => ({
-              name: extra.name,
+              name: extra.quantity > 1 ? `${extra.name} x${extra.quantity}` : extra.name,
               price: extra.price,
+              quantity: extra.quantity,
             }))
           : null,
       materials: this.item?.materials,
@@ -181,6 +187,7 @@ export class ItemDetailModalComponent implements OnInit {
         : category === 'Τοστ - Κρέπες'
         ? 'crepe'
         : 'kitchen',
+      potoMixOption: this.item?.potoMixOption,
       comments: this.composeComments(),
     };
 
@@ -243,7 +250,7 @@ export class ItemDetailModalComponent implements OnInit {
   }
 
   increment() {
-    this.quantity++;
+    this.quantity = Math.min(this.quantity + 1, 100);
   }
 
   decrement() {
@@ -281,10 +288,12 @@ export class ItemDetailModalComponent implements OnInit {
 interface ItemWithSelected {
   name: string;
   price: number;
+  quantity: number;
   selected: boolean;
 }
 
 interface Item {
+  quantity?: number;
   name: string;
   price: number;
 }

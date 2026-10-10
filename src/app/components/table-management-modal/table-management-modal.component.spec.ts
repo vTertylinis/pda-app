@@ -60,20 +60,20 @@ describe('Tablet cart modal synchronization', () => {
         expect(component.hasSelection).toBe(false);
     });
 
-    it('stops sequential deletion on failure and reloads the remaining cart', async () => {
-        const removed: number[] = [];
-        cart.deleteItemFromTable.mockImplementation((_table, index) => defer(() => {
-            removed.push(index);
-            return index === 1 ? throwError(() => new Error('offline')) : of({});
+    it('sends removal once on failure and reloads the remaining cart', async () => {
+        const removed: any[][] = [];
+        cart.deleteItemFromTable.mockImplementation((_table, selected) => defer(() => {
+            removed.push(selected);
+            return throwError(() => new Error('offline'));
         }));
         component.toggleSelectAll();
         await component.askToRemovePaidItems();
         confirmations[0].buttons[1].handler();
-        expect(removed).toEqual([2, 1]);
+        expect(removed).toEqual([[items[2], items[1], items[0]]]);
         expect(cart.getCart).toHaveBeenCalledTimes(2);
     });
 
-    it('adds multiple copies sequentially and refreshes only after the last write', async () => {
+    it('adds quantity once and refreshes after the response', async () => {
         modal.create.mockResolvedValue({
             present: async () => { },
             onDidDismiss: async () => ({ data: { finalItem: { name: 'Coffee', price: 3 }, quantity: 2 } })
@@ -89,7 +89,8 @@ describe('Tablet cart modal synchronization', () => {
         expect(cart.getCart).toHaveBeenCalledTimes(1);
         first.next({});
         first.complete();
-        expect(writes).toBe(2);
+        expect(writes).toBe(1);
+        expect(cart.addItemToCart).toHaveBeenCalledWith('1', { name: 'Coffee', price: 3 }, 2);
         expect(cart.getCart).toHaveBeenCalledTimes(2);
     });
 });
