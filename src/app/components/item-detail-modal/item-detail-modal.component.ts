@@ -200,7 +200,7 @@ export class ItemDetailModalComponent implements OnInit {
 
   /** Live total shown in the footer: unit price × quantity. */
   get liveTotal(): number {
-    return this.computeFinalPrice() * this.quantity;
+    return this.computeFinalPrice() * (this.editMode ? 1 : this.quantity);
   }
 
   submit() {
@@ -279,7 +279,7 @@ export class ItemDetailModalComponent implements OnInit {
       ...(this.isPotoOptionTarget ? { potoMixOption: this.potoMixOption } : {}),
     };
 
-    this.dialogRef.dismiss({ finalItem, quantity: this.quantity });
+    this.dialogRef.dismiss({ finalItem, quantity: this.editMode ? 1 : this.quantity });
   }
 
   private composeComments(): string | undefined {
@@ -367,14 +367,16 @@ export class ItemDetailModalComponent implements OnInit {
 
   // Reuse this helper function
   removeDiacritics(text: string): string {
-    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u03c2/g, '\u03c3');
   }
 
   increment() {
+    if (this.editMode) return;
     this.quantity = Math.min(this.quantity + 1, 100);
   }
 
   decrement() {
+    if (this.editMode) return;
     if (this.quantity > 1) {
       this.quantity--;
     }
