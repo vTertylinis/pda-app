@@ -172,3 +172,21 @@ those older builds retain their previous index-based behavior.
 Quantities from 1 to 100 are added in one request, with one save and socket
 update. Do not automatically retry an unconfirmed write; check the refreshed
 cart first. Existing printer and persistence error handling is unchanged.
+
+## Favorites, partial moves and repeat orders
+
+Use the star beside a catalogue or search-result product to save it as a device
+favorite. Favorites appear above categories in both ordering and the add-item
+dialog. They open the usual product options and always use the current catalogue.
+They are stored locally in this browser/device and do not create server requests.
+
+Moves can carry selected quantities instead of entire groups. The destination
+receives only the selected item IDs; the remaining copies stay at the source.
+An empty partial selection never silently becomes a whole-table move.
+
+Select quantities and choose “Επανάληψη επιλεγμένων” to review the products and
+total before adding another round. Up to 100 selected units are copied in one
+request with new IDs, current timestamps and unprinted status. Original choices,
+extras, comments and unit prices are preserved. No automatic printing occurs.
+The backend validates the source selection before adding any copies.
+Deploy the updated backend before deploying these frontend changes.

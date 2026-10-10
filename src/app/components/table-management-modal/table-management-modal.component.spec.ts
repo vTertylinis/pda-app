@@ -9,7 +9,7 @@ import { TableManagementModalComponent } from './table-management-modal.componen
 
 describe('Table item selection', () => {
     let component: TableManagementModalComponent;
-    let cart: MockedObject<Pick<CartService, 'getCart' | 'deleteItemFromTable'>>;
+    let cart: MockedObject<Pick<CartService, 'getCart' | 'repeatItems' | 'deleteItemFromTable'>>;
     let updates: Subject<any>;
     let confirmation: any;
     let modal: MockedObject<Pick<DialogRef, 'dismiss'>>;
@@ -24,6 +24,7 @@ describe('Table item selection', () => {
         updates = new Subject();
         cart = {
             getCart: vi.fn().mockName("CartService.getCart"),
+            repeatItems: vi.fn().mockReturnValue(of({})),
             deleteItemFromTable: vi.fn().mockName("CartService.deleteItemFromTable")
         };
         cart.getCart.mockReturnValue(of(items));
@@ -53,6 +54,41 @@ describe('Table item selection', () => {
     });
 
     afterEach(() => component.ngOnDestroy());
+
+    it('repeats selected units once after confirmation and waits for the pending write', async () => {
+        const pending = new Subject<object>();
+        cart.repeatItems.mockReturnValue(pending);
+        component.setSelectedQuantity(component.groupedItems[0], 1);
+        await component.repeatSelectedItems();
+        expect(cart.repeatItems).not.toHaveBeenCalled();
+        confirmation.buttons[1].handler();
+        confirmation.buttons[1].handler();
+        expect(cart.repeatItems).toHaveBeenCalledTimes(1);
+        expect(cart.repeatItems).toHaveBeenCalledWith('1', [items[0]]);
+        expect(component.isRepeating).toBe(true);
+        pending.complete();
+        expect(component.isRepeating).toBe(false);
+    });
+    it('does not repeat a selection changed remotely while confirmation is open', async () => {
+        component.setSelectedQuantity(component.groupedItems[0], 1);
+        await component.repeatSelectedItems();
+        updates.next({ tableId: '1' });
+        confirmation.buttons[1].handler();
+        expect(cart.repeatItems).not.toHaveBeenCalled();
+    });
+    it('passes only selected copies to the move modal as a partial source snapshot', async () => {
+        component.selectionMode = true; component.removalMode = false;
+        component.setSelectedQuantity(component.groupedItems[0], 1);
+        const controller = (component as any).modalCtrl;
+        const create = vi.spyOn(controller, 'create').mockResolvedValue({
+            open: async () => {}, present: async () => {},
+            afterClosed: async () => ({ data: null }), onDidDismiss: async () => ({ data: null })
+        } as any);
+        await component.moveTable();
+        const props = (create.mock.calls[0][0] as any).componentProps;
+        expect(props.cartItems).toEqual([items[0]]);
+        expect(props.wholeTable).toBe(false);
+    });
 
     it('totals partial quantities and toggles all without changing the move selection', () => {
         component.setSelectedQuantity(component.groupedItems[0], 2);

@@ -22,7 +22,7 @@
         <span class="ui-icon" aria-hidden="true">⇄</span>
         Move
         @if (selectedItems.size > 0) {
-          <span class="ui-badge" data-color="danger">{{ selectedItems.size }}</span>
+          <span class="ui-badge" data-color="danger">{{ selectedCount }}</span>
         }
       </button>
       <button class="ui-button" data-size="large" (click)="close()" [disabled]="isRemoving || isPrinting" aria-label="Κλείσιμο" type="button">
@@ -89,6 +89,7 @@
         @if (selectionMode) {
           <input class="ui-checkbox"
             [checked]="isItemSelected(item)"
+            [indeterminate]="item.selectedQuantity > 0 && item.selectedQuantity < item.quantity"
             [attr.aria-label]="'Μετακίνηση ' + item.name"
             (change)="toggleItemSelection(item)"
            type="checkbox">
@@ -133,7 +134,7 @@
               }
             </div>
           }
-          @if (removalMode && item.quantity > 1) {
+          @if ((removalMode || selectionMode) && item.quantity > 1) {
             <div class="quantity-selector">
               <button class="ui-button" data-fill="outline" [disabled]="isRemoving || item.selectedQuantity === 0"
                 [attr.aria-label]="'Μείωση ποσότητας ' + item.name"
@@ -165,15 +166,20 @@
 
 <footer class="ui-footer">
   <div class="ui-toolbar">
-    @if (removalMode) {
+    @if (removalMode || selectionMode) {
       <div class="selection-summary" role="status" aria-live="polite">
         <span>{{ selectedCount }} επιλεγμένα</span>
         <strong>{{ selectedTotal | number : "1.2-2" }} €</strong>
       </div>
+      @if (selectionMode) {
+        <button class="ui-button" (click)="moveTable()" [disabled]="!selectedCount || isRemoving || isLoading" type="button">Επιλογή τραπεζιού</button>
+      } @else {
+      <button class="ui-button" data-expand="block" (click)="repeatSelectedItems()" [disabled]="!selectedCount || isRemoving || isLoading || !!loadError" type="button">{{ isRepeating ? 'Προσθήκη…' : 'Επανάληψη επιλεγμένων' }}</button>
       <button class="ui-button" data-expand="block" data-color="danger" (click)="removeSelectedItems()"
         [disabled]="!selectedCount || isRemoving || isLoading || !!loadError" type="button">
         {{ isRemoving ? 'Αφαίρεση…' : 'Αφαίρεση επιλεγμένων' }}
       </button>
+      }
     } @else {
     <button class="ui-button"
       data-expand="block"

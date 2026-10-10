@@ -1,3 +1,4 @@
+import { MenuFavoritesComponent, FavoriteToggleComponent } from '../components/menu-favorites.component';
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { PromptService, DialogService, NotificationService } from '../ui/dialog.service';
 
@@ -18,7 +19,7 @@ import { CATEGORIES } from '../models/categories';
   templateUrl: './tab1.page.html',
   styleUrls: ['./tab1.page.scss'],
   standalone: true,
-  imports: [FormsModule, DecimalPipe, TableGridComponent],
+  imports: [MenuFavoritesComponent, FavoriteToggleComponent, FormsModule, DecimalPipe, TableGridComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Tab1Page implements OnInit, OnDestroy {

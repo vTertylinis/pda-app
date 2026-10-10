@@ -1,3 +1,4 @@
+import { MenuFavoritesComponent, FavoriteToggleComponent } from '../menu-favorites.component';
 import { Component, Input, ChangeDetectionStrategy, inject } from '@angular/core';
 import { DialogRef } from '../../ui/dialog.service';
 import { CommonModule } from '@angular/common';
@@ -8,7 +9,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './item-selection-modal.component.html',
   styleUrls: ['./item-selection-modal.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [MenuFavoritesComponent, FavoriteToggleComponent, CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ItemSelectionModalComponent {

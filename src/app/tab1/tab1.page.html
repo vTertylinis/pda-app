@@ -49,6 +49,7 @@
 
 
     @if (!searchQuery) {
+      <app-menu-favorites [categories]="categories" (itemSelected)="openItemModal($event, $event.categoryName)" />
       <div class="category-grid">
         @for (category of categories; track trackByCategoryName($index, category)) {
           <button type="button" class="category-card" (click)="onSelectCategory(category)">
@@ -66,6 +67,7 @@
               <p>{{ item.categoryName }}</p>
             </span>
             <span class="ui-note" data-color="success">{{ item.price | number : "1.2-2" }} €</span>
+          <app-favorite-toggle [item]="item" [category]="item.categoryName" />
           </div>
         }
         @if (filteredItems.length === 0) {
@@ -84,6 +86,7 @@
         <div class="ui-item" (click)="openItemModal(item, selectedCategory.name)" role="button" tabindex="0" (keydown.enter)="$any($event.target).click()" (keydown.space)="$event.preventDefault(); $any($event.target).click()">
           <span class="ui-label">{{ item.name }}</span>
           <span class="ui-note" data-color="success">{{ item.price | number : "1.2-2" }} €</span>
+          <app-favorite-toggle [item]="item" [category]="selectedCategory.name" />
         </div>
       }
     </div>

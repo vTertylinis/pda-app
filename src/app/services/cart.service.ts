@@ -159,6 +159,10 @@ export class CartService {
     return this.mutation(this.http.post(`${this.apiUrl}/cart/${tableId}/items`, { item, quantity }));
   }
 
+  repeatItems(tableId: any, expectedItems: any[]) {
+    return this.mutation(this.http.post(`${this.apiUrl}/cart/${tableId}/items/repeat`, { expectedItems }));
+  }
+
   clearCart(tableId: any, items: any[]) {
     return this.mutation(this.http.post(`${this.apiUrl}/cart/${tableId}/items/remove`, { expectedItems: items, wholeTable: true }));
   }

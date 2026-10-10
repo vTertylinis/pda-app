@@ -1,4 +1,6 @@
 /* ---- Compact item list (mobile) ---- */
+.ui-footer .ui-toolbar { flex-wrap: wrap; }
+.ui-footer .ui-button { width: 100%; }
 .items-list {
   padding: 0;
 }

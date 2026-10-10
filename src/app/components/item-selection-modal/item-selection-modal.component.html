@@ -21,6 +21,7 @@
 
       <!-- Show categories if no search query -->
       @if (!searchQuery) {
+      <app-menu-favorites [categories]="categories" (itemSelected)="selectItem($event, $event.categoryName)" />
         <h2 class="ui-list-header">Menu</h2>
         @for (category of categories; track trackByCategoryName($index, category)) {
           <div class="ui-item" (click)="onSelectCategory(category)" role="button" tabindex="0" (keydown.enter)="$any($event.target).click()" (keydown.space)="$event.preventDefault(); $any($event.target).click()">
@@ -34,6 +35,7 @@
             <span class="ui-label">
               {{ item.name }} <small>({{ item.categoryName }})</small>
             </span>
+          <app-favorite-toggle [item]="item" [category]="item.categoryName" />
           </div>
         }
         @if (filteredItems.length === 0) {
@@ -61,6 +63,7 @@
             <h3>{{ item.name }}</h3>
             <p>{{ item.price | currency : "EUR" : "symbol" }}</p>
           </span>
+          <app-favorite-toggle [item]="item" [category]="selectedCategory.name" />
         </div>
       }
     </div>

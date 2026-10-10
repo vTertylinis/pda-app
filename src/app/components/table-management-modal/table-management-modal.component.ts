@@ -37,6 +37,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   selectionMode: boolean = false;
   removalMode = false;
   isRemoving = false;
+  isRepeating = false;
   isPrinting = false;
   selectionNotice = '';
   isLoading = true;
@@ -195,6 +196,10 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   setSelectedQuantity(item: any, quantity: number) {
     if (this.isRemoving || this.isLoading) return;
     item.selectedQuantity = Math.max(0, Math.min(item.quantity, Math.trunc(quantity)));
+    if (this.selectionMode) {
+      if (item.selectedQuantity) this.selectedItems.add(item);
+      else this.selectedItems.delete(item);
+    }
     this.cdr.markForCheck();
   }
 
@@ -250,12 +255,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
   }
 
   toggleItemSelection(item: any) {
-    if (this.selectedItems.has(item)) {
-      this.selectedItems.delete(item);
-    } else {
-      this.selectedItems.add(item);
-    }
-    this.cdr.markForCheck();
+    this.setSelectedQuantity(item, item.selectedQuantity > 0 ? 0 : item.quantity);
   }
 
   isItemSelected(item: any): boolean {
@@ -629,82 +629,59 @@ async alertModal(message: string) {
   await alert.open();
 }
 
-async moveTable() {
-    // If already in selection mode, proceed to table selection
-    if (this.selectionMode) {
-      // If no items selected in selection mode, select all
-      if (this.selectedItems.size === 0) {
-        this.groupedItems.forEach(item => this.selectedItems.add(item));
-      }
+  getSelectedItems(): any[] {
+    return this.groupedItems.flatMap(group => group.members.slice(0, group.selectedQuantity));
+  }
 
-      const modal = await this.modalCtrl.create({
-        component: SelectTableComponent,
-        componentProps: { 
-          table: this.table,
-          selectedItems: Array.from(this.selectedItems),
-          cartItems: this.cartItems
-        },
-      });
-      await modal.open();
-      const { data } = await modal.afterClosed();
-      if(data && data.res && data.res.success){
-        this.close()
-      }
+  async moveTable() {
+    if (this.isRemoving || this.isPrinting || this.isLoading || this.loadError) return;
+    if (this.selectionMode) {
+      if (!this.selectedCount) { this.selectionNotice = 'Επιλέξτε τουλάχιστον ένα είδος για μεταφορά.'; this.cdr.markForCheck(); return; }
+      await this.proceedToTableSelection(this.getSelectedItems());
       return;
     }
-
-    // Show move options alert
     const alert = await this.alertController.create({
-      header: 'Μετακίνηση αντικειμένων',
-      message: 'Πώς θα θέλατε να προχωρήσουμε;',
-      cssClass: 'move-options-alert',
+      header: 'Μεταφορά ειδών', message: 'Ποια είδη θέλετε να μεταφέρετε;',
       buttons: [
-        {
-          text: 'Ακύρωση',
-          role: 'cancel',
-          cssClass: 'alert-button-cancel',
-          handler: () => {
-            console.log('Move cancelled');
-          },
-        },
-        {
-          text: 'Όλα',
-          cssClass: 'alert-button-all',
-          handler: () => {
-            // Select all items and proceed to table selection
-            this.groupedItems.forEach(item => this.selectedItems.add(item));
-            this.proceedToTableSelection();
-          },
-        },
-        {
-          text: 'Μερικά',
-          cssClass: 'alert-button-select',
-          handler: () => {
-            // Enable selection mode so user can select specific items
-            this.selectionMode = true;
-            this.cdr.markForCheck();
-          },
-        },
-      ],
+        { text: 'Ακύρωση', role: 'cancel' },
+        { text: 'Όλα', handler: () => { void this.proceedToTableSelection(this.cartItems); } },
+        { text: 'Μερικά', handler: () => {
+          this.selectionMode = true; this.selectedItems.clear();
+          this.groupedItems.forEach(item => item.selectedQuantity = 0);
+          this.cdr.markForCheck();
+        } }
+      ]
     });
-
     await alert.open();
   }
 
-  private async proceedToTableSelection() {
-    const modal = await this.modalCtrl.create({
-      component: SelectTableComponent,
-      componentProps: { 
-        table: this.table,
-        selectedItems: Array.from(this.selectedItems),
-        cartItems: this.cartItems
-      },
-    });
+  private async proceedToTableSelection(items: any[]) {
+    const modal = await this.modalCtrl.create({ component: SelectTableComponent,
+      componentProps: { table: this.table, cartItems: structuredClone(items), wholeTable: items.length === this.cartItems.length } });
     await modal.open();
     const { data } = await modal.afterClosed();
-    if(data && data.res && data.res.success){
-      this.close()
-    }
+    if (data?.res?.success) this.close();
+  }
+
+  async repeatSelectedItems() {
+    if (this.isRemoving || this.isPrinting || this.isLoading || this.loadError || !this.selectedCount) return;
+    const expectedItems = structuredClone(this.getSelectedItems());
+    if (expectedItems.length > 100) { await this.alertModal('Επιλέξτε έως 100 είδη ανά επανάληψη.'); return; }
+    const sequence = this.loadSequence;
+    const description = this.groupedItems.filter(item => item.selectedQuantity).map(item => item.selectedQuantity + ' × ' + item.name).join(', ');
+    const alert = await this.alertController.create({ header: 'Επανάληψη επιλεγμένων',
+      message: description + ' — ' + this.selectedTotal.toFixed(2) + ' €. Να προστεθούν ως νέα, μη εκτυπωμένα είδη;',
+      buttons: [{ text: 'Ακύρωση', role: 'cancel' }, { text: 'Προσθήκη στο τραπέζι', handler: () => {
+        if (sequence !== this.loadSequence || this.isRemoving) return;
+        this.isRemoving = true; this.isRepeating = true; this.cdr.markForCheck();
+        this.cartService.repeatItems(this.table, expectedItems).pipe(finalize(() => {
+          this.isRemoving = false; this.isRepeating = false; this.loadTable();
+        })).subscribe({ error: () => {
+          this.selectionNotice = 'Δεν επιβεβαιώθηκε η επανάληψη. Ελέγξτε τα νέα είδη πριν δοκιμάσετε ξανά.';
+        } });
+      } }]
+    });
+    await alert.open();
   }
 
   async addNewItem() {
