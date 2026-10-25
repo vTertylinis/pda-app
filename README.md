@@ -54,3 +54,12 @@ request with new IDs, current timestamps and unprinted status. Original choices,
 extras, comments and unit prices are preserved. No automatic printing occurs.
 The backend validates the source selection before adding any copies.
 Deploy the updated backend before deploying these frontend changes.
+
+
+### Πακέτο στα ποτά
+
+Στις λεπτομέρειες ποτού υπάρχει επιλογή «Πακέτο (−1 €)», ανά τεμάχιο.
+Ισχύει σε καφέδες, χυμούς, αναψυκτικά, μπύρες, cocktails, ποτά/κρασιά και ούζο/τσίπουρο.
+Εξαιρούνται τα νερά και τα φαγητά (μεζέδες, μπακαλιαράκια, γάμπαρι, παγωτό).
+Η επιλογή διατηρείται στην επεξεργασία, επανάληψη και μεταφορά και εμφανίζεται στην εκτύπωση.
+Για διάθεση: ενημέρωση backend και restart, ενημέρωση/build και των δύο εφαρμογών.

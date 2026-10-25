@@ -43,6 +43,18 @@ describe('Tablet cart modal synchronization', () => {
     });
     afterEach(() => component.ngOnDestroy());
 
+    it('keeps takeaway separate even when the final unit prices match', () => {
+        component.cartItems = [
+            {id:'regular', name:'Coffee', price:3},
+            {id:'takeaway', name:'Coffee', price:3, takeaway:true},
+            {id:'takeaway-2', name:'Coffee', price:3, takeaway:true},
+        ];
+        const groups = component.groupCartItems();
+        expect(groups.length).toBe(2);
+        expect(groups.find(item => item.takeaway === true).quantity).toBe(2);
+        expect(groups.find(item => item.takeaway !== true).quantity).toBe(1);
+    });
+
     it('repeats selected units once after confirmation and waits for the pending write', async () => {
         const pending = new Subject<object>();
         cart.repeatItems.mockReturnValue(pending);

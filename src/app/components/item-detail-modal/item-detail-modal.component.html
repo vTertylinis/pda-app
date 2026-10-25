@@ -29,6 +29,12 @@
       <strong>Τιμή:</strong> {{ item?.price | currency : "EUR" : "symbol" }}
     </p>
 
+    @if (supportsTakeaway) {
+      <ion-item class="ion-margin-top">
+        <ion-checkbox name="takeaway" [(ngModel)]="takeaway">Πακέτο (−1 €)</ion-checkbox>
+      </ion-item>
+    }
+
     <!-- Coffee Sweetness Options -->
     @if (categoryName === 'Καφέδες') {
       <ion-item class="ion-margin-top">

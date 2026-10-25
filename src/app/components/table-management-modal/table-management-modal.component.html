@@ -96,8 +96,9 @@
             }
           </p>
 
-          @if (item.coffeeSize || item.coffeePreference || item.decaf === true || item.extras?.length || item.comments) {
+          @if (item.takeaway === true || item.coffeeSize || item.coffeePreference || item.decaf === true || item.extras?.length || item.comments) {
             <p class="item-meta">
+              @if (item.takeaway === true) { <span class="meta-pill">Πακέτο</span> }
               @if (item.coffeeSize) {
                 <span>{{ item.coffeeSize === 'double' ? 'Διπλός' : 'Μονός' }}</span>
               }

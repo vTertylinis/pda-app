@@ -20,6 +20,7 @@ export class ItemDetailModalComponent implements OnInit {
   coffeeSize: 'single' | 'double' = 'single';
   coffeePreference: string = '';
   decaf = false;
+  takeaway = false;
   comments: any;
   drinkCommentOption: string = '';
   searchTerm: string = '';
@@ -31,6 +32,7 @@ export class ItemDetailModalComponent implements OnInit {
     if (this.editMode) {
       this.coffeePreference = this.item?.coffeePreference;
       this.decaf = this.item?.decaf === true;
+      this.takeaway = this.item?.takeaway === true;
       this.comments = this.item?.comments;
       this.coffeeSize = this.item?.coffeeSize;
       // Preserve structured comment option when available
@@ -94,8 +96,16 @@ export class ItemDetailModalComponent implements OnInit {
     this.modalCtrl.dismiss({});
   }
 
+  get supportsTakeaway(): boolean {
+    const category = this.categoryName || this.item?.category;
+    return ['Καφέδες', 'Χυμοί', 'Αναψυκτικά', 'Ποτά - Κρασιά', 'Cocktails', 'Μπύρες', 'Ούζο-Μεζέδες'].includes(category)
+      && !['Νερό Μικρό', 'Νερό Μεγάλο', 'Παγωτό', 'Μεζέδες', 'Μπακαλιαράκια', 'Γάμπαρι'].includes(this.item?.name);
+  }
+
   computeFinalPrice(): number {
     let finalPrice = this.item.price;
+    // Undo the previous discount before applying the current selection.
+    if (this.editMode && this.item.takeaway === true) finalPrice += 1;
     // In edit mode, revert previously added values to get base price
     if (this.editMode) {
       // Remove previous extras
@@ -117,7 +127,8 @@ export class ItemDetailModalComponent implements OnInit {
     this.getSelectedExtras().forEach((extra) => {
       finalPrice += extra.price * extra.quantity;
     });
-    return finalPrice;
+    if (this.supportsTakeaway && this.takeaway) finalPrice -= 1;
+    return Math.max(0, Math.round(finalPrice * 100) / 100);
   }
 
   get liveTotal(): number {
@@ -174,6 +185,7 @@ export class ItemDetailModalComponent implements OnInit {
       name: this.item?.name,
       price: finalPrice,
       category: this.categoryName,
+      takeaway: this.supportsTakeaway && this.takeaway,
       coffeePreference:
         this.categoryName === 'Καφέδες' ? this.coffeePreference : null,
       decaf: this.categoryName === 'Καφέδες' && this.decaf,

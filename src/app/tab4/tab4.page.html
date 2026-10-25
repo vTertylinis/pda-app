@@ -55,8 +55,9 @@
                 <span class="item-line">
                   @if (item.quantity) {{{ item.quantity }}× }{{ item.name }}
                 </span>
-                @if (item.coffeePreference || item.coffeeSize || item.extrasDisplay || item.comments) {
+                @if (item.takeaway === true || item.coffeePreference || item.coffeeSize || item.extrasDisplay || item.comments) {
                   <span class="item-extras">
+                    @if (item.takeaway === true) { Πακέτο · }
                     @if (item.coffeePreference) {{{ item.coffeePreference }} }
                     @if (item.coffeeSize) {({{ item.coffeeSize === 'double' ? 'Διπλός' : 'Μονός' }}) }
                     @if (item.extrasDisplay) {+ {{ item.extrasDisplay }} }

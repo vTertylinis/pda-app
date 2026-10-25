@@ -53,6 +53,7 @@
             <li>
               <span class="item-line">
                 {{ order.item.name }}
+                @if (order.item.takeaway === true) { Πακέτο · }
                 @if (order.item.coffeePreference) {— {{ order.item.coffeePreference }}}
                 @if (order.item.coffeeSize) {({{ order.item.coffeeSize === 'double' ? 'Διπλός' : 'Μονός' }})}
               </span>
