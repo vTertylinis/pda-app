@@ -32,6 +32,15 @@
 
   <section class="ui-card-content">
 
+    @if (supportsTakeaway) {
+      <div class="ui-item margin-top">
+        <label class="radio-option">
+          <input class="ui-checkbox" type="checkbox" name="takeaway" [(ngModel)]="takeaway">
+          Πακέτο (−1 €)
+        </label>
+      </div>
+    }
+
     <!-- Coffee Sweetness Options -->
     @if (categoryName === 'Καφέδες') {
       <div class="ui-item margin-top">

@@ -110,8 +110,9 @@
             </span>
           </div>
 
-          @if (item.decaf || item.coffeeSize || item.coffeePreference || item.extras?.length || item.comments) {
+          @if (item.takeaway === true || item.decaf || item.coffeeSize || item.coffeePreference || item.extras?.length || item.comments) {
             <div class="item-meta">
+              @if (item.takeaway === true) { <span class="meta-pill">Πακέτο</span> }
               @if (item.coffeeSize) {
                 <span class="meta-pill">{{ item.coffeeSize }}</span>
               }

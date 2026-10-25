@@ -156,6 +156,7 @@ export class TableManagementModalComponent implements OnInit, OnDestroy {
       coffeeSize: item.coffeeSize || '',
       coffeePreference: item.coffeePreference || '',
       decaf: item.decaf === true,
+      takeaway: item.takeaway === true,
       extras: item.extras?.map((e: any) => e.name).sort().join(',') || '',
       comments: item.comments || ''
     });
