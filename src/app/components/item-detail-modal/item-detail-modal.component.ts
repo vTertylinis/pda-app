@@ -72,7 +72,8 @@ export class ItemDetailModalComponent implements OnInit {
         this._editPotoMixOption = this.potoMixOption;
         this.comments = parts.filter(part => part !== premium).join(' - ');
         // Restore generated chips while preserving unrecognized free text.
-        let rest = String(this.comments || '');
+        const commentParts = String(this.comments || '').split(' - ');
+        let rest = commentParts.shift() || '';
         const consume = (options: string[]) => {
           const match = [...options].sort((a, b) => b.length - a.length)
             .find(option => rest === option || rest.startsWith(option + ' '));
@@ -80,12 +81,10 @@ export class ItemDetailModalComponent implements OnInit {
           return match || '';
         };
         this.potoLiquor = consume(this.potoLiquorOptions);
-        if (this.potoLiquor) {
-          this.potoMixer = consume(this.potoMixerOptions);
-          let prep: string;
-          while ((prep = consume(ItemDetailModalComponent.POTO_PREP))) this.potoPrep.push(prep);
-          this.comments = rest.replace(/^-\s*/, '');
-        }
+        this.potoMixer = consume(this.potoMixerOptions);
+        let prep: string;
+        while ((prep = consume(this.potoAllPrepOptions))) this.potoPrep.push(prep);
+        this.comments = [rest, ...commentParts].filter(Boolean).join(' - ');
       }
       // Parse formatted extra names (e.g., "cheese ×2" → "cheese", quantity: 2).
       // Accept both the Unicode "×" and the ASCII "x" separator: submit() writes
@@ -435,10 +434,10 @@ export class ItemDetailModalComponent implements OnInit {
   private static readonly POTO_LIQUORS: Record<string, string[]> = {
     'Ποτό Απλό': [
       'Τζιν', 'Βότκα', 'Τζέιμσον', 'Καμπάρι', 'Τουλαμόρ',
-      'Τζόνι', 'Κάτι Σαρκ', 'Μπακάρντι', 'Τζακ',
+      'Haig', 'Famous Grouse', 'Τζόνι', 'Κάτι Σαρκ', 'Μπακάρντι', 'Τζακ',
     ],
     'Ποτό Σπέσιαλ': [
-      'Τζόνι Μαύρο', 'Τζιν', 'Σίβας', 'Τζακ', 'Βότκα',
+      'Τζόνι Μαύρο', 'Τζιν', 'Σίβας', 'Τζακ', 'Τζακ Honey', 'Βότκα',
       'Αβάνα', 'Ντιπλοματικό', 'Μπόμπεϊ', 'Ταγκερέι', 'Καμπάρι',
     ],
     'Ποτό Πρίμιουμ': [
@@ -451,9 +450,15 @@ export class ItemDetailModalComponent implements OnInit {
     'Τόνικ', 'Λεμονάδα', 'Κόλα', 'Σόδα', 'Πορτοκάλι', 'Βύσσινο', 'Σπράιτ',
   ];
 
-  private static readonly POTO_PREP: string[] = [
-    'Πάγο', 'Χωρίς πάγο', 'Στημένο', 'Σκέτο', 'Διπλό',
+  readonly potoPrepGroups = [
+    { label: 'Πάγος', options: ['Πάγο', 'Χωρίς πάγο', '1 παγάκι', '2 παγάκια', '3 παγάκια', 'Ice ball'], exclusive: true },
+    { label: 'Ποτήρι', options: ['Χαμηλό', 'Ψηλό'], exclusive: true },
+    { label: 'Σερβίρισμα', options: ['Στημένο', 'Σκέτο', 'Διπλό'], exclusive: false },
   ];
+
+  private get potoAllPrepOptions(): string[] {
+    return this.potoPrepGroups.flatMap(group => group.options);
+  }
 
   get potoLiquorOptions(): string[] {
     return ItemDetailModalComponent.POTO_LIQUORS[this.item?.name] ?? [];
@@ -461,10 +466,6 @@ export class ItemDetailModalComponent implements OnInit {
 
   get potoMixerOptions(): string[] {
     return ItemDetailModalComponent.POTO_MIXERS;
-  }
-
-  get potoPrepOptions(): string[] {
-    return ItemDetailModalComponent.POTO_PREP;
   }
 
   selectPotoLiquor(option: string) {
@@ -480,16 +481,13 @@ export class ItemDetailModalComponent implements OnInit {
     if (i > -1) {
       this.potoPrep.splice(i, 1);
     } else {
-      // "Πάγο" and "Χωρίς πάγο" are mutually exclusive
-      if (option === 'Πάγο') this.removePrep('Χωρίς πάγο');
-      if (option === 'Χωρίς πάγο') this.removePrep('Πάγο');
+      const group = this.potoPrepGroups.find(group => group.options.includes(option));
+      if (!group) return;
+      if (group.exclusive) {
+        this.potoPrep = this.potoPrep.filter(prep => !group.options.includes(prep));
+      }
       this.potoPrep.push(option);
     }
-  }
-
-  private removePrep(option: string) {
-    const i = this.potoPrep.indexOf(option);
-    if (i > -1) this.potoPrep.splice(i, 1);
   }
 
   isPotoPrepSelected(option: string): boolean {
@@ -498,7 +496,8 @@ export class ItemDetailModalComponent implements OnInit {
 
   // Order matters for readability on the printed ticket: liquor, mixer, prep.
   private potoChipString(): string {
-    return [this.potoLiquor, this.potoMixer, ...this.potoPrep]
+    const prep = this.potoAllPrepOptions.filter(option => this.potoPrep.includes(option));
+    return [this.potoLiquor, this.potoMixer, ...prep]
       .filter(Boolean)
       .join(' ');
   }

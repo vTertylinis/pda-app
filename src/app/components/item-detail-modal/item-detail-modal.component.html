@@ -168,6 +168,7 @@
                 <button class="ui-chip"
                   [class.outline]="potoLiquor !== option"
                   [attr.data-color]="potoLiquor === option ? 'primary' : 'medium'"
+                  [attr.aria-pressed]="potoLiquor === option"
                   (click)="selectPotoLiquor(option)"
                  type="button">
                   <span class="ui-label">{{ option }}</span>
@@ -181,6 +182,7 @@
                 <button class="ui-chip"
                   [class.outline]="potoMixer !== option"
                   [attr.data-color]="potoMixer === option ? 'primary' : 'medium'"
+                  [attr.aria-pressed]="potoMixer === option"
                   (click)="selectPotoMixer(option)"
                  type="button">
                   <span class="ui-label">{{ option }}</span>
@@ -188,18 +190,21 @@
               }
             </div>
 
-            <span class="ui-label poto-group-label">Σερβίρισμα:</span>
-            <div class="chip-row">
-              @for (option of potoPrepOptions; track trackByValue($index, option)) {
-                <button class="ui-chip"
-                  [class.outline]="!isPotoPrepSelected(option)"
-                  [attr.data-color]="isPotoPrepSelected(option) ? 'primary' : 'medium'"
-                  (click)="togglePotoPrep(option)"
-                 type="button">
-                  <span class="ui-label">{{ option }}</span>
-                </button>
-              }
-            </div>
+            @for (group of potoPrepGroups; track group.label) {
+              <span class="ui-label poto-group-label">{{ group.label }}:</span>
+              <div class="chip-row" role="group" [attr.aria-label]="group.label">
+                @for (option of group.options; track option) {
+                  <button class="ui-chip"
+                    [class.outline]="!isPotoPrepSelected(option)"
+                    [attr.data-color]="isPotoPrepSelected(option) ? 'primary' : 'medium'"
+                    [attr.aria-pressed]="isPotoPrepSelected(option)"
+                    (click)="togglePotoPrep(option)"
+                    type="button">
+                    <span class="ui-label">{{ option }}</span>
+                  </button>
+                }
+              </div>
+            }
           </div>
         }
 
