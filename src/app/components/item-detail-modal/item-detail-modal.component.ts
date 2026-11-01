@@ -130,7 +130,7 @@ export class ItemDetailModalComponent implements OnInit {
 
   get supportsTakeaway(): boolean {
     const category = this.categoryName || this.item?.category;
-    return ['Καφέδες', 'Χυμοί', 'Αναψυκτικά', 'Ποτά - Κρασιά', 'Cocktails', 'Μπύρες', 'Ούζο-Μεζέδες'].includes(category)
+    return ['Καφέδες', 'Χυμοί', 'Αναψυκτικά', 'Cocktails', 'Μπύρες', 'Ούζο-Μεζέδες'].includes(category)
       && !['Νερό Μικρό', 'Νερό Μεγάλο', 'Παγωτό', 'Μεζέδες', 'Μπακαλιαράκια', 'Γάμπαρι'].includes(this.item?.name);
   }
 
