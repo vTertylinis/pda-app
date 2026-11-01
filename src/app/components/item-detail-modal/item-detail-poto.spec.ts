@@ -91,4 +91,19 @@ describe('Drink quick picks', () => {
     expect(component.potoPrep).toEqual(['3 παγάκια', 'Ψηλό']);
     expect(component.comments).toBe('ειδική οδηγία');
   });
+  it('replaces a paid mixer without doubling the surcharge and allows clearing an edited selection', () => {
+    const { component, saved } = create('\u03a0\u03bf\u03c4\u03cc \u03a3\u03c0\u03ad\u03c3\u03b9\u03b1\u03bb', {
+      price: 9, comments: 'Pink Soda', potoMixOption: 'Pink Soda',
+    }, true);
+    component.togglePotoMixOption('Red Bull');
+    component.submit();
+    expect(saved().finalItem.price).toBe(9);
+    expect(saved().finalItem.comments).toBe('Red Bull');
+    component.togglePotoMixOption('Red Bull');
+    component.submit();
+    expect(saved().finalItem.price).toBe(8);
+    expect(saved().finalItem.potoMixOption).toBe('');
+    expect(saved().finalItem.comments).toBeUndefined();
+  });
+
 });

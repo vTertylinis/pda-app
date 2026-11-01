@@ -200,11 +200,11 @@
         @if (isPotoOptionTarget) {
           <div class="ion-margin-top">
             <ion-label position="stacked">Επιλέξτε αναψυκτικό (+1€):</ion-label>
-            <ion-radio-group name="potoMixOption" [(ngModel)]="potoMixOption">
+            <div role="group" aria-label="Επιλέξτε αναψυκτικό (+1€)">
               @for (option of ['Pink Soda', 'Φυσικός Πορτοκάλι', 'Red Bull']; track option) {
-                <ion-item><ion-radio slot="start" [value]="option">{{ option }}</ion-radio></ion-item>
+                <ion-item><ion-checkbox [checked]="potoMixOption === option" (ionChange)="togglePotoMixOption(option)">{{ option }}</ion-checkbox></ion-item>
               }
-            </ion-radio-group>
+            </div>
           </div>
         }
 
