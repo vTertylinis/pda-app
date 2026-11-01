@@ -4,6 +4,32 @@ import { DialogRef } from '../../ui/dialog.service';
 import { ItemDetailModalComponent } from './item-detail-modal.component';
 
 describe('Drink quick picks', () => {
+  it.each(['Pink Soda', 'Φυσικός Πορτοκάλι', 'Red Bull'])('removes %s and its surcharge on a second click', async (option) => {
+    let saved: any;
+    TestBed.configureTestingModule({ imports: [ItemDetailModalComponent], providers: [{
+      provide: DialogRef, useValue: { dismiss: (data: any) => { saved = data; } },
+    }] });
+    const fixture = TestBed.createComponent(ItemDetailModalComponent);
+    fixture.componentRef.setInput('item', { name: 'Ποτό Απλό', price: 7 });
+    fixture.componentRef.setInput('categoryName', 'Ποτά - Κρασιά');
+    await fixture.whenStable();
+    const checkbox = Array.from(fixture.nativeElement.querySelectorAll(
+      'input[name="potoMixOption"]'
+    ) as NodeListOf<HTMLInputElement>).find(input => input.parentElement?.textContent?.trim() === option)!;
+    checkbox.click();
+    await fixture.whenStable();
+    expect(checkbox.checked).toBe(true);
+    expect(fixture.componentInstance.liveTotal).toBe(8);
+    checkbox.click();
+    await fixture.whenStable();
+    expect(checkbox.checked).toBe(false);
+    expect(fixture.componentInstance.liveTotal).toBe(7);
+    fixture.nativeElement.querySelector('footer button').click();
+    expect(saved.finalItem.potoMixOption).toBe('');
+    expect(saved.finalItem.comments).toBeUndefined();
+    expect(saved.finalItem.price).toBe(7);
+  });
+
   it('connects the visible drink, ice and glass buttons to the submitted order', async () => {
     let saved: any;
     TestBed.configureTestingModule({ imports: [ItemDetailModalComponent], providers: [{
@@ -117,4 +143,19 @@ describe('Drink quick picks', () => {
     expect(component.potoPrep).toEqual(['3 παγάκια', 'Ψηλό']);
     expect(component.comments).toBe('ειδική οδηγία');
   });
+  it('replaces a paid mixer without doubling the surcharge and allows clearing an edited selection', () => {
+    const { component, saved } = create('\u03a0\u03bf\u03c4\u03cc \u03a3\u03c0\u03ad\u03c3\u03b9\u03b1\u03bb', {
+      price: 9, comments: 'Pink Soda', potoMixOption: 'Pink Soda',
+    }, true);
+    component.togglePotoMixOption('Red Bull');
+    component.submit();
+    expect(saved().finalItem.price).toBe(9);
+    expect(saved().finalItem.comments).toBe('Red Bull');
+    component.togglePotoMixOption('Red Bull');
+    component.submit();
+    expect(saved().finalItem.price).toBe(8);
+    expect(saved().finalItem.potoMixOption).toBe('');
+    expect(saved().finalItem.comments).toBeUndefined();
+  });
+
 });

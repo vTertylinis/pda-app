@@ -438,7 +438,7 @@ export class ItemDetailModalComponent implements OnInit {
     ],
     'Ποτό Σπέσιαλ': [
       'Τζόνι Μαύρο', 'Τζιν', 'Σίβας', 'Τζακ', 'Τζακ Honey', 'Βότκα',
-      'Αβάνα', 'Ντιπλοματικό', 'Μπόμπεϊ', 'Ταγκερέι', 'Καμπάρι',
+      'Αβάνα', 'Ντιπλοματικό', 'Μπόμπεϊ', 'Ταγκερέι',
     ],
     'Ποτό Πρίμιουμ': [
       'Μπελβεντέρε', 'Γκρέι Γκουζ', 'Μπλακ Μπάρελ', 'Ντιπλοματικό',
@@ -474,6 +474,10 @@ export class ItemDetailModalComponent implements OnInit {
 
   selectPotoMixer(option: string) {
     this.potoMixer = this.potoMixer === option ? '' : option;
+  }
+
+  togglePotoMixOption(option: string) {
+    this.potoMixOption = this.potoMixOption === option ? '' : option;
   }
 
   togglePotoPrep(option: string) {

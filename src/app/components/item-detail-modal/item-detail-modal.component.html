@@ -215,7 +215,7 @@
             <fieldset class="radio-group">
               @for (option of ['Pink Soda', 'Φυσικός Πορτοκάλι', 'Red Bull']; track trackByValue($index, option)) {
                 <div class="ui-item">
-                  <label class="radio-option"><input type="radio" name="potoMixOption" [(ngModel)]="potoMixOption" [value]="option">{{ option }}</label>
+                  <label class="radio-option"><input class="ui-checkbox" type="checkbox" name="potoMixOption" [checked]="potoMixOption === option" (change)="togglePotoMixOption(option)">{{ option }}</label>
                 </div>
               }
             </fieldset>
