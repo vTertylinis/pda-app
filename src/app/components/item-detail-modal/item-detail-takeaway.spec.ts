@@ -39,7 +39,7 @@ describe('Takeaway drinks', () => {
   });
   it.each([
     ['Χυμοί','Φυσικός Χυμός',true], ['Μπύρες','Βαρέλι',true],
-    ['Ποτά - Κρασιά','Φιάλη Απλή',true], ['Cocktails','Mojito',true],
+    ['Ποτά - Κρασιά','Φιάλη Απλή',false], ['Cocktails','Mojito',true],
     ['Ούζο-Μεζέδες','Ούζο ποτήρι',true], ['Αναψυκτικά','Coca Cola',true],
     ['Αναψυκτικά','Νερό Μικρό',false], ['Αναψυκτικά','Νερό Μεγάλο',false],
     ['Αναψυκτικά','Παγωτό',false], ['Ούζο-Μεζέδες','Μεζέδες',false],
@@ -59,4 +59,17 @@ describe('Takeaway drinks', () => {
     component.takeaway = false;
     expect(component.computeFinalPrice()).toBe(3);
   });
+  it('clears the old takeaway discount when editing a drink with a paid mixer', () => {
+    const { component, result } = setup({
+      name: '\u03a0\u03bf\u03c4\u03cc \u0391\u03c0\u03bb\u03cc', price: 7, takeaway: true,
+      comments: 'Pink Soda', potoMixOption: 'Pink Soda',
+    }, '\u03a0\u03bf\u03c4\u03ac - \u039a\u03c1\u03b1\u03c3\u03b9\u03ac', true);
+    expect(component.supportsTakeaway).toBe(false);
+    expect(component.computeFinalPrice()).toBe(8);
+    component.submit();
+    expect(result().finalItem.takeaway).toBe(false);
+    expect(result().finalItem.price).toBe(8);
+    expect(result().finalItem.potoMixOption).toBe('Pink Soda');
+  });
+
 });

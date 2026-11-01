@@ -275,24 +275,6 @@ export const CATEGORIES = [
       { name: 'Κουβέρ', price: 1.5 },
     ],
   },
-  {
-    name: 'Μενού 28ης',
-    items: [
-      { name: 'Μπακαλιάρος Αγιορείτικος', price: 14 },
-      { name: 'Μπακαλιάρος Κουρκούτι', price: 14 },
-      { name: 'Καλαμαράκια', price: 12 },
-      { name: 'Πανσέτα', price: 11 },
-      { name: 'Μπιφτέκι', price: 12.5 },
-      { name: 'Σουβλάκι', price: 11 },
-      { name: 'Αγγουροντομάτα', price: 6 },
-      { name: 'Μαρούλι', price: 6 },
-      { name: 'Λάχανο', price: 6 },
-      { name: 'Φέτα', price: 5 },
-      { name: 'Καυτερές', price: 3 },
-      { name: 'Τονολακέρδα', price: 8 },
-      { name: 'Κουβέρ', price: 1.5 },
-    ],
-  }
 ];
 
 export const EXTRALIST = [
