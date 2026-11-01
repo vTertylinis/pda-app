@@ -2,3 +2,30 @@
   max-height: 350px;
   overflow-y: auto;
 }
+
+.poto-quickpick {
+  .poto-group-label {
+    display: block;
+    margin: 12px 0 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ion-color-medium-shade);
+  }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .poto-chip {
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid var(--ion-color-medium);
+    border-radius: 24px;
+    background: transparent;
+    color: var(--ion-color-medium-shade);
+    font: inherit;
+    cursor: pointer;
+    &[data-color='primary'] {
+      border-color: var(--ion-color-primary);
+      background: var(--ion-color-primary);
+      color: var(--ion-color-primary-contrast);
+    }
+    &:focus-visible { outline: 2px solid var(--ion-color-primary); outline-offset: 2px; }
+  }
+}

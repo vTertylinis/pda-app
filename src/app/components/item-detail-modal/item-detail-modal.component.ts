@@ -23,6 +23,16 @@ export class ItemDetailModalComponent implements OnInit {
   takeaway = false;
   comments: any;
   drinkCommentOption: string = '';
+  potoMixOption: string = '';
+  private _editPotoMixOption: string = '';
+
+  // Structured quick-pick selections for Ποτό items. Built from the most
+  // common free-text comments in the order history (liquor + mixer + prep),
+  // so staff tap instead of type. The free-text `comments` field is appended
+  // for anything not covered by the chips.
+  potoLiquor: string = '';
+  potoMixer: string = '';
+  potoPrep: string[] = [];
   searchTerm: string = '';
   extraList = EXTRALIST.map((extra) => ({ ...extra, quantity: 1 }));
   extraListSweet = EXTRALISTSWEET.map((extra) => ({ ...extra, quantity: 1 }));
@@ -45,6 +55,28 @@ export class ItemDetailModalComponent implements OnInit {
           parts.shift();
           this.comments = parts.join(' - ');
         }
+      }
+      if (this.isPotoOptionTarget && typeof this.comments === 'string') {
+        const parts = this.comments.split(' - ');
+        const validPotoOptions = ['Pink Soda', 'Φυσικός Πορτοκάλι', 'Red Bull'];
+        const premium = parts.find(part => validPotoOptions.includes(part));
+        this.potoMixOption = this.item.potoMixOption || premium || '';
+        this._editPotoMixOption = this.potoMixOption;
+        this.comments = parts.filter(part => part !== premium).join(' - ');
+        // Restore generated chips while preserving unrecognized free text.
+        const commentParts = String(this.comments || '').split(' - ');
+        let rest = commentParts.shift() || '';
+        const consume = (options: string[]) => {
+          const match = [...options].sort((a, b) => b.length - a.length)
+            .find(option => rest === option || rest.startsWith(option + ' '));
+          if (match) rest = rest.slice(match.length).trim();
+          return match || '';
+        };
+        this.potoLiquor = consume(this.potoLiquorOptions);
+        this.potoMixer = consume(this.potoMixerOptions);
+        let prep: string;
+        while ((prep = consume(this.potoAllPrepOptions))) this.potoPrep.push(prep);
+        this.comments = [rest, ...commentParts].filter(Boolean).join(' - ');
       }
       this.selectMatchingItems(
         this.extraList,
@@ -119,10 +151,18 @@ export class ItemDetailModalComponent implements OnInit {
       if (this.supportsSingleOrDouble && this.item.coffeeSize === 'double') {
         finalPrice -= 0.5;
       }
+
+      // Remove previously applied poto mix surcharge
+      if (this.isPotoOptionTarget && this._editPotoMixOption) {
+        finalPrice -= 1;
+      }
     }
 
     if (this.supportsSingleOrDouble && this.coffeeSize === 'double') {
       finalPrice += 0.5;
+    }
+    if (this.isPotoOptionTarget && this.potoMixOption) {
+      finalPrice += 1;
     }
     this.getSelectedExtras().forEach((extra) => {
       finalPrice += extra.price * extra.quantity;
@@ -210,7 +250,7 @@ export class ItemDetailModalComponent implements OnInit {
         : category === 'Τοστ - Κρέπες'
         ? 'crepe'
         : 'kitchen',
-      potoMixOption: this.item?.potoMixOption,
+      potoMixOption: this.isPotoOptionTarget ? this.potoMixOption : this.item?.potoMixOption,
       comments: this.composeComments(),
     };
 
@@ -218,9 +258,18 @@ export class ItemDetailModalComponent implements OnInit {
   }
 
   private composeComments(): string | undefined {
-    const combined = (this.isOuzoOptionTarget || this.isKarafakiOptionTarget)
-      ? [this.drinkCommentOption, this.comments].filter((value) => !!value).join(' - ')
-      : this.comments;
+    let combined: string | undefined;
+    if (this.isOuzoOptionTarget || this.isKarafakiOptionTarget) {
+      combined = [this.drinkCommentOption, this.comments].filter((value) => !!value).join(' - ');
+    } else if (this.isPotoOptionTarget) {
+      // Order on the ticket: chip selection (liquor/mixer/prep), then the paid
+      // premium mixer, then any free-text the user still typed.
+      combined = [this.potoChipString(), this.potoMixOption, this.comments]
+        .filter((value) => !!value)
+        .join(' - ');
+    } else {
+      combined = this.comments;
+    }
     return combined === '' ? undefined : combined;
   }
 
@@ -284,6 +333,12 @@ export class ItemDetailModalComponent implements OnInit {
     }
   }
 
+  get potoLivePreview(): string {
+    return [this.potoChipString(), this.potoMixOption, this.comments]
+      .filter(Boolean)
+      .join(' ');
+  }
+
   get supportsSingleOrDouble(): boolean {
     const namesWithOption = [
       'Ελληνικός',
@@ -308,6 +363,88 @@ export class ItemDetailModalComponent implements OnInit {
   get isKarafakiOptionTarget(): boolean {
     return this.categoryName === 'Ούζο-Μεζέδες' && this.item?.name === 'Καραφάκι Κρασί 1/2';
   }
+  get isPotoOptionTarget(): boolean {
+    const potoItems = ['Ποτό Απλό', 'Ποτό Σπέσιαλ', 'Ποτό Πρίμιουμ'];
+    return this.categoryName === 'Ποτά - Κρασιά' && potoItems.includes(this.item?.name);
+  }
+
+  // --- Ποτό quick-pick chips -------------------------------------------------
+  // Liquor lists are ordered by real frequency in the order history, per item.
+  private static readonly POTO_LIQUORS: Record<string, string[]> = {
+    'Ποτό Απλό': [
+      'Τζιν', 'Βότκα', 'Τζέιμσον', 'Καμπάρι', 'Τουλαμόρ',
+      'Haig', 'Famous Grouse', 'Τζόνι', 'Κάτι Σαρκ', 'Μπακάρντι', 'Τζακ',
+    ],
+    'Ποτό Σπέσιαλ': [
+      'Τζόνι Μαύρο', 'Τζιν', 'Σίβας', 'Τζακ', 'Τζακ Honey', 'Βότκα',
+      'Αβάνα', 'Ντιπλοματικό', 'Μπόμπεϊ', 'Ταγκερέι', 'Καμπάρι',
+    ],
+    'Ποτό Πρίμιουμ': [
+      'Μπελβεντέρε', 'Γκρέι Γκουζ', 'Μπλακ Μπάρελ', 'Ντιπλοματικό',
+      'Ζακάπα', 'Μακάλαν', 'Τζιν',
+    ],
+  };
+
+  private static readonly POTO_MIXERS: string[] = [
+    'Τόνικ', 'Λεμονάδα', 'Κόλα', 'Σόδα', 'Πορτοκάλι', 'Βύσσινο', 'Σπράιτ',
+  ];
+
+  readonly potoPrepGroups = [
+    { label: 'Πάγος', options: ['Πάγο', 'Χωρίς πάγο', '1 παγάκι', '2 παγάκια', '3 παγάκια', 'Ice ball'], exclusive: true },
+    { label: 'Ποτήρι', options: ['Χαμηλό', 'Ψηλό'], exclusive: true },
+    { label: 'Σερβίρισμα', options: ['Στημένο', 'Σκέτο', 'Διπλό'], exclusive: false },
+  ];
+
+  private get potoAllPrepOptions(): string[] {
+    return this.potoPrepGroups.flatMap(group => group.options);
+  }
+
+  get potoLiquorOptions(): string[] {
+    return ItemDetailModalComponent.POTO_LIQUORS[this.item?.name] ?? [];
+  }
+
+  get potoMixerOptions(): string[] {
+    return ItemDetailModalComponent.POTO_MIXERS;
+  }
+
+  selectPotoLiquor(option: string) {
+    this.potoLiquor = this.potoLiquor === option ? '' : option;
+  }
+
+  selectPotoMixer(option: string) {
+    this.potoMixer = this.potoMixer === option ? '' : option;
+  }
+
+  togglePotoPrep(option: string) {
+    const i = this.potoPrep.indexOf(option);
+    if (i > -1) {
+      this.potoPrep.splice(i, 1);
+    } else {
+      const group = this.potoPrepGroups.find(group => group.options.includes(option));
+      if (!group) return;
+      if (group.exclusive) {
+        this.potoPrep = this.potoPrep.filter(prep => !group.options.includes(prep));
+      }
+      this.potoPrep.push(option);
+    }
+  }
+
+  isPotoPrepSelected(option: string): boolean {
+    return this.potoPrep.includes(option);
+  }
+
+  // Order matters for readability on the printed ticket: liquor, mixer, prep.
+  private potoChipString(): string {
+    const prep = this.potoAllPrepOptions.filter(option => this.potoPrep.includes(option));
+    return [this.potoLiquor, this.potoMixer, ...prep]
+      .filter(Boolean)
+      .join(' ');
+  }
+
+  get potoChipPreview(): string {
+    return [this.potoChipString(), this.comments].filter(Boolean).join(' ');
+  }
+
 }
 
 interface ItemWithSelected {

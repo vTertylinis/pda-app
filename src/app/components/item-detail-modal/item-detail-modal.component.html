@@ -149,6 +149,65 @@
         }
 
 
+        @if (isPotoOptionTarget) {
+          <div class="ion-margin-top poto-quickpick">
+            <span class=" poto-group-label">Ποτό:</span>
+            <div class="chip-row">
+              @for (option of potoLiquorOptions; track option) {
+                <button class="poto-chip"
+                  [class.outline]="potoLiquor !== option"
+                  [attr.data-color]="potoLiquor === option ? 'primary' : 'medium'"
+                  [attr.aria-pressed]="potoLiquor === option"
+                  (click)="selectPotoLiquor(option)"
+                 type="button">
+                  <span class="">{{ option }}</span>
+                </button>
+              }
+            </div>
+
+            <span class=" poto-group-label">Μίξερ:</span>
+            <div class="chip-row">
+              @for (option of potoMixerOptions; track option) {
+                <button class="poto-chip"
+                  [class.outline]="potoMixer !== option"
+                  [attr.data-color]="potoMixer === option ? 'primary' : 'medium'"
+                  [attr.aria-pressed]="potoMixer === option"
+                  (click)="selectPotoMixer(option)"
+                 type="button">
+                  <span class="">{{ option }}</span>
+                </button>
+              }
+            </div>
+
+            @for (group of potoPrepGroups; track group.label) {
+              <span class=" poto-group-label">{{ group.label }}:</span>
+              <div class="chip-row" role="group" [attr.aria-label]="group.label">
+                @for (option of group.options; track option) {
+                  <button class="poto-chip"
+                    [class.outline]="!isPotoPrepSelected(option)"
+                    [attr.data-color]="isPotoPrepSelected(option) ? 'primary' : 'medium'"
+                    [attr.aria-pressed]="isPotoPrepSelected(option)"
+                    (click)="togglePotoPrep(option)"
+                    type="button">
+                    <span class="">{{ option }}</span>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        @if (isPotoOptionTarget) {
+          <div class="ion-margin-top">
+            <ion-label position="stacked">Επιλέξτε αναψυκτικό (+1€):</ion-label>
+            <ion-radio-group name="potoMixOption" [(ngModel)]="potoMixOption">
+              @for (option of ['Pink Soda', 'Φυσικός Πορτοκάλι', 'Red Bull']; track option) {
+                <ion-item><ion-radio slot="start" [value]="option">{{ option }}</ion-radio></ion-item>
+              }
+            </ion-radio-group>
+          </div>
+        }
+
         <!-- Comments Input -->
         <ion-item class="ion-margin-top">
           <ion-label position="stacked">Σχόλια</ion-label>
@@ -157,6 +216,9 @@
             placeholder="Προσθέστε σχόλια για την παραγγελία σας"
           ></ion-input>
         </ion-item>
+        @if (isPotoOptionTarget && potoLivePreview) {
+          <ion-item><ion-note>Προεπισκόπηση: <strong>{{ potoLivePreview }}</strong></ion-note></ion-item>
+        }
       </ion-card-content>
     </ion-content>
 
