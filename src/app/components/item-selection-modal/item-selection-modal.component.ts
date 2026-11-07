@@ -1,5 +1,5 @@
 import { MenuFavoritesComponent, FavoriteToggleComponent } from '../menu-favorites.component';
-import { Component, Input, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy, ElementRef, Injector, afterNextRender, inject, viewChild } from '@angular/core';
 import { DialogRef } from '../../ui/dialog.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +14,8 @@ import { FormsModule } from '@angular/forms';
 })
 export class ItemSelectionModalComponent {
   private dialogRef = inject(DialogRef);
+  private readonly injector = inject(Injector);
+  private readonly content = viewChild.required<ElementRef<HTMLElement>>('content');
 
   @Input() categories: any[] = [];
   selectedCategory: any = null;
@@ -22,12 +24,21 @@ export class ItemSelectionModalComponent {
 
   onSelectCategory(category: any) {
     this.selectedCategory = category;
+    this.resetScroll();
   }
 
   onBackToCategories() {
     this.selectedCategory = null;
     this.searchQuery = '';
     this.filteredItems = [];
+    this.resetScroll();
+  }
+
+  private resetScroll() {
+    // Reset after the new list renders so the previous list's offset is not reused.
+    afterNextRender({
+      write: () => this.content().nativeElement.scrollTo({ top: 0, behavior: 'instant' }),
+    }, { injector: this.injector });
   }
 
   onSearch(event: any) {
