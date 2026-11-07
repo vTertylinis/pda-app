@@ -309,7 +309,7 @@ export const EXTRALIST = [
   { name: 'πάπρικα', price: 0.5 },
   { name: 'μανούρι', price: 1 },
   { name: 'λουκάνικο', price: 1 },
-  { name: 'σαλάμι αέρος', price: 0.5 },
+  { name: 'σαλάμι αέρος', price: 1 },
   { name: 'μελιτζανοσαλάτα', price: 0.5 },
   { name: 'τσένταρ', price: 0.5 },
 ].map((extra) => ({ ...extra, selected: false }));
